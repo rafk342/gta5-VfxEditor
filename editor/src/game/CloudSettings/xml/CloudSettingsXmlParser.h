@@ -36,7 +36,6 @@ class CloudSettingsXmlParser
 	void			AddKeyframeData(pugi::xml_node& settings_node,const char* param_name ,atArray<ptxKeyframeEntry>& keyframesData);
 	std::string&	GetKeyframesTextParams(atArray<ptxKeyframeEntry>& keyframesData);
 
-
 public:
 
 	void ImportCloudKfData(const std::string& path, CloudsHandler& CloudsHandler);

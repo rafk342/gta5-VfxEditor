@@ -32,7 +32,7 @@ private:
 struct CloudHatSettings				
 {
 private:
-	char pad[16];	
+	u8 pad[16];	
 public:
 	atArray<int>  probability_array;
 	atBitSet<u16> bits;
@@ -54,13 +54,11 @@ public:
 struct CloudHatFragContainer
 {
 private:
-	char pad01[64];
-
+	u8 pad01[64];
 public:
 	char Name[64];		//we need just names from here
-
 private:
-	char pad02[336];
+	u8 pad02[336];
 };
 
 
@@ -86,7 +84,9 @@ class CloudsHandler
 	// game related things
 	struct gCloudSettingsMap
 	{
-		char pad[48];
+	private:
+		u8 pad[48];
+	public:
 		atHashMap<CloudHatSettings>				CloudSettings;
 		atArray<float>							TimeData;
 	};
