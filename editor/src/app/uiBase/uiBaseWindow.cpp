@@ -39,6 +39,8 @@ void BaseUiWindow::OnRender()
 {
     renderState = true;
 
+    ImGui::SetNextWindowSize({ 712 ,885 }, ImGuiCond_FirstUseEver);
+
     ImGui::Begin(MainWindowLabel);
 
     file_section();

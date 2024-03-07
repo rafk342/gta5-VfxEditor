@@ -14,8 +14,6 @@
 
 
 
-
-
 class configHandler
 {
 	static std::string config_name;
@@ -36,6 +34,8 @@ struct config_params
 	static bool tooltips;
 	static bool replace_item_names_with_tooltips_definition;
 	static int open_window_btn_key;
+	static bool cursor_imgui_usage;
+
 };
 
 
@@ -46,6 +46,8 @@ struct default_cfg_params
 	//const static int default_tooltips = 0;
 	const static int default_replace_item_names_with_tooltips_definition = 1;
 	const static int default_open_window_btn_key = 0x2D; //insert	
+	const static bool default_cursor_imgui_usage = false;
+
 };
 
 

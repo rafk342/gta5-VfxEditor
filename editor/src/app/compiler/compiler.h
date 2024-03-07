@@ -11,7 +11,7 @@
 #define AM_NOINLINE		__declspec(noinline)
 #define AM_FORCEINLINE	__forceinline
 
-#define am_version true
+#define am_version false
 
 #define gameVer3095 1
 #define gameVer2802 2

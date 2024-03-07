@@ -37,6 +37,7 @@ AM_EXPORT void Init()
 	Preload_Integration::Preload();
 	FileListUI::setPreBuff(config_params::path_from_cfg);
 	mRender::SetOpenWindowBtn(config_params::open_window_btn_key);
+	mRender::SetCursorImguiUsage(config_params::cursor_imgui_usage);
 	Hook::Init();
 	ScriptHook::Init();
 	std::thread th(mRender::Init);

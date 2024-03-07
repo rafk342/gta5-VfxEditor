@@ -28,7 +28,8 @@ class mRender
 	static bool init;
 	static bool show_window;
 	static bool mInitialized;
-
+	static bool ImGuiCursorUsage;
+	
 	static HWND	window;
 	static ID3D11Device* p_device;
 	static ID3D11DeviceContext* p_context;
@@ -49,6 +50,7 @@ class mRender
 
 public:
 
+	static void SetCursorImguiUsage(bool state);
 	static void SetOpenWindowBtn(int btn);
 	static void Init();
 	static void Shutdown();

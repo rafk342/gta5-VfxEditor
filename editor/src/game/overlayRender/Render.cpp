@@ -26,6 +26,7 @@ IDXGISwapChain*			mRender::p_SwapChain = nullptr;
 int		mRender::open_window_btn = 0;
 bool	mRender::show_window = false;
 bool	mRender::mInitialized = false;
+bool    mRender::ImGuiCursorUsage = false;
 
 void mRender::CreateDevice()
 {
@@ -78,6 +79,9 @@ int mRender::n_ShowCursor(bool visible)
 
 void mRender::SetMouseCursorState(bool visible, HWND hwnd)
 {
+	if (ImGuiCursorUsage)
+		return;
+
 	RECT rect;
 	GetWindowRect(hwnd, &rect);
 	orig_ClipCursor(visible ? &rect : NULL);
@@ -110,7 +114,7 @@ void mRender::PresentImage()
 		InitBackend();
 		ScriptHook::Start(); // <---- init from gta thread
 		BaseUiWindow::Create();
-			
+
 		mInitialized = true;
 	}
 	else if (show_window)
@@ -135,8 +139,12 @@ void mRender::Init()
 	CreateDevice();
 	Hook::Create(game_PresentImageAddr,		mRender::PresentImage,		&orig_PresentImage,		"swapChainPresent");
 	Hook::Create(game_WndProcAddr,			mRender::WndProc,			&orig_WndProc,			"WndProc");
-	Hook::Create(ClipCursor,				mRender::n_ClipCursor,		&orig_ClipCursor,		"ClipCursor");
-	Hook::Create(ShowCursor,				mRender::n_ShowCursor,		&orig_ShowCursor,		"ShowCursor");
+	
+	if (!ImGuiCursorUsage) 
+	{
+		Hook::Create(ClipCursor, mRender::n_ClipCursor, &orig_ClipCursor, "ClipCursor");
+		Hook::Create(ShowCursor, mRender::n_ShowCursor, &orig_ShowCursor, "ShowCursor");
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,10 +155,13 @@ void mRender::InitBackend()
 	ImGui::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
+
 	mStyle();
 	LoadWindowsFont();
-		
+
+	if (ImGuiCursorUsage)
+		io.MouseDrawCursor = true;
+
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(p_device, p_context);
 }
@@ -255,6 +266,11 @@ void mRender::mStyle()
 
 
 
+void mRender::SetCursorImguiUsage(bool state)
+{
+	ImGuiCursorUsage = state;
+}
+
 void mRender::SetOpenWindowBtn(int btn)
 {
 	open_window_btn = btn;
@@ -270,7 +286,7 @@ void WaitWhileGameIsStarting()
 
 	while (*is_game_rendering == 0)
 	{
-		if (shutdown_request)			 // gets true in render::shutdown
+		if (shutdown_request)	// gets true in render::shutdown
 			break;
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));

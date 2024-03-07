@@ -6,7 +6,7 @@ bool                            config_params::categories;
 bool                            config_params::tooltips;
 bool                            config_params::replace_item_names_with_tooltips_definition;
 int                             config_params::open_window_btn_key = 0x2D;
-
+bool                            config_params::cursor_imgui_usage = false;
 
 std::vector<std::string>                                    CategoriesHandler::category_names;
 std::unordered_map<std::string, std::vector<std::string>>   CategoriesHandler::categories_map;
@@ -42,7 +42,7 @@ void configHandler::readCfg()
     config_params::path_from_cfg =                              reader.GetString ("Settings",   "Default_path",             default_cfg_params::default_path);
     config_params::replace_item_names_with_tooltips_definition= reader.GetBoolean("Settings",   "Names_replacement",        default_cfg_params::default_replace_item_names_with_tooltips_definition);
     config_params::open_window_btn_key =                        reader.GetInteger("Settings",   "OpenClose_window_button",  default_cfg_params::default_open_window_btn_key);
-
+    config_params::cursor_imgui_usage =                         reader.GetInteger("Settings",   "CursorImgui_Impl",         default_cfg_params::default_cursor_imgui_usage);
 
     if (config_params::path_from_cfg.empty())
     {
@@ -65,14 +65,16 @@ void configHandler::WriteDefaultParamsToCfg()
     config_params::categories =                                     default_cfg_params::default_categories;
     config_params::replace_item_names_with_tooltips_definition =    default_cfg_params::default_replace_item_names_with_tooltips_definition;
 
-    outfile << "All key codes can be found here: https://msdn.microsoft.com/library/windows/desktop/dd375731.aspx\n\n";
+    outfile << "// All key codes can be found here: https://msdn.microsoft.com/library/windows/desktop/dd375731.aspx\n\n";
 
     outfile << "[Settings]" << std::endl;
 
-    outfile << "Default_path"                   << " = " <<     default_cfg_params::default_path << std::endl;
-    outfile << "Categories"                     << " = " <<     default_cfg_params::default_categories << std::endl;
-    outfile << "Names_replacement"              << " = " <<     default_cfg_params::default_replace_item_names_with_tooltips_definition << std::endl;
-    outfile << "OpenClose_window_button"         << " = " <<     "0x2D"  << std::endl;
+    outfile << "Default_path             " << " = " <<     default_cfg_params::default_path                                         << '\n';
+    outfile << "Categories               " << " = " <<     default_cfg_params::default_categories                                   << '\n';
+    outfile << "Names_replacement        " << " = " <<     default_cfg_params::default_replace_item_names_with_tooltips_definition  << '\n';
+    outfile << "OpenClose_window_button  " << " = " <<     "0x2D"                                                                   << "\n\n";
+    outfile << "// In case there's something wrong with the system cursor - set this to 1 "                                         << '\n';
+    outfile << "CursorImgui_Impl         " << " = " <<     default_cfg_params::default_cursor_imgui_usage                           << '\n';
 
     outfile.close();
 }
