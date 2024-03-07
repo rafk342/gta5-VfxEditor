@@ -20,18 +20,6 @@ std::string strip_str(const std::string& str);
 std::vector<const char*> convert_str_to_char_vec(std::vector<std::string>& vec);
 
 
-//
-//template<class T>
-//std::string get_hex_addr_str(const T& value) 
-//{
-//	std::stringstream ss;
-//	ss << std::setfill('0') << std::setw(sizeof(T) * 2) 
-//		<< std::uppercase << std::hex << reinterpret_cast<std::uintptr_t>(value);
-//
-//	return ss.str();
-//}
-
-
 template <class Tt>
 void RemoveDuplicatesInVector(std::vector<Tt>& vec)
 {

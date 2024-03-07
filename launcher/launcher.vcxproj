@@ -19,12 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="helpers.cpp" />
     <ClCompile Include="launcher.cpp" />
     <ClCompile Include="mfileSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="helpers.h" />
     <ClInclude Include="mfileSystem.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
