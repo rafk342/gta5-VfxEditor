@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{9256f0c6-5599-4799-b810-ccc937d16c5d}</ProjectGuid>
+    <RootNamespace>asitest</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>tceApp</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetExt>.asi</TargetExt>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;ASITEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;ASITEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;ASITEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;ASITEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir);src;vendor;src\app;src\game</AdditionalIncludeDirectories>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ExceptionHandling>false</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/LTCG %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\game\gameClock\Ui\ClockUi.cpp" />
+    <ClCompile Include="src\app\uiBase\ImguiHelpers.cpp" />
+    <ClCompile Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.cpp" />
+    <ClCompile Include="src\game\CloudSettings\ui\CloudSettingsUI.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="src\app\amString\string.cpp" />
+    <ClCompile Include="src\app\crypto\float16.cpp" />
+    <ClCompile Include="src\app\fileSystem\FileHandler.cpp" />
+    <ClCompile Include="src\app\helpers\helpers.cpp" />
+    <ClCompile Include="src\app\helpers\win32.cpp" />
+    <ClCompile Include="src\app\memory\address.cpp" />
+    <ClCompile Include="src\app\Preload\Preload.cpp" />
+    <ClCompile Include="src\app\Preload\Preload_Integration.cpp" />
+    <ClCompile Include="src\game\CloudSettings\CloudSettings.cpp" />
+    <ClCompile Include="src\game\gameClock\CClock.cpp" />
+    <ClCompile Include="src\game\overlayRender\Render.cpp" />
+    <ClCompile Include="src\game\timecycle\tccycle.cpp" />
+    <ClCompile Include="src\game\timecycle\tсHandler.cpp" />
+    <ClCompile Include="src\game\timecycle\ui\timecycleUI_impl.cpp" />
+    <ClCompile Include="src\app\uiBase\FileListUI.cpp" />
+    <ClCompile Include="src\game\timecycle\xml\tcXmlParser.cpp" />
+    <ClCompile Include="src\app\uiBase\uiBaseWindow.cpp" />
+    <ClCompile Include="vendor\ImGui\imgui.cpp" />
+    <ClCompile Include="vendor\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="vendor\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="vendor\ImGui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="vendor\ImGui\imgui_impl_win32.cpp" />
+    <ClCompile Include="vendor\ImGui\imgui_tables.cpp" />
+    <ClCompile Include="vendor\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="vendor\inih\ini.c" />
+    <ClCompile Include="vendor\inih\INIReader.cpp" />
+    <ClCompile Include="vendor\pugixml\pugixml.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\game\scripthookTh.h" />
+    <ClInclude Include="src\game\gameClock\Ui\ClockUi.h" />
+    <ClInclude Include="src\app\helpers\SimpleTimer.h" />
+    <ClInclude Include="src\app\uiBase\ImguiHelpers.h" />
+    <ClInclude Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.h" />
+    <ClInclude Include="src\app\atl\atBitSet.h" />
+    <ClInclude Include="src\game\CloudSettings\ui\CloudSettingsUI.h" />
+    <ClInclude Include="resources\images_r.h" />
+    <ClInclude Include="src\app\amString\char.h" />
+    <ClInclude Include="src\app\amString\splitter.h" />
+    <ClInclude Include="src\app\amString\string.h" />
+    <ClInclude Include="src\app\amString\stringwrapper.h" />
+    <ClInclude Include="src\app\atl\atArray.h" />
+    <ClInclude Include="src\app\atl\atHashMap.h" />
+    <ClInclude Include="src\app\common\types.h" />
+    <ClInclude Include="src\app\compiler\compiler.h" />
+    <ClInclude Include="src\app\crypto\float16.h" />
+    <ClInclude Include="src\app\crypto\joaat.h" />
+    <ClInclude Include="src\app\fileSystem\FileHandler.h" />
+    <ClInclude Include="src\app\helpers\com.h" />
+    <ClInclude Include="src\app\helpers\cstr.h" />
+    <ClInclude Include="src\app\helpers\helpers.h" />
+    <ClInclude Include="src\app\helpers\resharper.h" />
+    <ClInclude Include="src\app\helpers\win32.h" />
+    <ClInclude Include="src\app\logger.h" />
+    <ClInclude Include="src\app\memory\address.h" />
+    <ClInclude Include="src\app\memory\hook.h" />
+    <ClInclude Include="src\app\Preload\Preload.h" />
+    <ClInclude Include="src\app\Preload\Preload_Integration.h" />
+    <ClInclude Include="src\game\CloudSettings\CloudSettings.h" />
+    <ClInclude Include="src\game\gameClock\CClock.h" />
+    <ClInclude Include="src\game\overlayRender\Render.h" />
+    <ClInclude Include="src\game\rageControl\control.h" />
+    <ClInclude Include="src\game\timecycle\tccycle.h" />
+    <ClInclude Include="src\game\timecycle\tcData.h" />
+    <ClInclude Include="src\game\timecycle\tcdef.h" />
+    <ClInclude Include="src\game\timecycle\tсHandler.h" />
+    <ClInclude Include="src\game\timecycle\ui\timecycleUI_impl.h" />
+    <ClInclude Include="src\app\uiBase\FileListUI.h" />
+    <ClInclude Include="src\game\timecycle\xml\tcXmlParser.h" />
+    <ClInclude Include="src\app\uiBase\uiBaseWindow.h" />
+    <ClInclude Include="vendor\ImGui\imconfig.h" />
+    <ClInclude Include="vendor\ImGui\imgui.h" />
+    <ClInclude Include="vendor\ImGui\imgui_impl_dx11.h" />
+    <ClInclude Include="vendor\ImGui\imgui_impl_win32.h" />
+    <ClInclude Include="vendor\ImGui\imgui_internal.h" />
+    <ClInclude Include="vendor\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="vendor\ImGui\imstb_textedit.h" />
+    <ClInclude Include="vendor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="vendor\inih\ini.h" />
+    <ClInclude Include="vendor\inih\INIReader.h" />
+    <ClInclude Include="vendor\MinHook\MinHook.h" />
+    <ClInclude Include="vendor\pugixml\pugiconfig.hpp" />
+    <ClInclude Include="vendor\pugixml\pugixml.hpp" />
+    <ClInclude Include="vendor\scripthook\inc\enums.h" />
+    <ClInclude Include="vendor\scripthook\inc\nativeCaller.h" />
+    <ClInclude Include="vendor\scripthook\inc\natives.h" />
+    <ClInclude Include="vendor\scripthook\inc\scripthookMain.h" />
+    <ClInclude Include="vendor\scripthook\inc\types.h" />
+    <ClInclude Include="vendor\spdlog\async.h" />
+    <ClInclude Include="vendor\spdlog\async_logger-inl.h" />
+    <ClInclude Include="vendor\spdlog\async_logger.h" />
+    <ClInclude Include="vendor\spdlog\cfg\argv.h" />
+    <ClInclude Include="vendor\spdlog\cfg\env.h" />
+    <ClInclude Include="vendor\spdlog\cfg\helpers-inl.h" />
+    <ClInclude Include="vendor\spdlog\cfg\helpers.h" />
+    <ClInclude Include="vendor\spdlog\common-inl.h" />
+    <ClInclude Include="vendor\spdlog\common.h" />
+    <ClInclude Include="vendor\spdlog\details\backtracer-inl.h" />
+    <ClInclude Include="vendor\spdlog\details\backtracer.h" />
+    <ClInclude Include="vendor\spdlog\details\circular_q.h" />
+    <ClInclude Include="vendor\spdlog\details\console_globals.h" />
+    <ClInclude Include="vendor\spdlog\details\file_helper-inl.h" />
+    <ClInclude Include="vendor\spdlog\details\file_helper.h" />
+    <ClInclude Include="vendor\spdlog\details\fmt_helper.h" />
+    <ClInclude Include="vendor\spdlog\details\log_msg-inl.h" />
+    <ClInclude Include="vendor\spdlog\details\log_msg.h" />
+    <ClInclude Include="vendor\spdlog\details\log_msg_buffer-inl.h" />
+    <ClInclude Include="vendor\spdlog\details\log_msg_buffer.h" />
+    <ClInclude Include="vendor\spdlog\details\mpmc_blocking_q.h" />
+    <ClInclude Include="vendor\spdlog\details\null_mutex.h" />
+    <ClInclude Include="vendor\spdlog\details\os-inl.h" />
+    <ClInclude Include="vendor\spdlog\details\os.h" />
+    <ClInclude Include="vendor\spdlog\details\periodic_worker-inl.h" />
+    <ClInclude Include="vendor\spdlog\details\periodic_worker.h" />
+    <ClInclude Include="vendor\spdlog\details\registry-inl.h" />
+    <ClInclude Include="vendor\spdlog\details\registry.h" />
+    <ClInclude Include="vendor\spdlog\details\synchronous_factory.h" />
+    <ClInclude Include="vendor\spdlog\details\tcp_client-windows.h" />
+    <ClInclude Include="vendor\spdlog\details\tcp_client.h" />
+    <ClInclude Include="vendor\spdlog\details\thread_pool-inl.h" />
+    <ClInclude Include="vendor\spdlog\details\thread_pool.h" />
+    <ClInclude Include="vendor\spdlog\details\udp_client-windows.h" />
+    <ClInclude Include="vendor\spdlog\details\udp_client.h" />
+    <ClInclude Include="vendor\spdlog\details\windows_include.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bin_to_hex.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\args.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\chrono.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\color.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\compile.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\core.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\format-inl.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\format.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\locale.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\os.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\ostream.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\printf.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\ranges.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\std.h" />
+    <ClInclude Include="vendor\spdlog\fmt\bundled\xchar.h" />
+    <ClInclude Include="vendor\spdlog\fmt\chrono.h" />
+    <ClInclude Include="vendor\spdlog\fmt\compile.h" />
+    <ClInclude Include="vendor\spdlog\fmt\fmt.h" />
+    <ClInclude Include="vendor\spdlog\fmt\ostr.h" />
+    <ClInclude Include="vendor\spdlog\fmt\ranges.h" />
+    <ClInclude Include="vendor\spdlog\fmt\std.h" />
+    <ClInclude Include="vendor\spdlog\fmt\xchar.h" />
+    <ClInclude Include="vendor\spdlog\formatter.h" />
+    <ClInclude Include="vendor\spdlog\fwd.h" />
+    <ClInclude Include="vendor\spdlog\logger-inl.h" />
+    <ClInclude Include="vendor\spdlog\logger.h" />
+    <ClInclude Include="vendor\spdlog\pattern_formatter-inl.h" />
+    <ClInclude Include="vendor\spdlog\pattern_formatter.h" />
+    <ClInclude Include="vendor\spdlog\sinks\android_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\ansicolor_sink-inl.h" />
+    <ClInclude Include="vendor\spdlog\sinks\ansicolor_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\base_sink-inl.h" />
+    <ClInclude Include="vendor\spdlog\sinks\base_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\basic_file_sink-inl.h" />
+    <ClInclude Include="vendor\spdlog\sinks\basic_file_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\callback_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\daily_file_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\dist_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\dup_filter_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\hourly_file_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\kafka_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\mongo_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\msvc_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\null_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\ostream_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\qt_sinks.h" />
+    <ClInclude Include="vendor\spdlog\sinks\ringbuffer_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\rotating_file_sink-inl.h" />
+    <ClInclude Include="vendor\spdlog\sinks\rotating_file_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\sink-inl.h" />
+    <ClInclude Include="vendor\spdlog\sinks\sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\stdout_color_sinks-inl.h" />
+    <ClInclude Include="vendor\spdlog\sinks\stdout_color_sinks.h" />
+    <ClInclude Include="vendor\spdlog\sinks\stdout_sinks-inl.h" />
+    <ClInclude Include="vendor\spdlog\sinks\stdout_sinks.h" />
+    <ClInclude Include="vendor\spdlog\sinks\syslog_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\systemd_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\tcp_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\udp_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\wincolor_sink-inl.h" />
+    <ClInclude Include="vendor\spdlog\sinks\wincolor_sink.h" />
+    <ClInclude Include="vendor\spdlog\sinks\win_eventlog_sink.h" />
+    <ClInclude Include="vendor\spdlog\spdlog-inl.h" />
+    <ClInclude Include="vendor\spdlog\spdlog.h" />
+    <ClInclude Include="vendor\spdlog\stopwatch.h" />
+    <ClInclude Include="vendor\spdlog\tweakme.h" />
+    <ClInclude Include="vendor\spdlog\version.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="vendor\MinHook\libMinHook.x64.lib" />
+    <Library Include="vendor\scripthook\lib\ScriptHookV.lib" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

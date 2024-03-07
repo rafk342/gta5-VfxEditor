@@ -1,0 +1,69 @@
+#include "tñHandler.h"
+#include <sstream>
+#include <format>
+
+
+timeñycleHandler::timeñycleHandler()
+{
+	NamesMap = {
+		{rage::joaat("EXTRASUNNY")	, "EXTRASUNNY"	},
+		{rage::joaat("CLEAR")		, "CLEAR"		},
+		{rage::joaat("CLOUDS")		, "CLOUDS"		},
+		{rage::joaat("SMOG")		, "SMOG"		},
+		{rage::joaat("FOGGY")		, "FOGGY"		},
+		{rage::joaat("OVERCAST")	, "OVERCAST"	},
+		{rage::joaat("RAIN")		, "RAIN"		},
+		{rage::joaat("THUNDER")		, "THUNDER"		},
+		{rage::joaat("CLEARING")	, "CLEARING"	},
+		{rage::joaat("NEUTRAL")		, "NEUTRAL"		},
+		{rage::joaat("SNOW")		, "SNOW"		},
+		{rage::joaat("BLIZZARD")	, "BLIZZARD"	},
+		{rage::joaat("HALLOWEEN")	, "HALLOWEEN"	},
+		{rage::joaat("SNOWLIGHT")	, "SNOWLIGHT"	},
+		{rage::joaat("XMAS")		, "XMAS"		},
+	};
+	InitCyclesArr();
+}
+
+void timeñycleHandler::InitCyclesArr()
+{
+	weather_names.reserve(15);
+	for (size_t i = 0; i < WEATHER_TC_FILES_COUNT; i++)
+	{
+		cyclesArray[i] = LoadCycle(i);
+		weather_names.push_back(GetCycleName(i).c_str());
+	}
+}
+
+//It's easier to get cycles from here
+tcCycle* timeñycleHandler::LoadCycle(u32 cycleIndex)
+{
+	static u64* tcMngr = gmAddress::Scan("48 C1 E0 03 41 80 E1 01 C6 44 24 20 00")
+		.GetRef(22)
+		.To<u64*>();
+
+	static auto fn = gmAddress::Scan("83 FA 10 73 ?? 8B C2 48 69 C0 E0 57 00 00")
+		.ToFunc<tcCycle* (u64*, u32)>();
+	
+	return fn(tcMngr, cycleIndex);
+}
+
+std::string& timeñycleHandler::GetCycleName(int index)
+{
+	static std::string none = "None";
+	u32 n_hash = cyclesArray[index]->GetCycleNameHash();
+	
+	if (NamesMap.contains(n_hash)) {
+		return NamesMap.at(n_hash);
+	} else {
+		return none;
+	}
+}
+
+timeñycleHandler::~timeñycleHandler()
+{
+	for (size_t i = 0; i < cyclesArray.size(); i++)
+	{
+		cyclesArray[i] = nullptr;
+	}
+}
