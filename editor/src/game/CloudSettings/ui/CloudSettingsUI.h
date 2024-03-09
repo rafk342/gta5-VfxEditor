@@ -18,10 +18,11 @@ class CloudSettingsUI : public App
 	std::vector<const char*>					CloudHatNames;
 	std::array<const char*, 15>					time_array;
 	std::vector<std::pair<int, const char*>>	time_samples;
+	int											current_hat = 0;
 	u8											current_time_sample_idx = 0;
 	bool										ShowOnlyTheCurrentSample = false;
-	int											current_hat = 0;
-	
+
+
 	void			GetCurrentTimeSample(int current_hour);
 
 	void			CloudsDataWidgets(int clIdx);

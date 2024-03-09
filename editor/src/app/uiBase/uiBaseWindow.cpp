@@ -3,6 +3,7 @@
 #include "timecycle/ui/timecycleUI_impl.h"
 #include "CloudSettings/ui/CloudSettingsUI.h"
 #include "gameClock/Ui/ClockUi.h"
+#include "VfxLightningSettings/ui/VfxLightningUi.h"
 
 BaseUiWindow* BaseUiWindow::instance = nullptr;
 
@@ -15,9 +16,10 @@ BaseUiWindow::BaseUiWindow()
 {
     // these instances should be static 
     // so they won't be local and they won't be deleted on the constructor exiting
-
-    static timecycleUI tcUi(this, "Timecycles");
+    
+    static TimecycleUI tcUi(this, "Timecycles");
     static CloudSettingsUI clUi(this, "Cloudkeyframes");
+    static VfxLightningUi LghtUi(this, "Lightnings");
 }
 
 void BaseUiWindow::setActiveApp(App* app) 
@@ -65,7 +67,7 @@ void BaseUiWindow::OnRender()
         ImGui::EndTabBar();
     }
     ImGui::End();
-   
+
     renderState = false;
 }
 
@@ -94,7 +96,7 @@ void BaseUiWindow::SaveBtn()
 
 void BaseUiWindow::Create()
 {
-    if (instance == nullptr) {
+    if (!instance) {
         instance = new BaseUiWindow;
     }
 }
@@ -103,7 +105,7 @@ void BaseUiWindow::Destroy()
 {
     while (instance->renderState) {}
 
-    if (instance != nullptr) {
+    if (instance) {
         delete instance;
         instance = nullptr;
     }
@@ -111,9 +113,6 @@ void BaseUiWindow::Destroy()
 
 BaseUiWindow* BaseUiWindow::GetInstance()
 {
-    if (instance == nullptr) {
-        return nullptr;
-    }
     return instance;
 }
 

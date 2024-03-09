@@ -189,8 +189,11 @@
     <ClCompile Include="vendor\inih\ini.c" />
     <ClCompile Include="vendor\inih\INIReader.cpp" />
     <ClCompile Include="vendor\pugixml\pugixml.cpp" />
+    <ClCompile Include="src\game\VfxLightningSettings\VfxLightningSettings.cpp" />
+    <ClCompile Include="src\game\VfxLightningSettings\ui\VfxLightningUi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\app\atl\color32.h" />
     <ClInclude Include="src\game\scripthookTh.h" />
     <ClInclude Include="src\game\gameClock\Ui\ClockUi.h" />
     <ClInclude Include="src\app\helpers\SimpleTimer.h" />
@@ -353,6 +356,8 @@
     <ClInclude Include="vendor\spdlog\stopwatch.h" />
     <ClInclude Include="vendor\spdlog\tweakme.h" />
     <ClInclude Include="vendor\spdlog\version.h" />
+    <ClInclude Include="src\game\VfxLightningSettings\VfxLightningSettings.h" />
+    <ClInclude Include="src\game\VfxLightningSettings\ui\VfxLightningUi.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\MinHook\libMinHook.x64.lib" />

@@ -2,6 +2,7 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
+#include <mutex>
 
 #include "app/memory/hook.h"
 
@@ -21,7 +22,6 @@
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-
 class mRender
 {
 	static int  open_window_btn;
@@ -35,15 +35,16 @@ class mRender
 	static ID3D11DeviceContext* p_context;
 	static IDXGISwapChain* p_SwapChain;
 
+
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void CreateDevice();
 	static void InitBackend();
 	static void PresentImage();
-	static void RenderLoop();
+	static void ImRenderFrame();
 		
 	static void n_ClipCursor(LPRECT rect);
 	static int	n_ShowCursor(bool visible);
-	static void SetMouseCursorState(bool state, HWND hwnd);
+	static void SetMouseVisible(bool visible);
 
 	static void LoadWindowsFont();
 	static void mStyle();

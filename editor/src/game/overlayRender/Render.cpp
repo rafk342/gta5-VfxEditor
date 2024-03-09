@@ -28,6 +28,7 @@ bool	mRender::show_window = false;
 bool	mRender::mInitialized = false;
 bool    mRender::ImGuiCursorUsage = false;
 
+
 void mRender::CreateDevice()
 {
 	game_ResizeBuffersAddr = gmAddress::Scan("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 81 EC 90 00 00 00 48 8B F1 48 8D 0D");
@@ -35,7 +36,7 @@ void mRender::CreateDevice()
 	game_WndProcAddr = gmAddress::Scan("48 8D 05 ?? ?? ?? ?? 33 C9 89 75 20").GetRef(3);
 
 	window = *game_ResizeBuffersAddr.GetRef(54 + 3).To<HWND*>();
-		
+
 #if game_version == gameVer3095
 
 	static gmAddress gAddr = gmAddress::Scan("48 8B 05 ?? ?? ?? ?? BE 08 00 00 00");
@@ -66,44 +67,56 @@ void mRender::CreateDevice()
 	
 
 void (*orig_ClipCursor)(LPRECT);
-void mRender::n_ClipCursor(LPRECT rect) {}
-
-int (*orig_ShowCursor)(bool);
-int mRender::n_ShowCursor(bool visible)
+void mRender::n_ClipCursor(LPRECT rect) 
 {
-	if (show_window) {
-		return visible ? 0 : -1;
+	if (!show_window) {
+		orig_ClipCursor(rect);
 	}
-	return orig_ShowCursor(visible);
 }
 
-void mRender::SetMouseCursorState(bool visible, HWND hwnd)
-{
-	if (ImGuiCursorUsage)
-		return;
 
+int (*orig_ShowCursor)(bool);
+int mRender::n_ShowCursor(bool visible) 
+{
+	return visible ? 0 : -1; 
+}
+
+void mRender::SetMouseVisible(bool visible)
+{
+	if (visible)
+		while (orig_ShowCursor(true) < 0);
+	else
+		while (orig_ShowCursor(false) >= 0);
+}
+
+
+void ClipCursorToWindowRect(HWND handle, bool clip)
+{
 	RECT rect;
-	GetWindowRect(hwnd, &rect);
-	orig_ClipCursor(visible ? &rect : NULL);
-	orig_ShowCursor(visible);
+	GetWindowRect(handle, &rect);
+	orig_ClipCursor(clip ? &rect : NULL);
 }
 
 
 LRESULT(*orig_WndProc)(HWND, UINT, WPARAM, LPARAM);
 LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (GetAsyncKeyState(open_window_btn) & 1)
+	if (GetAsyncKeyState(open_window_btn) & 1) 
 	{
 		show_window = !show_window;
-		SetMouseCursorState(show_window, hWnd);
+		ClipCursorToWindowRect(window, !show_window);
 	}
-	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
-	{
-		return true;
-	}
+	SetMouseVisible(show_window);
 
-	return orig_WndProc(hWnd, uMsg, wParam, lParam);
-	//return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+	if (show_window) 
+	{
+		//it handles mouse input even when ui isn't displayed, so i placed it under the "show_window" flag
+		if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) 
+			return true;
+	}
+	
+	/*return*/ orig_WndProc(hWnd, uMsg, wParam, lParam);
+	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
 void(*orig_PresentImage)();
@@ -112,14 +125,14 @@ void mRender::PresentImage()
 	if (!mInitialized)
 	{
 		InitBackend();
-		ScriptHook::Start(); // <---- init from gta thread
 		BaseUiWindow::Create();
+		ScriptHook::Start(); // <-- call from gta thread
 
 		mInitialized = true;
 	}
-	else if (show_window)
+	if (mInitialized && show_window)
 	{
-		RenderLoop();
+		ImRenderFrame();
 	}
 	orig_PresentImage();
 }
@@ -135,11 +148,11 @@ void mRender::Init()
 		return;
 
 	CClock::Init();	
-
 	CreateDevice();
-	Hook::Create(game_PresentImageAddr,		mRender::PresentImage,		&orig_PresentImage,		"swapChainPresent");
-	Hook::Create(game_WndProcAddr,			mRender::WndProc,			&orig_WndProc,			"WndProc");
-	
+
+	Hook::Create(game_PresentImageAddr,	mRender::PresentImage,	&orig_PresentImage,	"swapChainPresent");
+	Hook::Create(game_WndProcAddr,		mRender::WndProc,		&orig_WndProc,		"WndProc");
+
 	if (!ImGuiCursorUsage) 
 	{
 		Hook::Create(ClipCursor, mRender::n_ClipCursor, &orig_ClipCursor, "ClipCursor");
@@ -167,7 +180,7 @@ void mRender::InitBackend()
 }
 
 
-void mRender::RenderLoop()
+void mRender::ImRenderFrame()
 {
 	GameInput::DisableAllControlsThisFrame();
 
@@ -176,7 +189,7 @@ void mRender::RenderLoop()
 	ImGui::NewFrame();
 
 	BaseUiWindow::GetInstance()->OnRender();
-
+	
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

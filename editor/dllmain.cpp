@@ -11,6 +11,7 @@
 #include "game/CloudSettings/CloudSettings.h"
 #include "scripthookTh.h"
 
+
 #define test_ver 0
 
 
@@ -29,8 +30,6 @@ AM_EXPORT void Init()
 	Console();
 	mlogger("Init()");
 	
-	CloudsHandler clHandler;
-
 	mlogger("done");
 #else
 
@@ -38,10 +37,12 @@ AM_EXPORT void Init()
 	FileListUI::setPreBuff(config_params::path_from_cfg);
 	mRender::SetOpenWindowBtn(config_params::open_window_btn_key);
 	mRender::SetCursorImguiUsage(config_params::cursor_imgui_usage);
+
 	Hook::Init();
 	ScriptHook::Init();
 	std::thread th(mRender::Init);
 	th.detach();
+
 
 #endif
 }
@@ -75,7 +76,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
 		break;
 	case DLL_PROCESS_DETACH:
 		Shutdown();
-		
+		FreeLibraryAndExitThread(hModule,0);
 		break;
 	}
 #endif // !am_version

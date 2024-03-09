@@ -26,7 +26,7 @@
 #include "app/uiBase/uiBaseWindow.h"
 
 
-class timecycleUI : public App
+class TimecycleUI : public App
 {
 	 timeñycleHandler m_tcHandler;
 	
@@ -67,10 +67,10 @@ class timecycleUI : public App
 
 public:
 	
-	timecycleUI(BaseUiWindow* base, const char* label);
+	TimecycleUI(BaseUiWindow* base, const char* label);
 	void MainParamsWindow();
 
 };
 
-template void timecycleUI::manageKeyframeValues<timecycleUI::Action::GET>(float* color, Regions region, int VarIndex, size_t time);
-template void timecycleUI::manageKeyframeValues<timecycleUI::Action::SET>(float* color, Regions region, int VarIndex, size_t time);
+template void TimecycleUI::manageKeyframeValues<TimecycleUI::Action::GET>(float* color, Regions region, int VarIndex, size_t time);
+template void TimecycleUI::manageKeyframeValues<TimecycleUI::Action::SET>(float* color, Regions region, int VarIndex, size_t time);

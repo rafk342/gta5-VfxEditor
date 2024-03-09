@@ -3,7 +3,7 @@
 
 std::string                     config_params::path_from_cfg = "";
 bool                            config_params::categories; 
-bool                            config_params::tooltips;
+//bool                            config_params::tooltips;
 bool                            config_params::replace_item_names_with_tooltips_definition;
 int                             config_params::open_window_btn_key = 0x2D;
 bool                            config_params::cursor_imgui_usage = false;
@@ -814,7 +814,7 @@ void CategoriesHandler::print_debug_categories_data()
 
 void TooltipsHandler::load_tooltips()
 {
-    if (!(config_params::tooltips || config_params::replace_item_names_with_tooltips_definition))
+    if (!(/*config_params::tooltips ||*/ config_params::replace_item_names_with_tooltips_definition))
     {
         return;
     }

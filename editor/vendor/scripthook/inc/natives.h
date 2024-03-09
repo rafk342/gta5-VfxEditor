@@ -1937,7 +1937,7 @@ namespace GAMEPLAY
 	static void _SET_RAIN_FX_INTENSITY(float intensity) { invoke<Void>(0x643E26EA6E024D92, intensity); } // 0x643E26EA6E024D92
 	static Any GET_RAIN_LEVEL() { return invoke<Any>(0x96695E368AD855F3); } // 0x96695E368AD855F3 0xC9F67F28
 	static Any GET_SNOW_LEVEL() { return invoke<Any>(0xC5868A966E5BE3AE); } // 0xC5868A966E5BE3AE 0x1B09184F
-	static void _CREATE_LIGHTNING_THUNDER() { invoke<Void>(0xF6062E089251C898); } // 0xF6062E089251C898 0xDF38165E
+	static void FORCE_LIGHTNING_FLASH() { invoke<Void>(0xF6062E089251C898); } // 0xF6062E089251C898 0xDF38165E
 	static void _0x02DEAAC8F8EA7FE7(char* p0) { invoke<Void>(0x02DEAAC8F8EA7FE7, p0); } // 0x02DEAAC8F8EA7FE7
 	
 	static void PRELOAD_CLOUD_HAT(char* p0) { invoke<Void>(0x11B56FBBF7224868, p0); } // 0x11B56FBBF7224868 0x8727A4C5
@@ -1948,16 +1948,16 @@ namespace GAMEPLAY
 
 	static void _CLEAR_CLOUD_HAT() { invoke<Void>(0x957E790EA1727B64); } // 0x957E790EA1727B64 0x2D7787BC
 	
-	static void _0xF36199225D6D8C86(float p0) { invoke<Void>(0xF36199225D6D8C86, p0); } // 0xF36199225D6D8C86
-	static float _0x20AC25E781AE4A84() { return invoke<float>(0x20AC25E781AE4A84); } // 0x20AC25E781AE4A84
+	static void SET_CLOUDS_ALPHA(float p0) { invoke<Void>(0xF36199225D6D8C86, p0); } // 0xF36199225D6D8C86
+	static float _GET_CLOUD_HAT_OPACITY() { return invoke<float>(0x20AC25E781AE4A84); } // 0x20AC25E781AE4A84
 	static Any GET_GAME_TIMER() { return invoke<Any>(0x9CD27B0045628463); } // 0x9CD27B0045628463 0xA4EA0691
 	static float GET_FRAME_TIME() { return invoke<float>(0x15C40837039FFAF7); } // 0x15C40837039FFAF7 0x96374262
-	static float _0xE599A503B3837E1B() { return invoke<float>(0xE599A503B3837E1B); } // 0xE599A503B3837E1B
+	static float _GET_BENCHMARK_TIME() { return invoke<float>(0xE599A503B3837E1B); } // 0xE599A503B3837E1B
 	static int GET_FRAME_COUNT() { return invoke<int>(0xFC8202EFC642E6F2); } // 0xFC8202EFC642E6F2 0xB477A015
 	static float GET_RANDOM_FLOAT_IN_RANGE(float startRange, float endRange) { return invoke<float>(0x313CE5879CEB6FCD, startRange, endRange); } // 0x313CE5879CEB6FCD 0x0562C4D0
 	static int GET_RANDOM_INT_IN_RANGE(int startRange, int endRange) { return invoke<int>(0xD53343AA4FB7DD28, startRange, endRange); } // 0xD53343AA4FB7DD28 0x4051115B
 	static BOOL GET_GROUND_Z_FOR_3D_COORD(float x, float y, float z, float* groundZ, Any b) { return invoke<BOOL>(0xC906A7DAB05C8D2B, x, y, z, groundZ, b); } // 0xC906A7DAB05C8D2B 0xA1BFD5E0
-	static BOOL _0x8BDC7BFC57A81E76(float X, float Y, float Z, float* p3, Vector3* p4) { return invoke<BOOL>(0x8BDC7BFC57A81E76, X, Y, Z, p3, p4); } // 0x8BDC7BFC57A81E76 0x64D91CED
+	static BOOL GET_GROUND_Z_AND_NORMAL_FOR_3D_COORD(float X, float Y, float Z, float* p3, Vector3* p4) { return invoke<BOOL>(0x8BDC7BFC57A81E76, X, Y, Z, p3, p4); } // 0x8BDC7BFC57A81E76 0x64D91CED
 	static float ASIN(float p0) { return invoke<float>(0xC843060B5765DCE7, p0); } // 0xC843060B5765DCE7 0x998E5CAD
 	static float ACOS(float p0) { return invoke<float>(0x1D08B970013C34B6, p0); } // 0x1D08B970013C34B6 0xF4038776
 	static float TAN(float degrees) { return invoke<float>(0x632106CC96E82E91, degrees); } // 0x632106CC96E82E91 0xD320CE5E

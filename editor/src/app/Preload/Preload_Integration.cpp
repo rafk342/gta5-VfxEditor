@@ -129,20 +129,6 @@ void Preload_Integration::load_Tooltips_As_Param_Names()
 	}
 }
 
-#if debug0
-void CategoriesIntegrated::print_debug_data()
-{
-	for (auto& c_name : CategoryNames)
-	{
-		std::cout << "\n\n\n" << c_name << "\n\n\n";
-
-		for (auto& [var_name, id] : CategoriesMapIngr.at(c_name))
-		{
-			std::cout << var_name << std::endl;
-		}
-	}
-}
-#endif
 
 std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>& CategoriesIntegrated::getCategoriesMap()
 {

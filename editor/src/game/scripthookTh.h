@@ -22,8 +22,6 @@ class ScriptThreadDispatcher
 	std::vector<ScriptHookDelegate> m_Subscribers;
 	std::vector<ScriptHookDelegate> m_FrameTasks;
 
-	//rage::atArray<ScriptHookDelegate> m_Subscribers;
-	//rage::atArray<ScriptHookDelegate> m_FrameTasks;
 public:
 	void Subscribe(const ScriptHookDelegate& delegate)
 	{
@@ -86,7 +84,7 @@ class ScriptHook
 		}
 		else
 		{
-			::SCRIPT::TERMINATE_THIS_THREAD();
+			SCRIPT::TERMINATE_THIS_THREAD();
 			sm_KillRequested = false;
 		}
 
@@ -144,7 +142,7 @@ public:
 		static gmAddress scrThread_Execute_Addr = gmAddress::Scan("48 8B C4 4C 89 40 18 48 89 50 10 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D 68 A1 48 81 EC B8");
 		Hook::Create(scrThread_Execute_Addr, scrThread_Execute_aImpl, &scrThread_Execute_gImpl, "scrThread_Execute_Addr");
 				
-		sm_ScriptID = ::SYSTEM::START_NEW_SCRIPT(sm_ScriptName, 0);
+		sm_ScriptID = SYSTEM::START_NEW_SCRIPT(sm_ScriptName, 0);
 		
 		if (sm_ScriptID == 0) {
 			mlogger("Failed to start script thread; sm_ScriptID = " + std::to_string(sm_ScriptID));
@@ -171,9 +169,9 @@ public:
 };
 
 
-inline void scrBegin() { ::ScriptHook::Begin(); }
-inline void scrEnd() { ::ScriptHook::End(); }
-inline void scrInvoke(const ::ScriptHookDelegate& delegate)
+inline void scrBegin() { ScriptHook::Begin(); }
+inline void scrEnd() { ScriptHook::End(); }
+inline void scrInvoke(const ScriptHookDelegate& delegate)
 {
-	::ScriptHook::GetThread()->Invoke(delegate);
+	ScriptHook::GetThread()->Invoke(delegate);
 }

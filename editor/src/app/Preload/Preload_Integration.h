@@ -14,9 +14,6 @@ protected:
 	static std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> CategoriesMapIngr;
 	static std::vector<std::string> CategoryNames;
 
-#if debug0
-	static void print_debug_data();
-#endif
 public:
 
 	static std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>& getCategoriesMap();

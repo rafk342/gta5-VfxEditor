@@ -31,7 +31,7 @@ struct config_params
 
 	static std::string path_from_cfg;
 	static bool categories;
-	static bool tooltips;
+	//static bool tooltips;
 	static bool replace_item_names_with_tooltips_definition;
 	static int open_window_btn_key;
 	static bool cursor_imgui_usage;

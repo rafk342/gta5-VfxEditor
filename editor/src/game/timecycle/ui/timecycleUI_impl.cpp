@@ -41,7 +41,7 @@ struct TcImguiFlags
 };
 
 
-timecycleUI::timecycleUI(BaseUiWindow* base, const char* label) : App(base, label)
+TimecycleUI::TimecycleUI(BaseUiWindow* base, const char* label) : App(base, label)
 {
 	currentCycle = m_tcHandler.GetCycle(0);
 	regions = { "Global", "Urban" };
@@ -65,7 +65,7 @@ timecycleUI::timecycleUI(BaseUiWindow* base, const char* label) : App(base, labe
 }
 
 
-void timecycleUI::weather_and_region_section()
+void TimecycleUI::weather_and_region_section()
 {
 	static auto& weather_names = m_tcHandler.GetWeatherNamesVec();
 	static bool init = false;
@@ -130,7 +130,7 @@ void timecycleUI::weather_and_region_section()
 }
 
 
-void timecycleUI::GetCurrentTimeSample(int current_hour)
+void TimecycleUI::GetCurrentTimeSample(int current_hour)
 {
 	static int i = 0;
 
@@ -153,7 +153,7 @@ void timecycleUI::GetCurrentTimeSample(int current_hour)
 }
 
 
-void timecycleUI::MainParamsWindow()
+void TimecycleUI::MainParamsWindow()
 {
 	GetCurrentTimeSample(CClock::GetCurrentHour());
 
@@ -174,7 +174,7 @@ void timecycleUI::MainParamsWindow()
 }
 
 
-void timecycleUI::MainParamsWindow_without_Categories()
+void TimecycleUI::MainParamsWindow_without_Categories()
 {
 	for (size_t i = 0; i < TIMECYCLE_VAR_COUNT; i++)
 	{			
@@ -198,7 +198,7 @@ void timecycleUI::MainParamsWindow_without_Categories()
 }
 
 
-void timecycleUI::MainParamsWindow_with_Categories()
+void TimecycleUI::MainParamsWindow_with_Categories()
 {
 	static char buff[128];
 	static auto& categoryNames = CategoriesIntegrated::getNamesVec();
@@ -233,7 +233,7 @@ void timecycleUI::MainParamsWindow_with_Categories()
 }
 
 
-void timecycleUI::makeTable(Regions region, int VarIndex)
+void TimecycleUI::makeTable(Regions region, int VarIndex)
 {
 	static float val;
 	static float color[4];
@@ -317,7 +317,7 @@ void timecycleUI::makeTable(Regions region, int VarIndex)
 }
 
 
-void timecycleUI::makeJustSingleParamVidget(Regions region, int VarIndex)
+void TimecycleUI::makeJustSingleParamVidget(Regions region, int VarIndex)
 {
 	static float color[4];
 	static size_t time;
@@ -380,24 +380,21 @@ void timecycleUI::makeJustSingleParamVidget(Regions region, int VarIndex)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-template<timecycleUI::Action action>
-void timecycleUI::manageKeyframeValues(float* color, Regions region, int VarIndex, size_t time)
+template<TimecycleUI::Action action>
+void TimecycleUI::manageKeyframeValues(float* color, Regions region, int VarIndex, size_t time)
 {
-	static u8 n;
-	static u8 i;
-
-	n = (g_varInfos[VarIndex].varType == VARTYPE_COL3 || g_varInfos[VarIndex].varType == VARTYPE_COL3_LIN) ? 3 :
+	u8 n = (g_varInfos[VarIndex].varType == VARTYPE_COL3 || g_varInfos[VarIndex].varType == VARTYPE_COL3_LIN) ? 3 :
 		(g_varInfos[VarIndex].varType == VARTYPE_COL4 || g_varInfos[VarIndex].varType == VARTYPE_COL4_LIN) ? 4 :
 		(g_varInfos[VarIndex].varType == VARTYPE_FLOAT) ? 1 : 0;
 
-	for (i = 0; i < n; i++)
+	for (u8 i = 0; i < n; i++)
 	{
 		switch (action)
 		{
-		case timecycleUI::Action::SET:
+		case TimecycleUI::Action::SET:
 			currentCycle->SetKeyframeValue(region, g_varInfos[VarIndex + i].varId, time, color[i]);
 			break;
-		case timecycleUI::Action::GET:
+		case TimecycleUI::Action::GET:
 			color[i] = currentCycle->GetKeyframeValue(region, g_varInfos[VarIndex + i].varId, time);
 			break;
 		default:
@@ -407,22 +404,19 @@ void timecycleUI::manageKeyframeValues(float* color, Regions region, int VarInde
 }
 
 
-void timecycleUI::setValuesForAllTimeSamples(float* color, Regions region, int VarIndex)
+void TimecycleUI::setValuesForAllTimeSamples(float* color, Regions region, int VarIndex)
 {
-	for (size_t time = 0; time < 13; time++)
+	for (u8 time = 0; time < 13; time++)
 	{
 		manageKeyframeValues<SET>(color, region, VarIndex, time);
 	}
 }
 
 
-void timecycleUI::handleParams(float* color, Regions region, int VarIndex, size_t time)
+void TimecycleUI::handleParams(float* color, Regions region, int VarIndex, size_t time)
 {
-	static Regions other_region;
-	other_region = static_cast<Regions>(!(static_cast<bool>(region)));
+	Regions other_region = static_cast<Regions>(!(static_cast<bool>(region)));
 	
-	/*other_region = (Regions)!(bool)region;*/
-
 	manageKeyframeValues<SET>(color, region, VarIndex, time);
 	
 	if (edit_all_time_samples) 
@@ -440,17 +434,17 @@ void timecycleUI::handleParams(float* color, Regions region, int VarIndex, size_
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void timecycleUI::window()
+void TimecycleUI::window()
 {
 	MainParamsWindow();
 }
 
-void timecycleUI::importData(std::string path)
+void TimecycleUI::importData(std::string path)
 {
 	m_tcHandler.xmlParser.load_tcData(path, this->currentCycle);
 }
 
-void timecycleUI::exportData(std::string path)
+void TimecycleUI::exportData(std::string path)
 {
 	m_tcHandler.xmlParser.export_tcData(path, this->currentCycle, m_tcHandler.GetCycleName(this->current_weather_index));
 }
