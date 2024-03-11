@@ -5,7 +5,7 @@ int ClockUi::curr_hour = 0;
 int ClockUi::curr_min = 0;
 bool ClockUi::showTimeWindow = false;
 
-void ClockUi::timeWindow()
+void ClockUi::timeCheckBoxWindow()
 {
 	static bool time_flag = false;
 	static bool is_slider_active = false;

@@ -6,7 +6,21 @@ class Color32
 {
 	u32 hex;
 public:
-	Color32(u32 _col) : hex(_col) {};
+	Color32(u32 _hex) : hex(_hex) {};
+
+	Color32& operator= (Color32& other)
+	{
+		if (this == &other)
+			return *this;
+		hex = other.hex;
+		return *this;
+	}
+
+	Color32& operator= (u32 num)
+	{
+		hex = num;
+		return *this;
+	}
 
 	inline float* GetFloatRGBA() 
 	{
@@ -27,12 +41,10 @@ public:
 
 	inline void SetHexFromFloat(float r, float g, float b, float a)
 	{
-		float scale = 255.f;
-
-		u8 red = static_cast<u8>(r * scale);
-		u8 green = static_cast<u8>(g * scale);
-		u8 blue = static_cast<u8>(b * scale);
-		u8 alpha = static_cast<u8>(a * scale);
+		u8 red = static_cast<u8>(r * 255.0f);
+		u8 green = static_cast<u8>(g * 255.0f);
+		u8 blue = static_cast<u8>(b * 255.0f);
+		u8 alpha = static_cast<u8>(a * 255.0f);
 
 		hex = (red << 16) | (green << 8) | (blue << 0) | (alpha << 24);
 	}

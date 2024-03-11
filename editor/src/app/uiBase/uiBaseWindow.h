@@ -22,7 +22,7 @@ class BaseUiWindow : FileListUI
 {
     static BaseUiWindow* instance;
 
-    const char*         MainWindowLabel = "VisualSettings Editor";
+    const char*         MainWindowLabel = "VisualEffects Editor";
     std::vector<App*>   appsVec;
     App*                activeApp = nullptr;
     bool                renderState = false;

@@ -31,8 +31,6 @@ class TimecycleUI : public App
 	 timeñycleHandler m_tcHandler;
 	
 	 std::vector<std::pair<int, const char*>>	time_samples;
-	 std::array<const char*, 13>				time_array;
-	 std::array<float, 13>						time_array_float;
 	 std::array<const char*, 2>					regions;
 
 	 tcCycle*	currentCycle;
@@ -46,7 +44,7 @@ class TimecycleUI : public App
 
 	 void GetCurrentTimeSample(int curr_hour);
 
-	 void weather_and_region_section();
+	 void WeatherAndRegions();
 
 	 void MainParamsWindow_without_Categories();
 	 void MainParamsWindow_with_Categories();

@@ -1,22 +1,20 @@
 #pragma once
 #include "uiBase/uiBaseWindow.h"
+
+#include "VfxLightningSettings/xml/vfxLightningXmlParser.h"
 #include "VfxLightningSettings/VfxLightningSettings.h"
+
 #include "ImGui/imgui.h"
 #include "uiBase/ImguiHelpers.h"
-#include "scripthookTh.h"
+#include "memory/hook.h"
 
-class VfxLightningXmlParser 
-{
-public:
-	void exportLightningData(std::string path) {};
-	void importLightningData(std::string path) {};
-};
+
 
 
 class VfxLightningUi : public App
 {
-	VfxLightningOwner mVfxLightingOwner;
-	VfxLightningXmlParser mXmlParser;
+	VfxLightningHandler mVfxLightingHandler;
+	VfxLightningsXmlParser mXmlParser;
 
 	void LightningTimeCycleModsWidgets();
 	void DirectionalBurstSettingsWidgets();
@@ -25,7 +23,6 @@ class VfxLightningUi : public App
 
 	void StrikeVariationsWidgets(u8 idx);
 	void CloudBurstCommonSettingsWidgets(CloudBurstCommonSettings& rCloudBurstCommonSettings, const char* treeLabel);
-
 public:
 
 	VfxLightningUi(BaseUiWindow* base, const char* label);

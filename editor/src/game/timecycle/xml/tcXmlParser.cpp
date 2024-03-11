@@ -17,24 +17,19 @@ struct AttributePredicate
 void tcXmlParser::load_tcData(const std::string& path, tcCycle* cycle_to_load)
 {
 	if (cycle_to_load == nullptr) 
-	{ 
 		return;
-	}
 
 	pugi::xml_document doc;
 	pugi::xml_parse_result res = doc.load_file(path.c_str());
 	
 	if(!res) 
-	{
 		return;
-	}
+
 
 	pugi::xml_node root = doc.first_child();
 	
 	if (!(static_cast<std::string>(root.name()) == "timecycle_keyframe_data")) 
-	{
 		return;
-	}
 
 	//std::string attr_cycle_name = root.child("cycle").attribute("name").value();	//doesn't matter here
 	pugi::xml_node cycle_node = root.child("cycle");
@@ -66,11 +61,14 @@ void tcXmlParser::load_tcData(const std::string& path, tcCycle* cycle_to_load)
 			{
 				for (size_t time = 0; time < TC_TIME_SAMPLES; time++)
 				{
-					cycle_to_load->SetKeyframeValue(region_index, param_id, time, 0.f);
+					cycle_to_load->SetKeyframeValue(region_index, param_id, time, 0.0f);
 				}
 			}
 		}
 		region_index++;
+		
+		if (region_index > 2)
+			break;
 	}
 }
 

@@ -1,28 +1,64 @@
 #include "VfxLightningUi.h"
 
+
 VfxLightningUi::VfxLightningUi(BaseUiWindow* base, const char* label) : App(base, label) {}
+
 
 void VfxLightningUi::window()
 {
-	PushStyleCompact();
 
-	if (ImGui::Button("Force Lightning Flash"))
+	static float offset = 148.0f;
+	if (ImGui::TreeNode("Requests"))
 	{
-		scrInvoke([]
-			{
-				GAMEPLAY::FORCE_LIGHTNING_FLASH();
-			});
+		PushStyleCompact();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
+		ImGui::Text("Clear Update Type");
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(offset);
+		if (ImGui::Button("Request##Force Clear")) {
+			mVfxLightingHandler.setCurrentType(0);
+		}
+
+		ImGui::Text("Lightning");
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(offset);
+		if (ImGui::Button("Request##Lightning")) {
+			mVfxLightingHandler.LightningRequest();
+		}
+
+		ImGui::Text("Directional Burst");
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(offset);
+		if (ImGui::Button("Request##Directional Burst")) {
+			mVfxLightingHandler.DirBurstSeqRequest();
+		}
+
+		ImGui::Text("Cloud Lightning");
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(offset);
+		if (ImGui::Button("Request##Cloud Lightning ")) {
+			mVfxLightingHandler.CloudLightningSeqRequest();
+		}
+		ImGui::Text("Current Update Type : %i", mVfxLightingHandler.getCurrentUpdateType());
+
+		PopStyleCompact();
+
+		ImGui::TreePop();
 	}
 
-	ImGui::DragInt("Lightning Occurrance Chance", &mVfxLightingOwner.mVfxLightningSettings->lightningOccurranceChance, 1, 0, 200);
-	ImGui::DragFloat("Lightning Shake Intensity", &mVfxLightingOwner.mVfxLightningSettings->lightningShakeIntensity, 0.0025, 0.0f, 1.0f);
+	ImGui::Separator();
+	
+	PushStyleCompact();
 
+	ImGui::DragInt("Lightning Occurrance Chance", &mVfxLightingHandler.mVfxLightningSettings->lightningOccurranceChance, 1, 0, 200);
+	ImGui::DragFloat("Lightning Shake Intensity", &mVfxLightingHandler.mVfxLightningSettings->lightningShakeIntensity, 0.0025, 0.0f, 1.0f);
+	
+	PopStyleCompact();
+	
 	LightningTimeCycleModsWidgets();
 	DirectionalBurstSettingsWidgets();
 	CloudBurstSettingsWidgets();
 	StrikeSettingsWidgets();
-	
-	PopStyleCompact();
 }
 
 
@@ -39,10 +75,11 @@ void VfxLightningUi::LightningTimeCycleModsWidgets()
 
 void VfxLightningUi::DirectionalBurstSettingsWidgets()
 {
-	static auto& dirBurstSettings = mVfxLightingOwner.mVfxLightningSettings->m_DirectionalBurstSettings;
+	static auto& dirBurstSettings = mVfxLightingHandler.mVfxLightningSettings->m_DirectionalBurstSettings;
 
 	if (ImGui::CollapsingHeader("Directional Burst Settings"))
 	{
+		PushStyleCompact();
 		if (ImGui::TreeNode("Main Settings ##__DirBurst"))
 		{
 			ImGui::DragFloat("Intensity Min ##__DirBurstSettings", &dirBurstSettings.BurstIntensityMin, 0.1f, 0.0f, 3000.0f);
@@ -58,6 +95,7 @@ void VfxLightningUi::DirectionalBurstSettingsWidgets()
 			
 			ImGui::TreePop();
 		}
+		PopStyleCompact();
 	}
 }
 
@@ -115,12 +153,14 @@ void VfxLightningUi::CloudBurstCommonSettingsWidgets(CloudBurstCommonSettings& r
 
 void VfxLightningUi::CloudBurstSettingsWidgets()
 {
-	static auto& rCloudBurstSettings = mVfxLightingOwner.mVfxLightningSettings->m_CloudBurstSettings;
-	static auto& rCloudBurstCommonSettings = mVfxLightingOwner.mVfxLightningSettings->m_CloudBurstSettings.m_CloudBurstCommonSettings;
+	static auto& rCloudBurstSettings = mVfxLightingHandler.mVfxLightningSettings->m_CloudBurstSettings;
+	static auto& rCloudBurstCommonSettings = mVfxLightingHandler.mVfxLightningSettings->m_CloudBurstSettings.m_CloudBurstCommonSettings;
 	float* col;
 
 	if (ImGui::CollapsingHeader("Cloud Burst Settings"))
 	{
+		PushStyleCompact();
+		
 		if (ImGui::TreeNode("Main Settings ##__ClBurst"))
 		{
 			ImGui::DragFloat("Intensity Min ##__CLBurstSettings", &rCloudBurstSettings.BurstIntensityMin, 0.1f, 0.0f, 3000.0f);
@@ -136,16 +176,20 @@ void VfxLightningUi::CloudBurstSettingsWidgets()
 			ImGui::TreePop();
 		}
 		CloudBurstCommonSettingsWidgets(rCloudBurstCommonSettings, "Cloud Burst Common Settings");
+		
+		PopStyleCompact();
 	}
 }
 
 void VfxLightningUi::StrikeSettingsWidgets()
 {
-	static auto& rStrikeSettings = mVfxLightingOwner.mVfxLightningSettings->m_StrikeSettings;
+	static auto& rStrikeSettings = mVfxLightingHandler.mVfxLightningSettings->m_StrikeSettings;
 	static float* col;
 
 	if (ImGui::CollapsingHeader("Strike Settings"))
 	{
+		PushStyleCompact();
+
 		if (ImGui::TreeNode("Main Settings ## __CLStrikeSettings"))
 		{
 			ImGui::DragFloat("Intensity Min ##__CLStrikeSettings", &rStrikeSettings.IntensityMin, 0.1f, 0.0f, 50.0f);
@@ -219,13 +263,15 @@ void VfxLightningUi::StrikeSettingsWidgets()
 			}
 			ImGui::TreePop();
 		}
+
+		PopStyleCompact();
 	}
 }
 
 void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 {
 	static char buff[128];
-	auto& var = mVfxLightingOwner.mVfxLightningSettings->m_StrikeSettings.m_Variations[idx];
+	auto& var = mVfxLightingHandler.mVfxLightningSettings->m_StrikeSettings.m_Variations[idx];
 	
 	FORMAT_TO_BUFF(buff, "Variation : {} ##__CLStrikeSettings", idx);
 	if (ImGui::TreeNode(buff))
@@ -316,18 +362,100 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 		FORMAT_TO_BUFF(buff, "Lightning Key Frames ##__CLStrikeSettings {}", idx);
 		if (ImGui::TreeNode(buff))
 		{
-			auto& data = var.mKeyFrameData.LightningMainIntensity.data;
-			for (size_t i = 0; i < data.GetSize(); i++)
+			FORMAT_TO_BUFF(buff, "Lightning Main Intensity ##__CLStrikeSettings {}", idx);
+			if (ImGui::TreeNode(buff)) 
 			{
-				FORMAT_TO_BUFF(buff, "key : {:.3f} ", data[i].vTime[0], idx);
-				ImGui::Text(buff);
+				auto& data = var.mKeyFrameData.LightningMainIntensity.data;
 
-				FORMAT_TO_BUFF(buff, "##{}_{}__keyframe_L", i, idx);
-				ImGui::SameLine();
-				ImGui::DragFloat2(buff, &data[i].vValue[0]);
+				FORMAT_TO_BUFF(buff, "## Lightning Main__CLStrikeSettings table {}", idx);
+				if (ImGui::BeginTable(buff, 3, ImGuiTableFlags_Borders))
+				{
+					ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 45);
+					ImGui::TableSetupColumn("Min");
+					ImGui::TableSetupColumn("Max");
+					ImGui::TableHeadersRow();
+
+					for (u8 i = 0; i < data.GetSize(); i++)
+					{
+						ImGui::TableNextRow();
+
+						for (u8 j = 0; j < 3; j++)
+						{
+							ImGui::TableNextColumn();
+
+							switch (j)
+							{
+							case 0:
+								FORMAT_TO_BUFF(buff, " {:.3f} ", data[i].vTime[0], idx);
+								ImGui::Text(buff);
+								break;
+							case 1:
+								ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+								FORMAT_TO_BUFF(buff, "##MainIntensity{}_{}_{}__keyframe_Min", i, idx,j);
+								ImGui::DragFloat(buff, &data[i].vValue[0], 0.015, 0.0f, 1.0f);
+								break;
+							case 2:
+								ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+								FORMAT_TO_BUFF(buff, "##MainIntensity{}_{}_{}__keyframe_Max", i, idx,j);
+								ImGui::DragFloat(buff, &data[i].vValue[1], 0.015, 0.0f, 1.0f);
+								break;
+							default:
+								break;
+							}
+						}
+					}
+					ImGui::EndTable();
+				}
+				ImGui::TreePop();
 			}
 
-			ImGui::TreePop();
+
+			FORMAT_TO_BUFF(buff, "Lightning Branch Intensity ##__CLStrikeSettings {}", idx);
+			if (ImGui::TreeNode(buff))
+			{
+				auto& data = var.mKeyFrameData.LightningBranchIntensity.data;
+
+				FORMAT_TO_BUFF(buff, "## Lightning Branch__CLStrikeSettings table {}", idx);
+				if (ImGui::BeginTable(buff, 3, ImGuiTableFlags_Borders))
+				{
+					ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 45);
+					ImGui::TableSetupColumn("Min");
+					ImGui::TableSetupColumn("Max");
+					ImGui::TableHeadersRow();
+
+					for (u8 i = 0; i < data.GetSize(); i++)
+					{
+						ImGui::TableNextRow();
+
+						for (u8 j = 0; j < 3; j++)
+						{
+							ImGui::TableNextColumn();
+
+							switch (j)
+							{
+							case 0:
+								FORMAT_TO_BUFF(buff, " {:.3f} ", data[i].vTime[0], idx);
+								ImGui::Text(buff);
+								break;
+							case 1:
+								ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+								FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Min", i, idx, j);
+								ImGui::DragFloat(buff, &data[i].vValue[0], 0.015, 0.0f, 1.0f);
+								break;
+							case 2:
+								ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+								FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Max", i, idx, j);
+								ImGui::DragFloat(buff, &data[i].vValue[1], 0.015, 0.0f, 1.0f);
+								break;
+							default:
+								break;
+							}
+						}
+					}
+					ImGui::EndTable();
+				}
+				ImGui::TreePop();
+			}
 		}
 
 		ImGui::TreePop();
@@ -336,10 +464,10 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 
 void VfxLightningUi::importData(std::string path)
 {
-	mXmlParser.importLightningData(path);
+	mXmlParser.mImportLightningData("E:\\GTAV\\VSReloader\\timecycle\\111\\222.xml", mVfxLightingHandler.mVfxLightningSettings);
 }
 
 void VfxLightningUi::exportData(std::string path)
 {
-	mXmlParser.exportLightningData(path);
+	mXmlParser.mExportLightningData("E:\\GTAV\\VSReloader\\timecycle\\111\\m_test.xml", mVfxLightingHandler.mVfxLightningSettings);
 }

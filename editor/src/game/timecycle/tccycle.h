@@ -28,5 +28,5 @@ public:
 enum Regions
 {
 	GLOBAL = 0,
-	URBAN
+	URBAN = 1,
 };

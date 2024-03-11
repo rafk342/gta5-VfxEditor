@@ -47,7 +47,7 @@ void BaseUiWindow::OnRender()
 
     file_section();
     ImGui::SameLine();
-    ClockUi::timeWindow();
+    ClockUi::timeCheckBoxWindow();
 
     if (ImGui::BeginTabBar("TabBarEditor"))
     {
@@ -55,7 +55,7 @@ void BaseUiWindow::OnRender()
         {
             if (ImGui::BeginTabItem(app->get_label()))
             {
-                if (ImGui::BeginChild("MainParamsWindow", ImVec2(-FLT_MIN, -FLT_MIN), ImGuiChildFlags_Border))
+                if (ImGui::BeginChild("MainParamsWindow_Base", ImVec2(-FLT_MIN, -FLT_MIN), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar))
                 {
                     setActiveApp(app);
                     app->window();
@@ -103,7 +103,7 @@ void BaseUiWindow::Create()
 
 void BaseUiWindow::Destroy()
 {
-    while (instance->renderState) {}
+    while (instance->renderState);
 
     if (instance) {
         delete instance;
@@ -116,9 +116,7 @@ BaseUiWindow* BaseUiWindow::GetInstance()
     return instance;
 }
 
-BaseUiWindow::~BaseUiWindow()
-{
-}
+BaseUiWindow::~BaseUiWindow() {}
 
 const char* App::get_label()
 {

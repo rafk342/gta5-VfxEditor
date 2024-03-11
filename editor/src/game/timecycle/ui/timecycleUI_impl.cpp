@@ -45,8 +45,6 @@ TimecycleUI::TimecycleUI(BaseUiWindow* base, const char* label) : App(base, labe
 {
 	currentCycle = m_tcHandler.GetCycle(0);
 	regions = { "Global", "Urban" };
-	time_array_float = { 0, 5, 6, 7, 10, 12, 16, 17, 18, 19, 20, 21, 22 };
-	time_array = { "00:00", "05:00" , "06:00" , "07:00" , "10:00" , "12:00" , "16:00" , "17:00" , "18:00" , "19:00" , "20:00" , "21:00" , "22:00" };
 	time_samples = {
 		 {0 , " 00:00"},
 		 {5 , " 05:00"},
@@ -65,7 +63,7 @@ TimecycleUI::TimecycleUI(BaseUiWindow* base, const char* label) : App(base, labe
 }
 
 
-void TimecycleUI::weather_and_region_section()
+void TimecycleUI::WeatherAndRegions()
 {
 	static auto& weather_names = m_tcHandler.GetWeatherNamesVec();
 	static bool init = false;
@@ -158,7 +156,7 @@ void TimecycleUI::MainParamsWindow()
 	GetCurrentTimeSample(CClock::GetCurrentHour());
 
 	PushStyleCompact();
-	weather_and_region_section();
+	WeatherAndRegions();
 	PopStyleCompact();
 
 	ImGui::Separator();
@@ -244,18 +242,18 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 	tableSize = ImGui::GetContentRegionAvail();
 
 	FORMAT_TO_BUFF(buff, "##{}_table_tc", VarIndex);
-	if (ImGui::BeginTable(buff, time_array.size(), TcImguiFlags::table_flags))
+	if (ImGui::BeginTable(buff, time_samples.size(), TcImguiFlags::table_flags))
 	{
 		for (size_t i = 0; i < 2; i++)
 		{
 			ImGui::TableNextRow();
-			for (size_t time = 0; time < time_array.size(); time++)
+			for (size_t time = 0; time < time_samples.size(); time++)
 			{
 				ImGui::TableNextColumn();
 
 				if (i == 0)
 				{
-					ImGui::Text(time_array[time]);
+					ImGui::Text(time_samples[time].second);
 				}
 				if (i == 1)
 				{
@@ -282,7 +280,6 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 			//									Vec3
 
 					case (VARTYPE_COL3):
-					case (VARTYPE_COL3_LIN):
 
 						manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
 
@@ -296,7 +293,6 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 		//									Vec4
 
 					case (VARTYPE_COL4):			
-					case (VARTYPE_COL4_LIN):
 						
 						manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
 
@@ -346,7 +342,6 @@ void TimecycleUI::makeJustSingleParamVidget(Regions region, int VarIndex)
 		//									Vec3    
 
 	case (VARTYPE_COL3):
-	case (VARTYPE_COL3_LIN):
 
 		manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
 		
@@ -361,7 +356,6 @@ void TimecycleUI::makeJustSingleParamVidget(Regions region, int VarIndex)
 		//									Vec4
 
 	case (VARTYPE_COL4):
-	case (VARTYPE_COL4_LIN):
 
 		manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
 		
@@ -383,9 +377,9 @@ void TimecycleUI::makeJustSingleParamVidget(Regions region, int VarIndex)
 template<TimecycleUI::Action action>
 void TimecycleUI::manageKeyframeValues(float* color, Regions region, int VarIndex, size_t time)
 {
-	u8 n = (g_varInfos[VarIndex].varType == VARTYPE_COL3 || g_varInfos[VarIndex].varType == VARTYPE_COL3_LIN) ? 3 :
-		(g_varInfos[VarIndex].varType == VARTYPE_COL4 || g_varInfos[VarIndex].varType == VARTYPE_COL4_LIN) ? 4 :
-		(g_varInfos[VarIndex].varType == VARTYPE_FLOAT) ? 1 : 0;
+	u8 n =	g_varInfos[VarIndex].varType == VARTYPE_COL3  ? 3 :
+			g_varInfos[VarIndex].varType == VARTYPE_COL4  ? 4 :
+			g_varInfos[VarIndex].varType == VARTYPE_FLOAT ? 1 : 0;
 
 	for (u8 i = 0; i < n; i++)
 	{

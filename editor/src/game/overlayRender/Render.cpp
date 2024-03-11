@@ -89,7 +89,6 @@ void mRender::SetMouseVisible(bool visible)
 		while (orig_ShowCursor(false) >= 0);
 }
 
-
 void ClipCursorToWindowRect(HWND handle, bool clip)
 {
 	RECT rect;
@@ -104,9 +103,17 @@ LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	if (GetAsyncKeyState(open_window_btn) & 1) 
 	{
 		show_window = !show_window;
-		ClipCursorToWindowRect(window, !show_window);
+		
+		if (!ImGuiCursorUsage) 
+			ClipCursorToWindowRect(window, !show_window);
 	}
-	SetMouseVisible(show_window);
+	if (GetAsyncKeyState(VK_HOME) && show_window) {
+		mlogger("home pressed, return true");
+		return true;
+	}
+	
+	if (!ImGuiCursorUsage) 
+		SetMouseVisible(show_window); 
 
 	if (show_window) 
 	{

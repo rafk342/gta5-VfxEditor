@@ -102,9 +102,6 @@
     <ClCompile Include="src\game\CloudSettings\ui\CloudSettingsUI.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="src\app\uiBase\ImguiHelpers.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -115,6 +112,12 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="src\game\VfxLightningSettings\ui\VfxLightningUi.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -612,6 +615,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\app\atl\color32.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

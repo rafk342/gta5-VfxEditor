@@ -157,9 +157,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.cpp" />
     <ClCompile Include="src\game\gameClock\Ui\ClockUi.cpp" />
     <ClCompile Include="src\app\uiBase\ImguiHelpers.cpp" />
-    <ClCompile Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.cpp" />
     <ClCompile Include="src\game\CloudSettings\ui\CloudSettingsUI.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="src\app\amString\string.cpp" />
@@ -191,6 +191,7 @@
     <ClCompile Include="vendor\pugixml\pugixml.cpp" />
     <ClCompile Include="src\game\VfxLightningSettings\VfxLightningSettings.cpp" />
     <ClCompile Include="src\game\VfxLightningSettings\ui\VfxLightningUi.cpp" />
+    <ClCompile Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\atl\color32.h" />
@@ -358,6 +359,7 @@
     <ClInclude Include="vendor\spdlog\version.h" />
     <ClInclude Include="src\game\VfxLightningSettings\VfxLightningSettings.h" />
     <ClInclude Include="src\game\VfxLightningSettings\ui\VfxLightningUi.h" />
+    <ClInclude Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\MinHook\libMinHook.x64.lib" />
