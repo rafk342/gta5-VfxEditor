@@ -5,8 +5,7 @@
 ///                                         Import
 
 
-
-
+//No, I wasn't doing everything here manually
 void VfxLightningsXmlParser::mImportLightningData(std::string path, gVfxLightningSettings* settings)
 {
     if (!settings)
@@ -108,28 +107,28 @@ void VfxLightningsXmlParser::mImportLightningData(std::string path, gVfxLightnin
 
                 auto ZigZagSplitPointNode = Item.child("ZigZagSplitPoint");
                 {
-                    settings->m_StrikeSettings.m_Variations[idx].mZigZagSplitPoint.m_FractionMin = ZigZagSplitPointNode.child("FractionMin").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mZigZagSplitPoint.m_FractionMax = ZigZagSplitPointNode.child("FractionMax").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mZigZagSplitPoint.m_DeviationDecay = ZigZagSplitPointNode.child("DeviationDecay").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mZigZagSplitPoint.m_DeviationRightVariance = ZigZagSplitPointNode.child("DeviationRightVariance").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mZigZagSplitPoint.FractionMin = ZigZagSplitPointNode.child("FractionMin").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mZigZagSplitPoint.FractionMax = ZigZagSplitPointNode.child("FractionMax").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mZigZagSplitPoint.DeviationDecay = ZigZagSplitPointNode.child("DeviationDecay").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mZigZagSplitPoint.DeviationRightVariance = ZigZagSplitPointNode.child("DeviationRightVariance").attribute("value").as_float(0.0f);
                 }
 
                 auto ForkZigZagSplitPointNode = Item.child("ForkZigZagSplitPoint");
                 {
-                    settings->m_StrikeSettings.m_Variations[idx].mForkZigZagSplitPoint.m_FractionMin = ForkZigZagSplitPointNode.child("FractionMin").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mForkZigZagSplitPoint.m_FractionMax = ForkZigZagSplitPointNode.child("FractionMax").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mForkZigZagSplitPoint.m_DeviationDecay = ForkZigZagSplitPointNode.child("DeviationDecay").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mForkZigZagSplitPoint.m_DeviationRightVariance = ForkZigZagSplitPointNode.child("DeviationRightVariance").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkZigZagSplitPoint.FractionMin = ForkZigZagSplitPointNode.child("FractionMin").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkZigZagSplitPoint.FractionMax = ForkZigZagSplitPointNode.child("FractionMax").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkZigZagSplitPoint.DeviationDecay = ForkZigZagSplitPointNode.child("DeviationDecay").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkZigZagSplitPoint.DeviationRightVariance = ForkZigZagSplitPointNode.child("DeviationRightVariance").attribute("value").as_float(0.0f);
                 }
                 
                 auto ForkPointNode = Item.child("ForkPoint");
                 {
-                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.m_DeviationRightVariance = ForkPointNode.child("DeviationRightVariance").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.m_DeviationForwardMin = ForkPointNode.child("DeviationForwardMin").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.m_DeviationForwardMax = ForkPointNode.child("DeviationForwardMax").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.m_LengthMin = ForkPointNode.child("LengthMin").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.m_LengthMax = ForkPointNode.child("LengthMax").attribute("value").as_float(0.0f);
-                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.m_LengthDecay = ForkPointNode.child("LengthDecay").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.DeviationRightVariance = ForkPointNode.child("DeviationRightVariance").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.DeviationForwardMin = ForkPointNode.child("DeviationForwardMin").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.DeviationForwardMax = ForkPointNode.child("DeviationForwardMax").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.LengthMin = ForkPointNode.child("LengthMin").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.LengthMax = ForkPointNode.child("LengthMax").attribute("value").as_float(0.0f);
+                    settings->m_StrikeSettings.m_Variations[idx].mForkPoint.LengthDecay = ForkPointNode.child("LengthDecay").attribute("value").as_float(0.0f);
                 }
 
                 auto KeyFrameData = Item.child("KeyFrameData");
@@ -313,28 +312,28 @@ void VfxLightningsXmlParser::mExportLightningData(std::string path, gVfxLightnin
 
                     pugi::xml_node ZigZagSplitPointNode = Item.append_child("ZigZagSplitPoint");
                     {
-                        ZigZagSplitPointNode.append_child("FractionMin").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mZigZagSplitPoint.m_FractionMin);
-                        ZigZagSplitPointNode.append_child("FractionMax").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mZigZagSplitPoint.m_FractionMax);
-                        ZigZagSplitPointNode.append_child("DeviationDecay").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mZigZagSplitPoint.m_DeviationDecay);
-                        ZigZagSplitPointNode.append_child("DeviationRightVariance").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mZigZagSplitPoint.m_DeviationRightVariance);
+                        ZigZagSplitPointNode.append_child("FractionMin").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mZigZagSplitPoint.FractionMin);
+                        ZigZagSplitPointNode.append_child("FractionMax").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mZigZagSplitPoint.FractionMax);
+                        ZigZagSplitPointNode.append_child("DeviationDecay").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mZigZagSplitPoint.DeviationDecay);
+                        ZigZagSplitPointNode.append_child("DeviationRightVariance").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mZigZagSplitPoint.DeviationRightVariance);
                     }
 
                     pugi::xml_node ForkZigZagSplitPointNode = Item.append_child("ForkZigZagSplitPoint");
                     {
-                        ForkZigZagSplitPointNode.append_child("FractionMin").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkZigZagSplitPoint.m_FractionMin);
-                        ForkZigZagSplitPointNode.append_child("FractionMax").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkZigZagSplitPoint.m_FractionMax);
-                        ForkZigZagSplitPointNode.append_child("DeviationDecay").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkZigZagSplitPoint.m_DeviationDecay);
-                        ForkZigZagSplitPointNode.append_child("DeviationRightVariance").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkZigZagSplitPoint.m_DeviationRightVariance);
+                        ForkZigZagSplitPointNode.append_child("FractionMin").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkZigZagSplitPoint.FractionMin);
+                        ForkZigZagSplitPointNode.append_child("FractionMax").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkZigZagSplitPoint.FractionMax);
+                        ForkZigZagSplitPointNode.append_child("DeviationDecay").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkZigZagSplitPoint.DeviationDecay);
+                        ForkZigZagSplitPointNode.append_child("DeviationRightVariance").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkZigZagSplitPoint.DeviationRightVariance);
                     }
 
                     pugi::xml_node ForkPointNode = Item.append_child("ForkPoint");
                     {
-                        ForkPointNode.append_child("DeviationRightVariance").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.m_DeviationRightVariance);
-                        ForkPointNode.append_child("DeviationForwardMin").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.m_DeviationForwardMin);
-                        ForkPointNode.append_child("DeviationForwardMax").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.m_DeviationForwardMax);
-                        ForkPointNode.append_child("LengthMin").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.m_LengthMin);
-                        ForkPointNode.append_child("LengthMax").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.m_LengthMax);
-                        ForkPointNode.append_child("LengthDecay").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.m_LengthDecay);
+                        ForkPointNode.append_child("DeviationRightVariance").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.DeviationRightVariance);
+                        ForkPointNode.append_child("DeviationForwardMin").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.DeviationForwardMin);
+                        ForkPointNode.append_child("DeviationForwardMax").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.DeviationForwardMax);
+                        ForkPointNode.append_child("LengthMin").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.LengthMin);
+                        ForkPointNode.append_child("LengthMax").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.LengthMax);
+                        ForkPointNode.append_child("LengthDecay").append_attribute("value").set_value(settings->m_StrikeSettings.m_Variations[i].mForkPoint.LengthDecay);
                     }
 
                     pugi::xml_node KeyFrameData = Item.append_child("KeyFrameData");
@@ -348,7 +347,6 @@ void VfxLightningsXmlParser::mExportLightningData(std::string path, gVfxLightnin
                 }
             }
         }
-
         AppendCloudBurstCommonSettingsXmlNodes(StrikeSettingsNode, settings->m_StrikeSettings.m_CloudBurstCommonSettings);
     }
 

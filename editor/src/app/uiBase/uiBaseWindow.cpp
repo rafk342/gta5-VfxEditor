@@ -4,6 +4,8 @@
 #include "CloudSettings/ui/CloudSettingsUI.h"
 #include "gameClock/Ui/ClockUi.h"
 #include "VfxLightningSettings/ui/VfxLightningUi.h"
+#include "VisualSettings/ui/visualSettingsUi.h"
+
 
 BaseUiWindow* BaseUiWindow::instance = nullptr;
 
@@ -17,8 +19,9 @@ BaseUiWindow::BaseUiWindow()
     // these instances should be static 
     // so they won't be local and they won't be deleted on the constructor exiting
     
-    static TimecycleUI tcUi(this, "Timecycles");
-    static CloudSettingsUI clUi(this, "Cloudkeyframes");
+    static TimecycleUI TcUi(this, "Timecycles");
+    static CloudSettingsUI ClUi(this, "Cloudkeyframes");
+    static VisualSettingsUi VsUi(this, "VisualSettings");
     static VfxLightningUi LghtUi(this, "Lightnings");
 }
 
@@ -39,10 +42,7 @@ App* BaseUiWindow::getActiveApp() const
 
 void BaseUiWindow::OnRender()
 {
-    renderState = true;
-
     ImGui::SetNextWindowSize({ 712 ,885 }, ImGuiCond_FirstUseEver);
-
     ImGui::Begin(MainWindowLabel);
 
     file_section();
@@ -67,8 +67,6 @@ void BaseUiWindow::OnRender()
         ImGui::EndTabBar();
     }
     ImGui::End();
-
-    renderState = false;
 }
 
 void BaseUiWindow::LoadSelectedBtn()
@@ -103,8 +101,6 @@ void BaseUiWindow::Create()
 
 void BaseUiWindow::Destroy()
 {
-    while (instance->renderState);
-
     if (instance) {
         delete instance;
         instance = nullptr;

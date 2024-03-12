@@ -192,6 +192,8 @@
     <ClCompile Include="src\game\VfxLightningSettings\VfxLightningSettings.cpp" />
     <ClCompile Include="src\game\VfxLightningSettings\ui\VfxLightningUi.cpp" />
     <ClCompile Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.cpp" />
+    <ClCompile Include="src\game\VisualSettings\visualSettingsHandler.cpp" />
+    <ClCompile Include="src\game\VisualSettings\ui\visualSettingsUi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\atl\color32.h" />
@@ -360,6 +362,8 @@
     <ClInclude Include="src\game\VfxLightningSettings\VfxLightningSettings.h" />
     <ClInclude Include="src\game\VfxLightningSettings\ui\VfxLightningUi.h" />
     <ClInclude Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.h" />
+    <ClInclude Include="src\game\VisualSettings\visualSettingsHandler.h" />
+    <ClInclude Include="src\game\VisualSettings\ui\visualSettingsUi.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\MinHook\libMinHook.x64.lib" />

@@ -26,11 +26,8 @@ void Console() {
 AM_EXPORT void Init()
 {
 #if test_ver
-
 	Console();
-	mlogger("Init()");
-	
-	mlogger("done");
+
 #else
 
 	Preload_Integration::Preload();
@@ -42,7 +39,6 @@ AM_EXPORT void Init()
 	ScriptHook::Init();
 	std::thread th(mRender::Init);
 	th.detach();
-
 
 #endif
 }

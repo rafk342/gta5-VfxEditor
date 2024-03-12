@@ -9,8 +9,6 @@
 #include "memory/hook.h"
 
 
-
-
 class VfxLightningUi : public App
 {
 	VfxLightningHandler mVfxLightingHandler;

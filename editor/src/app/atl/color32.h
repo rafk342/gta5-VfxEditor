@@ -16,9 +16,9 @@ public:
 		return *this;
 	}
 
-	Color32& operator= (u32 num)
+	Color32& operator= (u32 _hex)
 	{
-		hex = num;
+		hex = _hex;
 		return *this;
 	}
 

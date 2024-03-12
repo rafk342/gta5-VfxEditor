@@ -9,7 +9,7 @@
 
 class lightningTimeCycleMods
 {
-	u8 pad02[8];
+	u8 pad[8];
 public:
 	u32 tcLightningDirectionalBurst;
 	u32 tcLightningCloudBurst;
@@ -20,7 +20,7 @@ public:
 
 class DirectionalBurstSettings
 {
-	u8 pad03[8];
+	u8 pad[8];
 public:
 	float BurstIntensityMin;
 	float BurstIntensityMax;
@@ -76,10 +76,10 @@ class ZigZagSplitPoint
 {
 	u8 pad[8];
 public:
-	float	m_FractionMin;
-	float	m_FractionMax;
-	float	m_DeviationDecay;
-	float	m_DeviationRightVariance;
+	float	FractionMin;
+	float	FractionMax;
+	float	DeviationDecay;
+	float	DeviationRightVariance;
 };
 
 
@@ -87,12 +87,12 @@ class ForkPoint
 {
 	u8 pad[8];
 public:
-	float	m_DeviationRightVariance;
-	float	m_DeviationForwardMin;
-	float	m_DeviationForwardMax;
-	float	m_LengthMin;
-	float	m_LengthMax;
-	float	m_LengthDecay;
+	float	DeviationRightVariance;
+	float	DeviationForwardMin;
+	float	DeviationForwardMax;
+	float	LengthMin;
+	float	LengthMax;
+	float	LengthDecay;
 };
 
 
@@ -119,9 +119,7 @@ public:
 
 	ZigZagSplitPoint mZigZagSplitPoint;
 	ZigZagSplitPoint mForkZigZagSplitPoint;
-
 	ForkPoint mForkPoint;
-
 	LightningKeyFrames mKeyFrameData;
 };
 
@@ -192,27 +190,48 @@ public:
 };
 
 
+enum gLightningsTypes
+{
+	NONE_TYPE = 0,
+	DIRECTIONAL_BURST_TYPE,
+	CLOUD_BURST_TYPE,
+	STRIKE_TYPE,
+};
 
 class VfxLightningHandler
 {
+	static VfxLightningHandler* selfInstance;
+	u8* mVfxLightningsMngr;
+
 	static bool lightning_request;
-	static bool DirBurstSeq_request;
-	static bool CloudLightningSeq_request;
+	static bool DirBurstS_request;
+	static bool CloudLightningS_request;
+	static bool override_flag;
+	static u16  requested_override_type;
 	static u16* LUpdateType;
-	u8*	        mVfxLightningsMngr;
+	static int  savedOccurranceChance;
 
 	static void n_VfxLightnings_Update(u64 arg);
+	static void GenStrike(u64& arg);
+	static void GenDirBurst(u64& arg);
+	static void GenCloudBurst(u64& arg);
 
 public:
+	
 	gVfxLightningSettings* mVfxLightningSettings;
-
+	
 	VfxLightningHandler();
+
 	void LightningRequest();
 	void DirBurstSeqRequest();
 	void CloudLightningSeqRequest();
+
 	u16  getCurrentUpdateType();
-	void setCurrentType(u16 t);
+	void setCurrentUpdateType(u16 t);
 	
+	void setOverrideState(bool state);
+	void setOverrideType(u16 type);
+	bool getOverrideState();
 };
 
 

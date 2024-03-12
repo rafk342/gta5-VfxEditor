@@ -6,51 +6,85 @@ VfxLightningUi::VfxLightningUi(BaseUiWindow* base, const char* label) : App(base
 
 void VfxLightningUi::window()
 {
+	static bool mOverride_state = false;
+	static int idx;
+	static const char* typeNames[4] =
+	{
+		"None",
+		"Directional Burst",
+		"Cloud Burst",
+		"Strike",
+	};
+	
+	if (ImGui::TreeNode("Override##T_override"))
+	{
+		PushStyleCompact();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
 
+		if (ImGui::Checkbox("Enable override##T_override", &mOverride_state))
+		{
+			mVfxLightingHandler.setOverrideState(mOverride_state);
+		}
+
+		if (mOverride_state)
+		{
+			if (ImGui::Combo("Type Name##T_override", (int*)&idx, typeNames, 4))
+			{
+				mVfxLightingHandler.setCurrentUpdateType(0);
+				mVfxLightingHandler.setOverrideType(idx);
+			}
+		}
+
+		PopStyleCompact();
+		ImGui::TreePop();
+	}
+	
 	static float offset = 148.0f;
 	if (ImGui::TreeNode("Requests"))
 	{
 		PushStyleCompact();
+
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
 		ImGui::Text("Clear Update Type");
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(offset);
 		if (ImGui::Button("Request##Force Clear")) {
-			mVfxLightingHandler.setCurrentType(0);
+			mVfxLightingHandler.setCurrentUpdateType(0);
 		}
-
-		ImGui::Text("Lightning");
-		ImGui::SameLine();
-		ImGui::SetCursorPosX(offset);
-		if (ImGui::Button("Request##Lightning")) {
-			mVfxLightingHandler.LightningRequest();
-		}
-
+		
 		ImGui::Text("Directional Burst");
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(offset);
 		if (ImGui::Button("Request##Directional Burst")) {
 			mVfxLightingHandler.DirBurstSeqRequest();
 		}
-
-		ImGui::Text("Cloud Lightning");
+		
+		ImGui::Text("Cloud Burst");
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(offset);
 		if (ImGui::Button("Request##Cloud Lightning ")) {
 			mVfxLightingHandler.CloudLightningSeqRequest();
 		}
-		ImGui::Text("Current Update Type : %i", mVfxLightingHandler.getCurrentUpdateType());
-
+		
+		ImGui::Text("Lightning Strike");
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(offset);
+		if (ImGui::Button("Request##Lightning")) {
+			mVfxLightingHandler.LightningRequest();
+		}
+	
 		PopStyleCompact();
-
 		ImGui::TreePop();
 	}
-
 	ImGui::Separator();
 	
+	ImGui::Text("Current Update Type : %i", mVfxLightingHandler.getCurrentUpdateType());
+	
 	PushStyleCompact();
-
-	ImGui::DragInt("Lightning Occurrance Chance", &mVfxLightingHandler.mVfxLightningSettings->lightningOccurranceChance, 1, 0, 200);
+	
+	if (!mOverride_state) {
+		ImGui::DragInt("Lightning Occurrance Chance", &mVfxLightingHandler.mVfxLightningSettings->lightningOccurranceChance, 1, 0, 200);
+	}
 	ImGui::DragFloat("Lightning Shake Intensity", &mVfxLightingHandler.mVfxLightningSettings->lightningShakeIntensity, 0.0025, 0.0f, 1.0f);
 	
 	PopStyleCompact();
@@ -303,16 +337,16 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 		if (ImGui::TreeNode(buff))
 		{
 			FORMAT_TO_BUFF(buff, "Fraction Min ##__CLStrikeSettings {}", idx)
-				ImGui::DragFloat(buff, &var.mZigZagSplitPoint.m_FractionMin, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat(buff, &var.mZigZagSplitPoint.FractionMin, 0.01f, 0.0f, 1.0f);
 
 			FORMAT_TO_BUFF(buff, "Fraction Max ##__CLStrikeSettings {}", idx);
-			ImGui::DragFloat(buff, &var.mZigZagSplitPoint.m_FractionMax, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mZigZagSplitPoint.FractionMax, 0.01f, 0.0f, 1.0f);
 
 			FORMAT_TO_BUFF(buff, "Deviation Decay ##__CLStrikeSettings {}", idx);
-			ImGui::DragFloat(buff, &var.mZigZagSplitPoint.m_DeviationDecay, 0.1f, 0.0f, 32.0f);
+			ImGui::DragFloat(buff, &var.mZigZagSplitPoint.DeviationDecay, 0.1f, 0.0f, 32.0f);
 
 			FORMAT_TO_BUFF(buff, "Deviation Right Variance ##__CLStrikeSettings {}", idx);
-			ImGui::DragFloat(buff, &var.mZigZagSplitPoint.m_DeviationRightVariance, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mZigZagSplitPoint.DeviationRightVariance, 0.01f, 0.0f, 1.0f);
 
 			ImGui::TreePop();
 		}
@@ -321,16 +355,16 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 		if (ImGui::TreeNode(buff))
 		{
 			FORMAT_TO_BUFF(buff, "Fraction Min ##__CLStrikeSettingsFork {}", idx);
-			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.m_FractionMin, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.FractionMin, 0.01f, 0.0f, 1.0f);
 
 			FORMAT_TO_BUFF(buff, "Fraction Max ##__CLStrikeSettingsFork {}", idx);
-			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.m_FractionMax, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.FractionMax, 0.01f, 0.0f, 1.0f);
 
 			FORMAT_TO_BUFF(buff, "Deviation Decay ##__CLStrikeSettingsFork {}", idx);
-			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.m_DeviationDecay, 0.1f, 0.0f, 32.0f);
+			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.DeviationDecay, 0.1f, 0.0f, 32.0f);
 
 			FORMAT_TO_BUFF(buff, "Deviation Right Variance ##__CLStrikeSettingsFork {}", idx);
-			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.m_DeviationRightVariance, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.DeviationRightVariance, 0.01f, 0.0f, 1.0f);
 
 			ImGui::TreePop();
 		}
@@ -339,22 +373,22 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 		if (ImGui::TreeNode(buff))
 		{
 			FORMAT_TO_BUFF(buff, "Deviation Right Variance ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.m_DeviationRightVariance, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mForkPoint.DeviationRightVariance, 0.01f, 0.0f, 1.0f);
 
 			FORMAT_TO_BUFF(buff, "Deviation Forward Min ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.m_DeviationForwardMin, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mForkPoint.DeviationForwardMin, 0.01f, 0.0f, 1.0f);
 
 			FORMAT_TO_BUFF(buff, "Deviation Forward Max ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.m_DeviationForwardMax, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mForkPoint.DeviationForwardMax, 0.01f, 0.0f, 1.0f);
 
 			FORMAT_TO_BUFF(buff, "Length Min ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.m_LengthMin, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mForkPoint.LengthMin, 0.01f, 0.0f, 1.0f);
 
 			FORMAT_TO_BUFF(buff, "Length Max ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.m_LengthMax, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(buff, &var.mForkPoint.LengthMax, 0.01f, 0.0f, 1.0f);
 
 			FORMAT_TO_BUFF(buff, "Length Decay ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.m_LengthDecay, 0.01f, 0.0f, 32.0f);
+			ImGui::DragFloat(buff, &var.mForkPoint.LengthDecay, 0.01f, 0.0f, 32.0f);
 
 			ImGui::TreePop();
 		}
@@ -464,10 +498,10 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 
 void VfxLightningUi::importData(std::string path)
 {
-	mXmlParser.mImportLightningData("E:\\GTAV\\VSReloader\\timecycle\\111\\222.xml", mVfxLightingHandler.mVfxLightningSettings);
+	mXmlParser.mImportLightningData(path, mVfxLightingHandler.mVfxLightningSettings);
 }
 
 void VfxLightningUi::exportData(std::string path)
 {
-	mXmlParser.mExportLightningData("E:\\GTAV\\VSReloader\\timecycle\\111\\m_test.xml", mVfxLightingHandler.mVfxLightningSettings);
+	mXmlParser.mExportLightningData(path, mVfxLightingHandler.mVfxLightningSettings);
 }

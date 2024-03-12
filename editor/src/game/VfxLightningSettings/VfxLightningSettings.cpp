@@ -2,10 +2,14 @@
 
 
 bool VfxLightningHandler::lightning_request = false;
-bool VfxLightningHandler::DirBurstSeq_request = false;
-bool VfxLightningHandler::CloudLightningSeq_request = false;
+bool VfxLightningHandler::DirBurstS_request = false;
+bool VfxLightningHandler::CloudLightningS_request = false;
+bool VfxLightningHandler::override_flag = false;
+u16  VfxLightningHandler::requested_override_type = 0;
 u16* VfxLightningHandler::LUpdateType = nullptr;
+int  VfxLightningHandler::savedOccurranceChance = 0;
 
+VfxLightningHandler* VfxLightningHandler::selfInstance = nullptr;
 
 namespace
 {
@@ -14,14 +18,48 @@ namespace
 	void(*Create_LightningStrike)(u64);
 	void(*Create_LightningStrike2)(u64);
 	int* v1 = nullptr;
+}
 
-	enum gLightningsTypes
+bool VfxLightningHandler::getOverrideState() { return override_flag; }
+void VfxLightningHandler::setOverrideState(bool state) 
+{
+	if (state == true)
 	{
-		NONE_TYPE = 0,
-		DIRECTIONAL_BURST_TYPE,
-		CLOUD_BURST_TYPE,
-		STRIKE_TYPE,
-	};
+		savedOccurranceChance = this->mVfxLightningSettings->lightningOccurranceChance;
+		override_flag = true;
+	}
+	if (state == false)
+	{
+		override_flag = false;
+		this->mVfxLightningSettings->lightningOccurranceChance = savedOccurranceChance;
+	}
+}
+
+void VfxLightningHandler::setOverrideType(u16 type)
+{
+	if (!override_flag)
+		return;
+	requested_override_type = type;
+}
+
+void VfxLightningHandler::GenStrike(u64& arg)
+{
+	*LUpdateType = gLightningsTypes::STRIKE_TYPE;
+	Create_LightningStrike(arg);
+	Create_LightningStrike2(arg);
+}
+
+void VfxLightningHandler::GenDirBurst(u64& arg)
+{
+	*LUpdateType = gLightningsTypes::DIRECTIONAL_BURST_TYPE;
+	Create_DirBurst_Sequence(arg);
+	*v1 = 3;
+}
+
+void VfxLightningHandler::GenCloudBurst(u64& arg)
+{
+	*LUpdateType = gLightningsTypes::CLOUD_BURST_TYPE;
+	Create_CloudLightning_Sequence(arg);
 }
 
 
@@ -30,6 +68,36 @@ void VfxLightningHandler::n_VfxLightnings_Update(u64 arg)
 {
 	orig_VfxLightnings_Update(arg);
 
+	if (override_flag)
+	{	
+		if (!selfInstance)
+			return;
+
+		selfInstance->mVfxLightningSettings->lightningOccurranceChance = 0;
+		
+		if (*LUpdateType != 0)
+			return;
+	
+		switch (requested_override_type)
+		{
+		case gLightningsTypes::NONE_TYPE:
+			break;
+		case gLightningsTypes::STRIKE_TYPE:
+			GenStrike(arg);
+			break;
+		case gLightningsTypes::DIRECTIONAL_BURST_TYPE:
+			GenDirBurst(arg);
+			break;
+		case gLightningsTypes::CLOUD_BURST_TYPE:
+			GenCloudBurst(arg);
+			break;
+		default:
+			break;
+		}
+
+		return;
+	}
+
 	if (lightning_request) 
 	{
 		lightning_request = false;
@@ -37,32 +105,27 @@ void VfxLightningHandler::n_VfxLightnings_Update(u64 arg)
 		if (*LUpdateType != 0)
 			*LUpdateType = 0;
 
-		*LUpdateType = gLightningsTypes::STRIKE_TYPE;
-		Create_LightningStrike(arg);
-		Create_LightningStrike2(arg);
+		GenStrike(arg);
 	}
 
-	if (DirBurstSeq_request) 
+	if (DirBurstS_request) 
 	{
-		DirBurstSeq_request = false;
+		DirBurstS_request = false;
 
 		if (*LUpdateType != 0)
 			*LUpdateType = 0;
 
-		*LUpdateType = gLightningsTypes::DIRECTIONAL_BURST_TYPE;
-		Create_DirBurst_Sequence(arg);
-		*v1 = 3;
+		GenDirBurst(arg);
 	}
 
-	if (CloudLightningSeq_request) 
+	if (CloudLightningS_request) 
 	{
-		CloudLightningSeq_request = false;
+		CloudLightningS_request = false;
 
 		if (*LUpdateType != 0)
 			*LUpdateType = 0;
 
-		*LUpdateType = gLightningsTypes::CLOUD_BURST_TYPE;
-		Create_CloudLightning_Sequence(arg);
+		GenCloudBurst(arg);
 	}
 }
 
@@ -88,12 +151,15 @@ VfxLightningHandler::VfxLightningHandler()
 	Create_CloudLightning_Sequence = VfxLightnings_UpdateAddr.GetRef(517 + 1).ToFunc<void(u64)>();
 	Create_LightningStrike = VfxLightnings_UpdateAddr.GetRef(480 + 1).ToFunc<void(u64)>();
 	Create_LightningStrike2 = VfxLightnings_UpdateAddr.GetRef(507 + 1).ToFunc<void(u64)>();
+
 	v1 = VfxLightnings_UpdateAddr.GetRef(532 + 2).To<int*>();
+
+	selfInstance = this;
 }
 
 void VfxLightningHandler::LightningRequest()            { lightning_request = true;}
-void VfxLightningHandler::DirBurstSeqRequest()          { DirBurstSeq_request = true;}
-void VfxLightningHandler::CloudLightningSeqRequest()    { CloudLightningSeq_request = true;}
+void VfxLightningHandler::DirBurstSeqRequest()          { DirBurstS_request = true;}
+void VfxLightningHandler::CloudLightningSeqRequest()    { CloudLightningS_request = true;}
 u16  VfxLightningHandler::getCurrentUpdateType()        { return *LUpdateType; }
-void VfxLightningHandler::setCurrentType(u16 t)         { *LUpdateType = t; }
+void VfxLightningHandler::setCurrentUpdateType(u16 t)   { *LUpdateType = t; }
 

@@ -54,14 +54,14 @@ void tcXmlParser::load_tcData(const std::string& path, tcCycle* cycle_to_load)
 
 				for (size_t time = 0; time < TC_TIME_SAMPLES; time++)
 				{
-					cycle_to_load->SetKeyframeValue(region_index, param_id, time, params_arr[time]);
+					cycle_to_load->SetKeyframeValue(static_cast<Regions>(region_index), param_id, time, params_arr[time]);
 				}
 			}
 			else
 			{
 				for (size_t time = 0; time < TC_TIME_SAMPLES; time++)
 				{
-					cycle_to_load->SetKeyframeValue(region_index, param_id, time, 0.0f);
+					cycle_to_load->SetKeyframeValue(static_cast<Regions>(region_index), param_id, time, 0.0f);
 				}
 			}
 		}
@@ -119,7 +119,7 @@ std::string& tcXmlParser::getTcParamsLine(const tcCycle* cycle, int region, int 
 
 	for (int time = 0; time < TC_TIME_SAMPLES; time++)
 	{
-		params_line += std::format("{:.4f} ", cycle->GetKeyframeValue(region, paramId, time));
+		params_line += std::format("{:.4f} ", cycle->GetKeyframeValue(static_cast<Regions>(region), paramId, time));
 	}
 	return params_line;
 }

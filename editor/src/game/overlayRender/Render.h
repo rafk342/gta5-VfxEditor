@@ -25,11 +25,11 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 class mRender
 {
 	static int  open_window_btn;
-	static bool init;
 	static bool show_window;
 	static bool mInitialized;
 	static bool ImGuiCursorUsage;
-	
+	static bool mRenderState;
+
 	static HWND	window;
 	static ID3D11Device* p_device;
 	static ID3D11DeviceContext* p_context;

@@ -1,7 +1,7 @@
 #pragma once
 #include "ImGui/imgui.h"
 #include "FileListUI.h"
-
+#include <format>
 
 class BaseUiWindow;
 
@@ -10,6 +10,7 @@ class App
     const char* label;
 public:
     App(BaseUiWindow* base, const char* label);
+    virtual ~App() {}
 
     const char*  get_label();
     virtual void window() = 0;
@@ -25,7 +26,6 @@ class BaseUiWindow : FileListUI
     const char*         MainWindowLabel = "VisualEffects Editor";
     std::vector<App*>   appsVec;
     App*                activeApp = nullptr;
-    bool                renderState = false;
    
     void setActiveApp(App* app);
     App* getActiveApp() const;

@@ -27,7 +27,7 @@ int		mRender::open_window_btn = 0;
 bool	mRender::show_window = false;
 bool	mRender::mInitialized = false;
 bool    mRender::ImGuiCursorUsage = false;
-
+bool	mRender::mRenderState = false;
 
 void mRender::CreateDevice()
 {
@@ -69,15 +69,16 @@ void mRender::CreateDevice()
 void (*orig_ClipCursor)(LPRECT);
 void mRender::n_ClipCursor(LPRECT rect) 
 {
-	if (!show_window) {
+	if (!show_window)
 		orig_ClipCursor(rect);
-	}
 }
-
 
 int (*orig_ShowCursor)(bool);
 int mRender::n_ShowCursor(bool visible) 
 {
+	if (!show_window)
+		orig_ShowCursor(visible);
+	
 	return visible ? 0 : -1; 
 }
 
@@ -107,17 +108,15 @@ LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (!ImGuiCursorUsage) 
 			ClipCursorToWindowRect(window, !show_window);
 	}
-	if (GetAsyncKeyState(VK_HOME) && show_window) {
-		mlogger("home pressed, return true");
+	if (GetAsyncKeyState(VK_HOME) && show_window)
 		return true;
-	}
 	
 	if (!ImGuiCursorUsage) 
 		SetMouseVisible(show_window); 
 
 	if (show_window) 
 	{
-		//it handles mouse input even when ui isn't displayed, so i placed it under the "show_window" flag
+		//it handles mouse input even when ui isn't displayed, so i placed it under "show_window" flag
 		if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) 
 			return true;
 	}
@@ -129,6 +128,8 @@ LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 void(*orig_PresentImage)();
 void mRender::PresentImage()
 {
+	mRenderState = true;
+
 	if (!mInitialized)
 	{
 		InitBackend();
@@ -142,6 +143,8 @@ void mRender::PresentImage()
 		ImRenderFrame();
 	}
 	orig_PresentImage();
+	
+	mRenderState = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -211,6 +214,9 @@ void mRender::Shutdown()
 
 	if (!mInitialized) 
 		return;	
+
+	show_window = false;
+	while (mRenderState) {};
 
 	BaseUiWindow::Destroy();
 

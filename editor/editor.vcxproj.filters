@@ -120,6 +120,12 @@
     <ClCompile Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\game\VisualSettings\visualSettingsHandler.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\VisualSettings\ui\visualSettingsUi.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\amString\char.h">
@@ -618,6 +624,12 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\VisualSettings\visualSettingsHandler.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\VisualSettings\ui\visualSettingsUi.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

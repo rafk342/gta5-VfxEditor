@@ -1,6 +1,7 @@
 #pragma once
 #include "atArray.h"
 
+
 template<typename TEntry>
 class atHashMap
 {
