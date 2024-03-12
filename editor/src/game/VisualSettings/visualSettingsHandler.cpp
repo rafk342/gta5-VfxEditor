@@ -9,12 +9,16 @@ namespace
     u8* bytesAddr = nullptr;
 }
 
-// it's almost like the VsReloader works
+// it's almost like VsReloader works, 
+// except we're replacing bytes in the function, instead of replacing symbols in the path str,
+// so it won't parse settings from the file, 
+// it will update existing settings stored in the game VisualSettings data array
+
 VisualSettingsHandler::VisualSettingsHandler()
 {
     mlogger("searching for gVisualSettings");
     static auto addr = gmAddress::Scan("48 83 EC 28 48 8D 15 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 84 C0");
-    mlogger(std::format("found at 0x{:08X}", (u64)addr));
+    mlogger(std::format("found at 0x{:08X}", addr.Value));
 
     p_Vsettings = addr.GetRef(14).To<gVisualSettings*>();
     updateSettings = addr.ToFunc<bool()>();
