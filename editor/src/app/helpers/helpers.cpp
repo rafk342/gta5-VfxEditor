@@ -2,7 +2,7 @@
 
 
 
-bool check_str_end(const std::string& fullstr, const std::string& ending)
+bool check_str_ending(const std::string& fullstr, const std::string& ending)
 {
     if (fullstr.length() >= ending.length()) 
     {

@@ -80,7 +80,10 @@ void BaseUiWindow::SaveAsBtn()
     io.WantCaptureKeyboard = false;
     io.WantCaptureMouse = false;
 
-    activeApp->exportData(selectPathForSaveAsBtn());
+    auto path = selectPathForSaveAsBtn();
+    
+    if (!path.empty())
+        activeApp->exportData(path);
 
     io.WantCaptureKeyboard = true;
     io.WantCaptureMouse = true;

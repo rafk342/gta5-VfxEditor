@@ -116,12 +116,9 @@ std::string FileListUI::GetCurrentSelectedFileName()
 
 std::string FileListUI::selectPathForSaveAsBtn()   
 {
-    //idk what's going on here
-
     std::string strFilePath = ""; 
-
+   
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-
     IFileSaveDialog* pFileSave;
     HRESULT hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_ALL, IID_IFileSaveDialog, (void**)&pFileSave);
 
@@ -130,9 +127,10 @@ std::string FileListUI::selectPathForSaveAsBtn()
         DWORD dwFlags;
         pFileSave->GetOptions(&dwFlags);
         pFileSave->SetOptions(dwFlags | FOS_OVERWRITEPROMPT);
-        
-        COMDLG_FILTERSPEC filters[] = { { L"XML", L"*.xml" } };
+
+        COMDLG_FILTERSPEC filters[] = { { L"XML Files", L"*.xml; *.dat"} };
         pFileSave->SetFileTypes(1, filters);
+        pFileSave->SetFileName(L"default");
 
         hr = pFileSave->Show(NULL); 
 
@@ -160,10 +158,12 @@ std::string FileListUI::selectPathForSaveAsBtn()
     }
     CoUninitialize();
     
-    if (!check_str_end(strFilePath, ".xml"))
-    {
+    if (strFilePath.empty())
+        return strFilePath;
+
+    if (!check_str_ending(strFilePath, ".xml") && !check_str_ending(strFilePath, ".dat"))
         strFilePath += ".xml";
-    }
+
     return strFilePath;
 }
 

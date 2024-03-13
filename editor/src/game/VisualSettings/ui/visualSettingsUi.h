@@ -3,15 +3,6 @@
 #include "ImGui/imgui.h"
 #include "uiBase/uiBaseWindow.h"
 
-
-class visualSettings_fParser
-{
-public:
-	void importVsData();
-	void exportVsData();
-};
-
-
 class VisualSettingsUi : App
 {
 	VisualSettingsHandler mHandler;

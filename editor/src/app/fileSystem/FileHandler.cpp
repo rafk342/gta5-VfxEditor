@@ -1,13 +1,13 @@
 #include "FileHandler.h"
 
 
-void FileHandler::set_files_map(std::filesystem::path wpath, std::string extension)
+void FileHandler::set_files_map(std::filesystem::path path, std::string extension)
 {
     files_vec.clear();
 
     namespace stdfs = std::filesystem;
 
-    if (!stdfs::exists(wpath) || !stdfs::is_directory(wpath))
+    if (!stdfs::exists(path) || !stdfs::is_directory(path))
     {
         invalid_path = true;
         return;
@@ -15,9 +15,9 @@ void FileHandler::set_files_map(std::filesystem::path wpath, std::string extensi
 
     const stdfs::directory_iterator end{};
 
-    for (const auto& entry : stdfs::directory_iterator{ wpath })
+    for (const auto& entry : stdfs::directory_iterator{ path })
     {
-        if (stdfs::is_regular_file(entry) && entry.path().extension() == extension)
+        if (stdfs::is_regular_file(entry) && entry.path().extension() == extension || entry.path().extension() == ".dat")
         {
             files_vec.push_back({ entry.path().filename().string(), entry.path().string()});
         }

@@ -18,10 +18,10 @@ void VisualSettingsUi::window()
 
 			auto& Params = mHandler.mContainer.paramsMap.at(category);
 
-			for (size_t i = 0; i < Params.size(); i++)
+			for (u16 i = 0; i < Params.size(); i++)
 			{
 				if (!Params[i].found || !Params[i].gPtrItem)
-					return;
+					continue;
 
 				switch (Params[i].vType)
 				{
@@ -29,10 +29,8 @@ void VisualSettingsUi::window()
 					break;
 
 				case Vs_VarType_e::V_FLOAT:
-					if (ImGui::DragFloat(Params[i].name, &Params[i].gPtrItem->value, 0.002f))
-					{
-						mHandler.updateData();
-					}
+					
+					if (ImGui::DragFloat(Params[i].labelName, &Params[i].gPtrItem->value, 0.005f)) { mHandler.updateData(); }
 					break;
 
 				case Vs_VarType_e::V_COL3:
@@ -40,7 +38,7 @@ void VisualSettingsUi::window()
 					for (u8 w = 0; w < 3; w++)
 						col3[w] = Params[i + w].gPtrItem->value;
 
-					if (ImGui::ColorEdit3(Params[i].name, col3))
+					if (ImGui::ColorEdit3(Params[i].labelName, col3))
 					{
 						for (u8 w = 0; w < 3; w++)
 							Params[i + w].gPtrItem->value = col3[w];
@@ -58,20 +56,10 @@ void VisualSettingsUi::window()
 
 void VisualSettingsUi::importData(std::string path)
 {
-
+	mHandler.importData(path);
 }
 
 void VisualSettingsUi::exportData(std::string path)
 {
-
-}
-
-void visualSettings_fParser::importVsData()
-{
-
-}
-
-void visualSettings_fParser::exportVsData()
-{
-
+	mHandler.exportData(path);
 }
