@@ -50,7 +50,7 @@ class TimecycleUI : public App
 	 void MainParamsWindow_with_Categories();
 	
 	 void makeTable(Regions region, int index);
-	 void makeJustSingleParamVidget(Regions region, int index);
+	 void makeJustSingleParamWidget(Regions region, int index);
 
 	 enum Action { GET, SET }; 
 	 template<Action action>

@@ -10,6 +10,7 @@
 #include "CloudSettings/xml/CloudSettingsXmlParser.h"
 #include "gameClock/CClock.h"
 
+
 class CloudSettingsUI : public App
 {
 	CloudsHandler								mCloudsHandler;
@@ -23,18 +24,18 @@ class CloudSettingsUI : public App
 	bool										ShowOnlyTheCurrentSample = false;
 
 
-	void			GetCurrentTimeSample(int current_hour);
+	void GetCurrentTimeSample(int current_hour);
 
-	void			CloudsDataWidgets(int clIdx);
-	void			ProbabilityWidgets(int clIdx);
+	void CloudsDataWidgets(int clIdx);
+	void ProbabilityWidgets(int clIdx);
 	
-	void			CloudDataTreeNode(const char* label, int clIdx, atArray<ptxKeyframeEntry>& arr, std::function<void(atArray<ptxKeyframeEntry>&, int, const char*)> func);
+	void CloudDataTreeNode(const char* label, int clIdx, atArray<ptxKeyframeEntry>& arr, std::function<void(atArray<ptxKeyframeEntry>&, int, const char*)> func);
 
-	void			CloudSettingsColourTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
-	void			CloudSettingsColourSimpleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
+	void CloudSettingsColourTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
+	void CloudSettingsColourSimpleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
 
-	void			CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
-	void			CloudSettingsVariablesSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
+	void CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
+	void CloudSettingsVariablesSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
 
 	virtual void	window() override;
 	virtual void	importData(std::string path) override;

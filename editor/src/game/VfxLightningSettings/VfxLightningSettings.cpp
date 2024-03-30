@@ -21,7 +21,7 @@ namespace
 }
 
 bool VfxLightningHandler::getOverrideState() { return override_flag; }
-void VfxLightningHandler::setOverrideState(bool state) 
+void VfxLightningHandler::setOverrideState(bool state)
 {
 	if (state == true)
 	{
@@ -129,6 +129,17 @@ void VfxLightningHandler::n_VfxLightnings_Update(u64 arg)
 	}
 }
 
+void (*orig_initStrike)(u64 arg, u64* arg2);
+void initStrike(u64 arg, u64* arg2)
+{
+	mlogger("initstrike call");
+	
+	mlogger(std::to_string(arg));
+
+	orig_initStrike(arg, arg2);
+
+}
+
 
 //GTA5.exe+DF4EDB - 4C 8D 0D 9E998F01 - lea r9,[  <GTA5.exe>  +26EE880  ] { (7FF629B39720) }
 VfxLightningHandler::VfxLightningHandler()
@@ -153,6 +164,10 @@ VfxLightningHandler::VfxLightningHandler()
 	Create_LightningStrike2 = VfxLightnings_UpdateAddr.GetRef(507 + 1).ToFunc<void(u64)>();
 
 	v1 = VfxLightnings_UpdateAddr.GetRef(532 + 2).To<int*>();
+
+	//auto InitStrinkeAddr = gmAddress::Scan("48 8B C4 48 89 58 ?? 48 89 70 ?? 48 89 78 ?? 55 48 8D 68 ?? 48 81 EC 90 00 00 00 0F 29 70 ?? 0F 29 78 ?? 44 0F 29 40 ?? 48 8B DA");
+
+	//Hook::Create(InitStrinkeAddr, initStrike, &orig_initStrike, "init strike");
 
 	selfInstance = this;
 }

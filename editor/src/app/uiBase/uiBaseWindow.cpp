@@ -7,7 +7,10 @@
 #include "VisualSettings/ui/visualSettingsUi.h"
 
 
-BaseUiWindow* BaseUiWindow::instance = nullptr;
+//BaseUiWindow* BaseUiWindow::instance = nullptr;
+
+std::unique_ptr<BaseUiWindow> BaseUiWindow::selfInstance = nullptr;
+
 
 App::App(BaseUiWindow* base, const char* label) : label(label)
 {
@@ -49,7 +52,7 @@ void BaseUiWindow::OnRender()
     ImGui::SameLine();
     ClockUi::timeCheckBoxWindow();
 
-    if (ImGui::BeginTabBar("TabBarEditor"))
+    if (ImGui::BeginTabBar("TabBarEditor", ImGuiTabBarFlags_Reorderable))
     {
         for (App* app : appsVec)
         {
@@ -97,22 +100,21 @@ void BaseUiWindow::SaveBtn()
 
 void BaseUiWindow::Create()
 {
-    if (!instance) {
-        instance = new BaseUiWindow;
+    if (!selfInstance) {
+        selfInstance = std::make_unique<BaseUiWindow>();
     }
 }
 
 void BaseUiWindow::Destroy()
 {
-    if (instance) {
-        delete instance;
-        instance = nullptr;
+    if (selfInstance) {
+        selfInstance.reset();
     }
 }
 
 BaseUiWindow* BaseUiWindow::GetInstance()
 {
-    return instance;
+    return selfInstance.get();
 }
 
 BaseUiWindow::~BaseUiWindow() {}

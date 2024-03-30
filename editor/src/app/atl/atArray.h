@@ -56,6 +56,7 @@ public:
 		}
 		return m_offset[idx];
 	}
+
 	~atArray()
 	{
 		m_offset = nullptr;

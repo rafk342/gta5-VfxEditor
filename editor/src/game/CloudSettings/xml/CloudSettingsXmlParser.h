@@ -9,7 +9,6 @@
 #include <map>
 
 #include "pugixml/pugixml.hpp"
-
 #include "CloudSettings/CloudSettings.h"
 #include "helpers/helpers.h"
 

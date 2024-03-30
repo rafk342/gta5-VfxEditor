@@ -6,12 +6,9 @@
 class VisualSettingsUi : App
 {
 	VisualSettingsHandler mHandler;
-
 public:
-	VisualSettingsUi(BaseUiWindow* base, const char* label);
-	
+	using App::App;
 	virtual void window() override;
-
 	virtual void importData(std::string path) override;
 	virtual void exportData(std::string path) override;
 };

@@ -6,6 +6,8 @@
 #include <fstream>
 
 #include "memory/address.h"
+#include "memory/hook.h"
+
 #include "atl/atArray.h"
 #include "crypto/joaat.h"
 #include "logger.h"
@@ -19,33 +21,31 @@ enum Vs_VarType_e
 	V_NONE
 };
 
+struct gSettingsItem
+{
+	u32 hash;
+	float value;
+};
 
 struct gVisualSettings
 {
-	struct gSettingsItem
-	{
-		u32 hash;
-		float value;
-	};
-
-	bool v1;
+	bool isLoaded;
 	atArray<gSettingsItem> data;
 };
 
-
 class VisualSettingsHandler;
-
 struct VScontainer
 {	
 	struct VSitem
 	{
-		const char*		labelName;
-		const char*		paramName;
-		u32				hash;
-		Vs_VarType_e	vType;
-		bool			found = false;
-
-		gVisualSettings::gSettingsItem* gPtrItem = nullptr;
+		const char*		 labelName;
+		const char*		 paramName;
+		u32				 hash;
+		Vs_VarType_e	 vType;
+		gSettingsItem*   gPtrItem = nullptr;
+		
+		bool			 found = false;
+		bool			 is_used = false;
 	};
 
 	//				 category   ->	vec (VSitem)
@@ -61,12 +61,13 @@ struct VScontainer
 class VisualSettingsHandler
 {	
 	friend struct VScontainer;
-	gVisualSettings*	p_Vsettings = nullptr;
+	gVisualSettings* p_Vsettings = nullptr;
 
 	void RestoreFuncBytes();
 	void SetFuncN_Bytes();
+	void getUsedParamNames();
 public:
-	VScontainer			mContainer;
+	VScontainer	mContainer;
 
 	VisualSettingsHandler();
 	~VisualSettingsHandler();
@@ -77,3 +78,13 @@ public:
 
 };
 
+
+struct VsItemTmp
+{
+	std::string name;
+	u32 hash;
+	bool already_exists_in_container = false;
+	
+	VsItemTmp(std::string name, u32 hash) : name(name), hash(hash) {};
+	VsItemTmp(std::string name) : name(name), hash(rage::joaat(name.c_str())) {};
+};

@@ -1,9 +1,6 @@
 #include "VfxLightningUi.h"
 
 
-VfxLightningUi::VfxLightningUi(BaseUiWindow* base, const char* label) : App(base, label) {}
-
-
 void VfxLightningUi::window()
 {
 	static bool mOverride_state = false;
@@ -133,6 +130,7 @@ void VfxLightningUi::DirectionalBurstSettingsWidgets()
 	}
 }
 
+
 void VfxLightningUi::CloudBurstCommonSettingsWidgets(CloudBurstCommonSettings& rCloudBurstCommonSettings, const char* treeLabel)
 {
 	static char buff[256];
@@ -185,6 +183,7 @@ void VfxLightningUi::CloudBurstCommonSettingsWidgets(CloudBurstCommonSettings& r
 	}
 }
 
+
 void VfxLightningUi::CloudBurstSettingsWidgets()
 {
 	static auto& rCloudBurstSettings = mVfxLightingHandler.mVfxLightningSettings->m_CloudBurstSettings;
@@ -214,6 +213,7 @@ void VfxLightningUi::CloudBurstSettingsWidgets()
 		PopStyleCompact();
 	}
 }
+
 
 void VfxLightningUi::StrikeSettingsWidgets()
 {
@@ -301,6 +301,7 @@ void VfxLightningUi::StrikeSettingsWidgets()
 		PopStyleCompact();
 	}
 }
+
 
 void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 {
@@ -397,104 +398,80 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 		if (ImGui::TreeNode(buff))
 		{
 			FORMAT_TO_BUFF(buff, "Lightning Main Intensity ##__CLStrikeSettings {}", idx);
-			if (ImGui::TreeNode(buff)) 
+			if (ImGui::TreeNode(buff))
 			{
-				auto& data = var.mKeyFrameData.LightningMainIntensity.data;
+				auto& m_keyframe = var.mKeyFrameData.LightningMainIntensity;
+				//keyframePlot(data, buff);
+				keyframeTable(buff, m_keyframe, idx);
 
-				FORMAT_TO_BUFF(buff, "## Lightning Main__CLStrikeSettings table {}", idx);
-				if (ImGui::BeginTable(buff, 3, ImGuiTableFlags_Borders))
-				{
-					ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 45);
-					ImGui::TableSetupColumn("Min");
-					ImGui::TableSetupColumn("Max");
-					ImGui::TableHeadersRow();
-
-					for (u8 i = 0; i < data.GetSize(); i++)
-					{
-						ImGui::TableNextRow();
-
-						for (u8 j = 0; j < 3; j++)
-						{
-							ImGui::TableNextColumn();
-
-							switch (j)
-							{
-							case 0:
-								FORMAT_TO_BUFF(buff, " {:.3f} ", data[i].vTime[0], idx);
-								ImGui::Text(buff);
-								break;
-							case 1:
-								ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-								FORMAT_TO_BUFF(buff, "##MainIntensity{}_{}_{}__keyframe_Min", i, idx,j);
-								ImGui::DragFloat(buff, &data[i].vValue[0], 0.015, 0.0f, 1.0f);
-								break;
-							case 2:
-								ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-								FORMAT_TO_BUFF(buff, "##MainIntensity{}_{}_{}__keyframe_Max", i, idx,j);
-								ImGui::DragFloat(buff, &data[i].vValue[1], 0.015, 0.0f, 1.0f);
-								break;
-							default:
-								break;
-							}
-						}
-					}
-					ImGui::EndTable();
-				}
 				ImGui::TreePop();
 			}
-
 
 			FORMAT_TO_BUFF(buff, "Lightning Branch Intensity ##__CLStrikeSettings {}", idx);
 			if (ImGui::TreeNode(buff))
 			{
-				auto& data = var.mKeyFrameData.LightningBranchIntensity.data;
+				auto& m_keyframe = var.mKeyFrameData.LightningBranchIntensity;
 
 				FORMAT_TO_BUFF(buff, "## Lightning Branch__CLStrikeSettings table {}", idx);
-				if (ImGui::BeginTable(buff, 3, ImGuiTableFlags_Borders))
-				{
-					ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 45);
-					ImGui::TableSetupColumn("Min");
-					ImGui::TableSetupColumn("Max");
-					ImGui::TableHeadersRow();
+				//keyframePlot(data, buff);
+				keyframeTable(buff, m_keyframe, idx);
 
-					for (u8 i = 0; i < data.GetSize(); i++)
-					{
-						ImGui::TableNextRow();
-
-						for (u8 j = 0; j < 3; j++)
-						{
-							ImGui::TableNextColumn();
-
-							switch (j)
-							{
-							case 0:
-								FORMAT_TO_BUFF(buff, " {:.3f} ", data[i].vTime[0], idx);
-								ImGui::Text(buff);
-								break;
-							case 1:
-								ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-								FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Min", i, idx, j);
-								ImGui::DragFloat(buff, &data[i].vValue[0], 0.015, 0.0f, 1.0f);
-								break;
-							case 2:
-								ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-								FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Max", i, idx, j);
-								ImGui::DragFloat(buff, &data[i].vValue[1], 0.015, 0.0f, 1.0f);
-								break;
-							default:
-								break;
-							}
-						}
-					}
-					ImGui::EndTable();
-				}
 				ImGui::TreePop();
 			}
+			ImGui::TreePop();
 		}
-
 		ImGui::TreePop();
+		
 	}
 }
+
+
+void keyframeTable(const char* label, ptxKeyframe& keyframe, u8 idx)
+{
+	static char buff[64];
+
+	auto& data = keyframe.data;
+
+	if (ImGui::BeginTable(label, 3, ImGuiTableFlags_Borders))
+	{
+		ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 45);
+		ImGui::TableSetupColumn("Min");
+		ImGui::TableSetupColumn("Max");
+		ImGui::TableHeadersRow();
+
+		for (u16 i = 0; i < data.GetSize(); i++)
+		{
+			ImGui::TableNextRow();
+
+			for (u8 j = 0; j < 3; j++)
+			{
+				ImGui::TableNextColumn();
+
+				switch (j)
+				{
+				case 0:
+					FORMAT_TO_BUFF(buff, " {:.3f} ", data[i].vTime[0], idx);
+					ImGui::Text(buff);
+					break;
+				case 1:
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+					FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Min", i, idx, j);
+					ImGui::DragFloat(buff, &data[i].vValue[0], 0.015, 0.0f, 1.0f);
+					break;
+				case 2:
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+					FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Max", i, idx, j);
+					ImGui::DragFloat(buff, &data[i].vValue[1], 0.015, 0.0f, 1.0f);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		ImGui::EndTable();
+	}
+}
+
 
 void VfxLightningUi::importData(std::string path)
 {
@@ -505,3 +482,217 @@ void VfxLightningUi::exportData(std::string path)
 {
 	mXmlParser.mExportLightningData(path, mVfxLightingHandler.mVfxLightningSettings);
 }
+
+
+
+
+
+
+
+
+
+#if 0
+
+enum class scaleAx
+{
+	X,
+	Y
+};
+
+template<scaleAx T>
+double* draw_scale_lines(std::vector<double>& dots_min, std::vector<double>& dots_max);
+
+void VfxLightningUi::keyframePlot(ptxKeyframe& keyframe, const char* label)
+{
+	static float point_size = 4.5;
+
+	static float col_dots_min[4] = { 0.761, 0.679, 1.000, 1.000 };
+	static float col_line_min[4] = { 0.348, 0.333, 0.523, 1.000 };
+
+	static float col_dots_max[4] = { 1.000, 0.582, 0.582, 1.000 };
+	static float col_line_max[4] = { 0.629, 0.313, 0.313, 1.000 };
+	
+	static float valuesForInfLines[4] = { 1,0,1,0 };
+	
+	static std::vector<double> dots_x;
+	static std::vector<double> dots_min;
+	static std::vector<double> dots_max;
+	
+	dots_x.clear();
+	dots_min.clear();
+	dots_max.clear();
+
+	for (u16 i = 0; i < keyframe.data.GetSize(); i++)
+	{
+		dots_x.push_back(keyframe.data[i].vTime[0]);
+		dots_min.push_back(keyframe.data[i].vValue[0]);
+		dots_max.push_back(keyframe.data[i].vValue[1]);
+	}
+
+
+
+	if (ImPlot::BeginPlot("mPlot", { -1, 400 }, ImPlotFlags_NoTitle | ImPlotFlags_NoMouseText | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame | ImPlotFlags_NoMenus))
+	{
+		ImPlot::SetupAxes("key", "value");
+		ImPlot::SetupAxesLimits(0, 1, -0.201, 1.38);
+
+		ImPlot::SetNextLineStyle({ col_line_min[0], col_line_min[1], col_line_min[2], col_line_min[3] }, 3.0f);
+		ImPlot::PlotLine("min", dots_x.data(), dots_min.data(), dots_min.size());
+
+		ImPlot::SetNextLineStyle({ col_line_max[0], col_line_max[1], col_line_max[2], col_line_max[3] }, 3.0f);
+		ImPlot::PlotLine("max", dots_x.data(), dots_max.data(), dots_max.size());
+
+		ImPlot::PlotInfLines("##Inf", dots_x.data(), dots_x.size());
+		ImPlot::PlotInfLines("##Inf", valuesForInfLines, 2);
+		ImPlot::PlotInfLines("##Inf", valuesForInfLines + 2, 2, ImPlotInfLinesFlags_Horizontal);
+
+		static double* l_x;
+		static double* l_y;
+
+		for (uint_fast16_t i = 0; i < dots_min.size(); i++)
+		{
+			l_x = draw_scale_lines<scaleAx::X>(dots_x, dots_x);
+			l_y = draw_scale_lines<scaleAx::Y>(dots_min, dots_max);
+
+			if (ImPlot::DragPoint(i + dots_min.size(), (double*)&dots_x[i], (double*)&dots_max[i], { col_dots_max[0], col_dots_max[1], col_dots_max[2], col_dots_max[3] }, point_size, ImPlotDragToolFlags_None))
+			{
+				if (dots_max[i] < dots_min[i])
+					dots_max[i] = dots_min[i];
+				if (dots_min[i] > dots_max[i])
+					dots_min[i] = dots_max[i];
+			}
+			if (ImPlot::DragPoint(i, (double*)&dots_x[i], (double*)&dots_min[i], { col_dots_min[0], col_dots_min[1], col_dots_min[2], col_dots_min[3] }, point_size, ImPlotDragToolFlags_None))
+			{
+				if (dots_min[i] > dots_max[i])
+					dots_min[i] = dots_max[i];
+				if (dots_max[i] < dots_min[i])
+					dots_max[i] = dots_min[i];
+			}
+
+			std::cout << l_y[0] << " " << l_y[1] << '\n';
+
+			if (dots_x[i] < l_x[0])
+				dots_x[i] = l_x[0];
+			if (dots_x[i] > l_x[1])
+				dots_x[i] = l_x[1];
+
+			if (dots_min[i] > l_y[1])
+				dots_min[i] = l_y[1];
+			if (dots_min[i] < l_y[0])
+				dots_min[i] = l_y[0];
+
+			if (dots_max[i] > l_y[1])
+				dots_max[i] = l_y[1];
+			if (dots_max[i] < l_y[0])
+				dots_max[i] = l_y[0];
+
+			if (i != 0 && i != dots_x.size() - 1)
+			{
+				if (dots_x[i] > dots_x[i + 1] - 0.005)
+					dots_x[i] = dots_x[i + 1] - 0.005;
+				if (dots_x[i] < dots_x[i - 1] + 0.005)
+					dots_x[i] = dots_x[i - 1] + 0.005;
+			}
+			else if (i == dots_x.size() - 1)
+			{
+				if (dots_x[i] < dots_x[i - 1] + 0.005)
+					dots_x[i] = dots_x[i - 1] + 0.005;
+			}
+			else if (i == 0)
+			{
+				if (dots_x[i] > dots_x[i + 1] - 0.005)
+					dots_x[i] = dots_x[i + 1] - 0.005;
+			}
+		}
+		ImPlot::EndPlot();
+	}
+
+
+	for (u16 i = 0; i < keyframe.data.GetSize(); i++)
+	{
+		keyframe.data[i].vTime[0] = dots_x[i];
+		keyframe.data[i].vValue[0] = dots_min[i];
+		keyframe.data[i].vValue[1] = dots_max[i];
+	}
+}
+
+
+template<scaleAx T>
+double* draw_scale_lines(std::vector<double>& dots_min, std::vector<double>& dots_max)
+{
+
+	static ImVec4 lines_col = { 0.5, 0.5, 0.5, 1 };
+	static float lines_thickness = 1;
+
+	static double prev_pos1 = 1;
+	static double curr_pos1 = 1;
+
+	prev_pos1 = curr_pos1;
+
+	static double prev_pos2 = 1;
+	static double curr_pos2 = 0;
+
+	prev_pos2 = curr_pos2;
+
+	switch (T)
+	{
+	case scaleAx::X:
+
+		if (ImPlot::DragLineX(1, &curr_pos1, lines_col, lines_thickness))
+		{
+			if (curr_pos1 < curr_pos2 + 0.2)
+				curr_pos1 = curr_pos2 + 0.2;
+		}
+		if (ImPlot::DragLineX(2, &curr_pos2, lines_col, lines_thickness))
+		{
+			if (curr_pos2 > curr_pos1 - 0.2)
+				curr_pos2 = curr_pos1 - 0.2;
+		}
+		break;
+
+	case scaleAx::Y:
+
+		if (ImPlot::DragLineY(1, &curr_pos1, lines_col, lines_thickness))
+		{
+			if (curr_pos1 < curr_pos2 + 0.05)
+				curr_pos1 = curr_pos2 + 0.05;
+		}
+		if (ImPlot::DragLineY(2, &curr_pos2, lines_col, lines_thickness))
+		{
+			if (curr_pos2 > curr_pos1 - 0.05)
+				curr_pos2 = curr_pos1 - 0.05;
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	if (curr_pos1 > 1)
+		curr_pos1 = 1;
+	if (curr_pos1 < 0)
+		curr_pos1 = 0 + 0.05;
+
+	if (curr_pos2 < 0)
+		curr_pos2 = 0;
+	if (curr_pos2 > 1)
+		curr_pos2 = 1 - 0.05;
+
+	static double scale_f;
+
+	scale_f = fabs((curr_pos2 - curr_pos1) / (prev_pos2 - prev_pos1));
+
+	for (uint_fast16_t i = 0; i < dots_min.size(); i++)
+	{
+		dots_min[i] = (dots_min[i] - prev_pos1) * scale_f + curr_pos1;
+		if (T == scaleAx::Y) dots_max[i] = (dots_max[i] - prev_pos1) * scale_f + curr_pos1;
+	}
+
+	static double lines_pos[2]{};
+
+	lines_pos[0] = curr_pos2;   //right / lower  line
+	lines_pos[1] = curr_pos1;   //left / upper  line
+
+	return lines_pos;
+}
+#endif

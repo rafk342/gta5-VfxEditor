@@ -162,13 +162,9 @@ void TimecycleUI::MainParamsWindow()
 	ImGui::Separator();
 
 	if (config_params::categories)
-	{
 		MainParamsWindow_with_Categories();
-	}
 	else
-	{
 		MainParamsWindow_without_Categories();
-	}
 }
 
 
@@ -177,19 +173,15 @@ void TimecycleUI::MainParamsWindow_without_Categories()
 	for (size_t i = 0; i < TIMECYCLE_VAR_COUNT; i++)
 	{			
 		if (g_varInfos[i].varType == tcVarType_e::VARTYPE_NONE)
-		{
 			continue;
-		}
+
 		if (ImGui::TreeNode(g_varInfos[i].labelName))
 		{
 			if (show_only_current_sample)
-			{
-				makeJustSingleParamVidget((Regions)current_region_index, i);
-			}
+				makeJustSingleParamWidget((Regions)current_region_index, i);
 			else
-			{
 				makeTable((Regions)current_region_index, i);
-			}
+
 			ImGui::TreePop();
 		}
 	}
@@ -207,7 +199,7 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 
 	for (auto& category : categoryNames)
 	{
-		FORMAT_TO_BUFF(buff, "{}##ChTc", category)
+		FORMAT_TO_BUFF(buff, "{}##ChTc0", category)
 		if (ImGui::CollapsingHeader(buff))
 		{
 			for (auto& [param_name, id] : categoriesMap.at(category))
@@ -215,13 +207,10 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 				if (ImGui::TreeNode(g_varInfos[id].labelName))
 				{
 					if (show_only_current_sample)
-					{
-						makeJustSingleParamVidget((Regions)current_region_index, id);
-					}
+						makeJustSingleParamWidget((Regions)current_region_index, id);
 					else
-					{
 						makeTable((Regions)current_region_index, id);
-					}
+
 					ImGui::TreePop();
 				}
 			}
@@ -255,9 +244,9 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 				{
 					ImGui::Text(time_samples[time].second);
 				}
-				if (i == 1)
+				else if (i == 1)
 				{
-					FORMAT_TO_BUFF(buff, "##{}_{}_{}_tableTcItem", (int)time, VarIndex, g_varInfos[VarIndex].name);
+					FORMAT_TO_BUFF(buff, "##{}_{}_{}_tableTcItem", static_cast<int>(time), VarIndex, g_varInfos[VarIndex].name);
 
 					switch (g_varInfos[VarIndex].varType)
 					{
@@ -313,7 +302,7 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 }
 
 
-void TimecycleUI::makeJustSingleParamVidget(Regions region, int VarIndex)
+void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 {
 	static float color[4];
 	static size_t time;
@@ -321,7 +310,7 @@ void TimecycleUI::makeJustSingleParamVidget(Regions region, int VarIndex)
 	
 	time = current_time_sample;
 
-	FORMAT_TO_BUFF(buff, "{} VarId : {}##_{}_var", time_samples[current_time_sample].second, VarIndex, (int)time)
+	FORMAT_TO_BUFF(buff, "{} VarId : {}##_{}_var", time_samples[current_time_sample].second, VarIndex, static_cast<int>(time))
 
 	switch (g_varInfos[VarIndex].varType)
 	{
@@ -401,9 +390,7 @@ void TimecycleUI::manageKeyframeValues(float* color, Regions region, int VarInde
 void TimecycleUI::setValuesForAllTimeSamples(float* color, Regions region, int VarIndex)
 {
 	for (u8 time = 0; time < 13; time++)
-	{
 		manageKeyframeValues<SET>(color, region, VarIndex, time);
-	}
 }
 
 

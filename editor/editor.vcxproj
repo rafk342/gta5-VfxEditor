@@ -136,7 +136,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir);src;vendor;src\app;src\game</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);src;vendor;src\app;src\game;vendor\ImGui</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -186,6 +186,9 @@
     <ClCompile Include="vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="vendor\ImGui\imgui_tables.cpp" />
     <ClCompile Include="vendor\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="vendor\ImPlot\implot.cpp" />
+    <ClCompile Include="vendor\ImPlot\implot_demo.cpp" />
+    <ClCompile Include="vendor\ImPlot\implot_items.cpp" />
     <ClCompile Include="vendor\inih\ini.c" />
     <ClCompile Include="vendor\inih\INIReader.cpp" />
     <ClCompile Include="vendor\pugixml\pugixml.cpp" />
@@ -246,6 +249,8 @@
     <ClInclude Include="vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="vendor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="vendor\ImPlot\implot.h" />
+    <ClInclude Include="vendor\ImPlot\implot_internal.h" />
     <ClInclude Include="vendor\inih\ini.h" />
     <ClInclude Include="vendor\inih\INIReader.h" />
     <ClInclude Include="vendor\MinHook\MinHook.h" />

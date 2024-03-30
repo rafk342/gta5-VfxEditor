@@ -90,7 +90,7 @@ void tcXmlParser::export_tcData(const std::string& path, const tcCycle* cycle, c
 	cycle_node.append_attribute("regions") = "2";
 
 
-	for (size_t region_i = 0; region_i < 2; region_i++)
+	for (u8 region_i = 0; region_i < 2; region_i++)
 	{
 		pugi::xml_node region_node = cycle_node.append_child("region");
 		

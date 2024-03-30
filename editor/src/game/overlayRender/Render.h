@@ -9,6 +9,8 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_win32.h"
 #include "ImGui/imgui_impl_dx11.h"
+#include "ImPlot/implot.h"
+
 #include "scripthook/inc/natives.h"
 
 #include "game/rageControl/control.h"
@@ -35,13 +37,12 @@ class mRender
 	static ID3D11DeviceContext* p_context;
 	static IDXGISwapChain* p_SwapChain;
 
-
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void CreateDevice();
 	static void InitBackend();
 	static void PresentImage();
 	static void ImRenderFrame();
-		
+	
 	static void n_ClipCursor(LPRECT rect);
 	static int	n_ShowCursor(bool visible);
 	static void SetMouseVisible(bool visible);

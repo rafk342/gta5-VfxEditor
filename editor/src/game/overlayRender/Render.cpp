@@ -6,7 +6,6 @@
 #include "app/compiler/compiler.h"
 
 
-
 void WaitWhileGameIsStarting();
 
 namespace 
@@ -29,6 +28,7 @@ bool	mRender::mInitialized = false;
 bool    mRender::ImGuiCursorUsage = false;
 bool	mRender::mRenderState = false;
 
+
 void mRender::CreateDevice()
 {
 	game_ResizeBuffersAddr = gmAddress::Scan("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 81 EC 90 00 00 00 48 8B F1 48 8D 0D");
@@ -36,35 +36,47 @@ void mRender::CreateDevice()
 	game_WndProcAddr = gmAddress::Scan("48 8D 05 ?? ?? ?? ?? 33 C9 89 75 20").GetRef(3);
 
 	window = *game_ResizeBuffersAddr.GetRef(54 + 3).To<HWND*>();
+	
 
 #if game_version == gameVer3095
 
-	static gmAddress gAddr = gmAddress::Scan("48 8B 05 ?? ?? ?? ?? BE 08 00 00 00");
-	p_context = *gAddr.GetRef(3).To<ID3D11DeviceContext**>();
-	p_device = *gAddr.GetRef(-19 - 4).To<ID3D11Device**>();
-	p_SwapChain = *gAddr.GetRef(-194 - 4).To<IDXGISwapChain**>();
-		
+	//static gmAddress gAddr = gmAddress::Scan("48 8B 05 ?? ?? ?? ?? BE 08 00 00 00");
+	//p_context = *gAddr.GetRef(3).To<ID3D11DeviceContext**>();
+	//p_device = *gAddr.GetRef(-19 - 4).To<ID3D11Device**>();
+
+	p_SwapChain = *game_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>();
+	//p_SwapChain = *gAddr.GetRef(-194 - 4).To<IDXGISwapChain**>();
+
 #elif game_version == gameVer2802
 
 	static gmAddress gAddr = gmAddress::Scan("48 8B C4 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 38 F7");
-	p_device = *gAddr.GetRef(0x622 + 0x3).To<ID3D11Device**>();
-	p_context = *gAddr.GetRef(0x602 + 0x3).To<ID3D11DeviceContext**>();
-	p_SwapChain = *gAddr.GetRef(0x631 + 0x3).To<IDXGISwapChain**>();
+	//p_device = *gAddr.GetRef(0x622 + 0x3).To<ID3D11Device**>();
+	//p_context = *gAddr.GetRef(0x602 + 0x3).To<ID3D11DeviceContext**>();
+	
+	p_SwapChain = *game_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>();
+	//p_SwapChain = *gAddr.GetRef(0x631 + 0x3).To<IDXGISwapChain**>();
 	
 #elif game_version == gameVer2060
 
 	static gmAddress gAddr = gmAddress::Scan("48 8D 05 ?? ?? ?? ?? 45 33 C9 48 89 44 24 58 48 8D 85 D0 08 00 00");
-	p_context = *gAddr.GetRef(3).To<ID3D11DeviceContext**>();		
-	p_device = *gAddr.GetRef(33).To<ID3D11Device**>();		
-	p_SwapChain = *gAddr.GetRef(47).To<IDXGISwapChain**>();
+	//p_context = *gAddr.GetRef(3).To<ID3D11DeviceContext**>();		
+	//p_device = *gAddr.GetRef(33).To<ID3D11Device**>();		
+	/p_SwapChain = *gAddr.GetRef(47).To<IDXGISwapChain**>();
 
 #endif
+
+	if (SUCCEEDED(p_SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void**>(&p_device))))
+	{
+		p_device->GetImmediateContext(&p_context);
+	}
 
 	p_context->AddRef();
 	p_device->AddRef();
 	p_SwapChain->AddRef();
 }
-	
+
+
+
 
 void (*orig_ClipCursor)(LPRECT);
 void mRender::n_ClipCursor(LPRECT rect) 
@@ -98,6 +110,8 @@ void ClipCursorToWindowRect(HWND handle, bool clip)
 }
 
 
+
+
 LRESULT(*orig_WndProc)(HWND, UINT, WPARAM, LPARAM);
 LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -108,13 +122,14 @@ LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (!ImGuiCursorUsage) 
 			ClipCursorToWindowRect(window, !show_window);
 	}
+	
 	if (GetAsyncKeyState(VK_HOME) && show_window)
 		return true;
 	
 	if (!ImGuiCursorUsage) 
 		SetMouseVisible(show_window); 
 
-	if (show_window) 
+	if (show_window)
 	{
 		//it handles mouse input even when ui isn't displayed, so i placed it under "show_window" flag
 		if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) 
@@ -124,6 +139,7 @@ LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	/*return*/ orig_WndProc(hWnd, uMsg, wParam, lParam);
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
+
 
 void(*orig_PresentImage)();
 void mRender::PresentImage()
@@ -163,7 +179,7 @@ void mRender::Init()
 	Hook::Create(game_PresentImageAddr,	mRender::PresentImage,	&orig_PresentImage,	"swapChainPresent");
 	Hook::Create(game_WndProcAddr,		mRender::WndProc,		&orig_WndProc,		"WndProc");
 
-	if (!ImGuiCursorUsage) 
+	if (!ImGuiCursorUsage)
 	{
 		Hook::Create(ClipCursor, mRender::n_ClipCursor, &orig_ClipCursor, "ClipCursor");
 		Hook::Create(ShowCursor, mRender::n_ShowCursor, &orig_ShowCursor, "ShowCursor");
@@ -176,7 +192,7 @@ void mRender::Init()
 void mRender::InitBackend()
 {	
 	ImGui::CreateContext();
-
+	ImPlot::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 
 	mStyle();
@@ -222,6 +238,8 @@ void mRender::Shutdown()
 
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
+	
+	ImPlot::DestroyContext();
 	ImGui::DestroyContext();
 
 	if (p_context)
@@ -280,16 +298,13 @@ void mRender::LoadWindowsFont()
 void mRender::mStyle()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
+	
 	style->GrabRounding = 4.0f;
-
-	ImVec4* colors = style->Colors;
-
 	style->CellPadding = { 0, 3 };
 	style->FramePadding = { 4, 4 };
 
-	style->Colors[ImGuiCol_PopupBg] = { 45.f/255, 45.f/255, 45.f/255, 1.0f };
+	style->Colors[ImGuiCol_PopupBg] = { 45.0f/255.0f, 45.0f/255.0f, 45.0f/255.0f, 1.0f };
 }
-
 
 
 void mRender::SetCursorImguiUsage(bool state)

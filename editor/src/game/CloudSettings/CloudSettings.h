@@ -13,6 +13,7 @@
 #include "atl/atBitSet.h"
 #include "helpers/helpers.h"
 
+
 struct ptxKeyframeEntry
 {
 	float vTime[4];
@@ -54,11 +55,11 @@ public:
 struct CloudHatFragContainer
 {
 private:
-	u8 pad01[64];
+	char pad01[64];
 public:
 	char Name[64];		//we need just names from here
 private:
-	u8 pad02[336];
+	char pad02[336];
 };
 
 
@@ -74,7 +75,7 @@ struct CloudSettingsNamed
 		hash_name(hash),
 		str_name(name),
 		CloudSettings(settings) 
-	{ 
+	{
 	}
 };
 

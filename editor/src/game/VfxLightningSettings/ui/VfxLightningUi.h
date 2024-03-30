@@ -5,6 +5,7 @@
 #include "VfxLightningSettings/VfxLightningSettings.h"
 
 #include "ImGui/imgui.h"
+#include "ImPlot/implot.h"
 #include "uiBase/ImguiHelpers.h"
 #include "memory/hook.h"
 
@@ -21,12 +22,13 @@ class VfxLightningUi : public App
 
 	void StrikeVariationsWidgets(u8 idx);
 	void CloudBurstCommonSettingsWidgets(CloudBurstCommonSettings& rCloudBurstCommonSettings, const char* treeLabel);
+	void keyframePlot(ptxKeyframe& keyframe, const char* label);
 public:
-
-	VfxLightningUi(BaseUiWindow* base, const char* label);
+	using App::App;
 
 	virtual void window() override;
 	virtual void importData(std::string path) override;
 	virtual void exportData(std::string path) override;
 };
 
+extern void keyframeTable(const char* label, ptxKeyframe& keyframe, u8 idx);

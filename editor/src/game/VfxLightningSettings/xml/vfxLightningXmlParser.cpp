@@ -250,7 +250,7 @@ void VfxLightningsXmlParser::mExportLightningData(std::string path, gVfxLightnin
         CloudBurstSettingsNode.append_child("LightDeltaPos").append_attribute("value").set_value(settings->m_CloudBurstSettings.LightDeltaPos);
         CloudBurstSettingsNode.append_child("LightDistance").append_attribute("value").set_value(settings->m_CloudBurstSettings.LightDistance);
 
-        CloudBurstSettingsNode.append_child("LightColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_CloudBurstSettings.LightColor.GetRawHexData()).c_str());
+        CloudBurstSettingsNode.append_child("LightColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_CloudBurstSettings.LightColor.GetRawU32Data()).c_str());
 
         AppendCloudBurstCommonSettingsXmlNodes(CloudBurstSettingsNode, settings->m_CloudBurstSettings.m_CloudBurstCommonSettings);
     }
@@ -284,8 +284,8 @@ void VfxLightningsXmlParser::mExportLightningData(std::string path, gVfxLightnin
         StrikeSettingsNode.append_child("CoronaIntensityMult").append_attribute("value").set_value(settings->m_StrikeSettings.CoronaIntensityMult);
         StrikeSettingsNode.append_child("BaseCoronaSize").append_attribute("value").set_value(settings->m_StrikeSettings.BaseCoronaSize);
 
-        StrikeSettingsNode.append_child("BaseColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_StrikeSettings.BaseColor.GetRawHexData()).c_str());
-        StrikeSettingsNode.append_child("FogColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_StrikeSettings.FogColor.GetRawHexData()).c_str());
+        StrikeSettingsNode.append_child("BaseColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_StrikeSettings.BaseColor.GetRawU32Data()).c_str());
+        StrikeSettingsNode.append_child("FogColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_StrikeSettings.FogColor.GetRawU32Data()).c_str());
 
         StrikeSettingsNode.append_child("CloudLightIntensityMult").append_attribute("value").set_value(settings->m_StrikeSettings.CloudLightIntensityMult);
         StrikeSettingsNode.append_child("CloudLightDeltaPos").append_attribute("value").set_value(settings->m_StrikeSettings.CloudLightDeltaPos);
@@ -370,16 +370,16 @@ std::string& VfxLightningsXmlParser::GetKeyframesTextParams(ptxKeyframe& keyfram
 {
 	static std::string text;
 	text.clear();
-    auto& keyEntryData = keyframe.data;
+    auto& keyEntryArray = keyframe.data;
 
 	for (size_t i = 0; i < keyframe.data.GetSize(); i++)
 	{
 		text += std::format("\n\t\t\t\t\t\t\t  {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}",
-            keyEntryData[i].vTime[0],
-            keyEntryData[i].vValue[0],
-            keyEntryData[i].vValue[1],
-            keyEntryData[i].vValue[2],
-            keyEntryData[i].vValue[3]);
+            keyEntryArray[i].vTime[0],
+            keyEntryArray[i].vValue[0],
+            keyEntryArray[i].vValue[1],
+            keyEntryArray[i].vValue[2],
+            keyEntryArray[i].vValue[3]);
 	}
 
 	text += "\n\t\t\t\t\t\t\t";

@@ -1,24 +1,28 @@
 #pragma once
+#include <format>
 #include "common/types.h"
 
 
 class Color32
 {
-	u32 hex;
+	u32 color;
 public:
-	Color32(u32 _hex) : hex(_hex) {};
+	Color32() = default;
+	Color32(u32 v) : color(v) {}
+	Color32(float _r, float _g, float _b, float _a) { SetHexFromFloat(_r,_g,_b,_a);}
+	Color32(float* p) { SetHexFromFloat(p); }
 
 	Color32& operator= (Color32& other)
 	{
 		if (this == &other)
 			return *this;
-		hex = other.hex;
+		color = other.color;
 		return *this;
 	}
 
-	Color32& operator= (u32 _hex)
+	Color32& operator= (u32 v)
 	{
-		hex = _hex;
+		color = v;
 		return *this;
 	}
 
@@ -26,10 +30,10 @@ public:
 	{
 		static float col[4];
 
-		u8 r = (hex >> 16) & 0xFF;
-		u8 g = (hex >> 8) & 0xFF;
-		u8 b = (hex >> 0) & 0xFF;
-		u8 a = (hex >> 24) & 0xFF;
+		u8 r = (color >> 16) & 0xff;
+		u8 g = (color >> 8) & 0xff;
+		u8 b = (color >> 0) & 0xff;
+		u8 a = (color >> 24) & 0xff;
 
 		col[0] = static_cast<float>(r) / 255.0f;
 		col[1] = static_cast<float>(g) / 255.0f;
@@ -39,20 +43,20 @@ public:
 		return &col[0];
 	}
 
-	inline void SetHexFromFloat(float r, float g, float b, float a)
+	inline void SetHexFromFloat(float _r, float _g, float _b, float _a)
 	{
-		u8 red = static_cast<u8>(r * 255.0f);
-		u8 green = static_cast<u8>(g * 255.0f);
-		u8 blue = static_cast<u8>(b * 255.0f);
-		u8 alpha = static_cast<u8>(a * 255.0f);
+		u8 r = static_cast<u8>(_r * 255.0f);
+		u8 g = static_cast<u8>(_g * 255.0f);
+		u8 b = static_cast<u8>(_b * 255.0f);
+		u8 a = static_cast<u8>(_a * 255.0f);
 
-		hex = (red << 16) | (green << 8) | (blue << 0) | (alpha << 24);
+		color = 0 | (a << 24) | (r << 16) | (g << 8) | (b << 0) ;
 	}
 
 	inline void SetHexFromFloat(float* colorf) {
 		SetHexFromFloat(colorf[0], colorf[1], colorf[2], colorf[3]);
 	}
 
-	inline void SetRawHexData(u32 v) { hex = v; }
-	inline u32 GetRawHexData() { return hex; }
+	inline void SetRawU32Data(u32 v) { color = v; }
+	inline u32 GetRawU32Data() { return color; }
 };

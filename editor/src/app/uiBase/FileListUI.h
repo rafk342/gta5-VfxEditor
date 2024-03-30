@@ -32,6 +32,9 @@ private:
 
 protected:
 	
+	FileListUI();
+
+	void			file_section();
 	std::string		GetCurrentSelectedFileName();
 	std::string		getPathOfSelectedFile();
 	std::string		selectPathForSaveAsBtn();
@@ -42,8 +45,6 @@ protected:
 
 public:
 
-					FileListUI();
 	static void		setPreBuff(const std::string& str);
-	void			file_section();
-	
+
 };
