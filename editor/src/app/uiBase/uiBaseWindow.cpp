@@ -21,11 +21,11 @@ BaseUiWindow::BaseUiWindow()
 {
     // these instances should be static 
     // so they won't be local and they won't be deleted on the constructor exiting
-    
-    static TimecycleUI TcUi(this, "Timecycles");
-    static CloudSettingsUI ClUi(this, "Cloudkeyframes");
-    static VisualSettingsUi VsUi(this, "VisualSettings");
-    static VfxLightningUi LghtUi(this, "Lightnings");
+
+    static std::unique_ptr<TimecycleUI> TcUi      = std::make_unique<TimecycleUI> (this, "Timecycles");
+    static std::unique_ptr<CloudSettingsUI> ClUi  = std::make_unique<CloudSettingsUI>(this, "Cloudkeyframes");
+    static std::unique_ptr<VisualSettingsUi> VsUi = std::make_unique<VisualSettingsUi>(this, "VisualSettings");
+    static std::unique_ptr<VfxLightningUi> LghtUi = std::make_unique<VfxLightningUi>(this, "Lightnings");
 }
 
 void BaseUiWindow::setActiveApp(App* app) 

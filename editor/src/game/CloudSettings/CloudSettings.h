@@ -2,6 +2,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <bitset>
+#include <map>
 
 #include "common/types.h"
 #include "memory/address.h"
@@ -70,14 +71,15 @@ struct CloudSettingsNamed
 	CloudHatSettings*	CloudSettings = nullptr;
 	std::bitset<21>		bits;
 
-	CloudSettingsNamed() = default;
-	CloudSettingsNamed(u32 hash, const char* name, CloudHatSettings* settings) :
+	CloudSettingsNamed(u32 hash, const char* name, CloudHatSettings* settings, u32 bits) :
 		hash_name(hash),
 		str_name(name),
-		CloudSettings(settings) 
-	{
-	}
+		CloudSettings(settings),
+		bits(bits)
+	{}
+
 };
+
 
 
 class CloudsHandler

@@ -1,7 +1,6 @@
 #pragma once
 #include "atArray.h"
 
-
 template<typename TEntry>
 class atHashMap
 {
@@ -22,7 +21,7 @@ public:
 	u16 getSize() { return m_data.GetSize(); }
 	u16 getCapacity() { return m_data.getCapacity(); }
 
-	inline TEntry* find(const uint32_t& idx)
+	inline TEntry* find(const u32& idx)
 	{
 		for (Entry* i = *(m_data.begin() + (idx % m_data.GetSize())); i; i = i->next) {
 			if (i->hash == idx) {

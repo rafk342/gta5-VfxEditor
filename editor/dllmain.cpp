@@ -10,7 +10,7 @@
 #include "app/compiler/compiler.h"
 #include "game/CloudSettings/CloudSettings.h"
 #include "scripthookTh.h"
-
+#include "helpers/SimpleTimer.h"
 
 #define test_ver 0
 
@@ -22,7 +22,6 @@ void Console() {
 	freopen_s(&f, "CONOUT$", "w", stdout);
 }
 
-
 AM_EXPORT void Init()
 {
 #if test_ver
@@ -31,6 +30,7 @@ AM_EXPORT void Init()
 #else
 
 	Preload_Integration::Preload();
+
 	FileListUI::setPreBuff(config_params::path_from_cfg);
 	mRender::SetOpenWindowBtn(config_params::open_window_btn_key);
 	mRender::SetCursorImguiUsage(config_params::cursor_imgui_usage);

@@ -4,8 +4,8 @@
 
 namespace
 {
-	u16(*__GetNewRandomCloudhatIndex)();
-	int (*__getActiveCloudhatIdx)(u64*);
+	u16(*_GetNewRandomCloudhatIndex)();
+	int (*_getActiveCloudhatIdx)(u64*);
 }
 
 
@@ -28,27 +28,24 @@ CloudsHandler::CloudsHandler()
 
 	CloudsSettingsVec.reserve(gCloudsMap->CloudSettings.getSize());
 
-	int idx = 0;
 	for (auto& [hash, name] : CloudNames)
 	{
 		auto* settings = gCloudsMap->CloudSettings.find(hash);
 		
 		if (settings) {
-			CloudsSettingsVec.push_back(CloudSettingsNamed(hash, name.c_str(), settings));
-			CloudsSettingsVec[idx].bits = *CloudsSettingsVec[idx].CloudSettings->bits.getRawPtr();
+			CloudsSettingsVec.push_back(CloudSettingsNamed(hash, name.c_str(), settings, *(settings->bits.getRawPtr())));
 		} else {
 			mlogger("CloudsHandler::CloudsHandler() could not find " + name);
 		}
-		idx++;
 	}
 
 	gCloudsMngr = *gmAddress::Scan("44 8A 49 ?? 48 8B 0D").GetRef(7).To<u8**>();
 	gCloudHatNames = (atArray<CloudHatFragContainer>*)(gCloudsMngr + 0x28);
 
-	__GetNewRandomCloudhatIndex = gmAddress::Scan("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 74 ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 88")
+	_GetNewRandomCloudhatIndex = gmAddress::Scan("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 74 ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 88")
 		.ToFunc<u16()>();
 	
-	__getActiveCloudhatIdx = gmAddress::Scan("0F B7 41 ?? 33 D2 45 33 C0 44 8B C8 85 C0 7E ?? 48 8B 41")
+	_getActiveCloudhatIdx = gmAddress::Scan("0F B7 41 ?? 33 D2 45 33 C0 44 8B C8 85 C0 7E ?? 48 8B 41")
 		.ToFunc<int(u64*)>();
 }
 
@@ -94,11 +91,11 @@ void CloudsHandler::RequestClearCloudHat()
 
 u16 CloudsHandler::GetNewRandomCloudhatIndex()
 {
-	return __GetNewRandomCloudhatIndex();
+	return _GetNewRandomCloudhatIndex();
 }
 
 
 int CloudsHandler::GetActiveCloudhatIndex()
 {
-	return __getActiveCloudhatIdx((u64*)(gCloudsMngr));
+	return _getActiveCloudhatIdx((u64*)(gCloudsMngr));
 }

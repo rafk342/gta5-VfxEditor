@@ -84,7 +84,7 @@ struct VsItemTmp
 	std::string name;
 	u32 hash;
 	bool already_exists_in_container = false;
-	
+
 	VsItemTmp(std::string name, u32 hash) : name(name), hash(hash) {};
 	VsItemTmp(std::string name) : name(name), hash(rage::joaat(name.c_str())) {};
 };

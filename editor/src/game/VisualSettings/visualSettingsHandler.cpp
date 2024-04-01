@@ -4,17 +4,18 @@
 namespace
 {
     bool(*updateSettings)();
-    const size_t buff_size = 27;
-    u8 origBytes[buff_size];
-    u8* bytesAddr = nullptr;
     
-    char origSavedPath[64];
-    char* p_toOrigPath;
-    const char* newPath = "__VfTmp.dat";
-    u8 origPathLen;
+    const size_t    buff_size = 27;
+    u8              origBytes[buff_size];
+    u8*             bytesAddr = nullptr;
     
-    std::vector<VsItemTmp> UsedGameItems;
+    char            origSavedPath[64];
+    char*           p_toOrigPath;
+    const char*     newPath = "__VfTmp.dat";
+    u8              origPathLen;
+    
     bool getting_ingame_names = false;
+    std::vector<VsItemTmp> UsedGameItems;
 }
 
 
@@ -190,9 +191,8 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
 
     for (auto category : categoriesOrder)
     {
-        if (!paramsMap.contains(category)) {
+        if (!paramsMap.contains(category)) 
             continue;
-        }
 
         auto& items = paramsMap.at(category);
         for (auto& item : items)
@@ -216,7 +216,6 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
     for (auto& inGameItem : UsedGameItems)
     {
         //bool should_be_in_none_category = true;
-        mlogger(std::format("{:<60} {}",inGameItem.name, inGameItem.hash));
         
         for (auto& [category, vec] : paramsMap)
         {

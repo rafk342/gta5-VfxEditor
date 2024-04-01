@@ -200,6 +200,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\atl\color32.h" />
+    <ClInclude Include="src\app\base\atRTTI.h" />
+    <ClInclude Include="src\app\base\tlsContext.h" />
+    <ClInclude Include="src\app\base\sysMemAllocator.h" />
+    <ClInclude Include="src\app\helpers\align.h" />
+    <ClInclude Include="src\app\helpers\bits.h" />
     <ClInclude Include="src\game\scripthookTh.h" />
     <ClInclude Include="src\game\gameClock\Ui\ClockUi.h" />
     <ClInclude Include="src\app\helpers\SimpleTimer.h" />
