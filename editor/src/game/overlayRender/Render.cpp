@@ -59,16 +59,16 @@ void mRender::CreateDevice()
 #elif game_version == gameVer2060
 
 	static gmAddress gAddr = gmAddress::Scan("48 8D 05 ?? ?? ?? ?? 45 33 C9 48 89 44 24 58 48 8D 85 D0 08 00 00");
-	//p_context = *gAddr.GetRef(3).To<ID3D11DeviceContext**>();		
-	//p_device = *gAddr.GetRef(33).To<ID3D11Device**>();		
-	/p_SwapChain = *gAddr.GetRef(47).To<IDXGISwapChain**>();
+	p_context = *gAddr.GetRef(3).To<ID3D11DeviceContext**>();		
+	p_device = *gAddr.GetRef(33).To<ID3D11Device**>();		
+	p_SwapChain = *gAddr.GetRef(47).To<IDXGISwapChain**>();
 
 #endif
 
-	if (SUCCEEDED(p_SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void**>(&p_device))))
+	/*if (SUCCEEDED(p_SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void**>(&p_device))))
 	{
 		p_device->GetImmediateContext(&p_context);
-	}
+	}*/
 
 	p_context->AddRef();
 	p_device->AddRef();
@@ -149,8 +149,11 @@ void mRender::PresentImage()
 	if (!mInitialized)
 	{
 		InitBackend();
+		mlogger("base ui create");
 		BaseUiWindow::Create();
+		mlogger("scripthook start");
 		ScriptHook::Start(); // <-- call from gta thread
+		mlogger("initialized");
 
 		mInitialized = true;
 	}
@@ -169,21 +172,26 @@ void mRender::PresentImage()
 void mRender::Init()
 {
 	WaitWhileGameIsStarting();
-		
+
 	if (shutdown_request)
 		return;
 
+	mlogger("cclock init");
 	CClock::Init();	
+	mlogger("create device");
 	CreateDevice();
-
+	mlogger("gamepresent image hook");
 	Hook::Create(game_PresentImageAddr,	mRender::PresentImage,	&orig_PresentImage,	"swapChainPresent");
+	mlogger("wnd proc");
 	Hook::Create(game_WndProcAddr,		mRender::WndProc,		&orig_WndProc,		"WndProc");
 
+	mlogger("ImGuiCursorUsage");
 	if (!ImGuiCursorUsage)
 	{
 		Hook::Create(ClipCursor, mRender::n_ClipCursor, &orig_ClipCursor, "ClipCursor");
 		Hook::Create(ShowCursor, mRender::n_ShowCursor, &orig_ShowCursor, "ShowCursor");
 	}
+	mlogger("Init done");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

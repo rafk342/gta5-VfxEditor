@@ -29,30 +29,12 @@ public:
 		m_capacity = 0;
 	}
 
-	TValue* begin()
-	{
-		return &m_offset[0];
-	}
-
-	TValue* end()
-	{
-		return &m_offset[m_size];
-	}
-	
-	TValue* data() const
-	{
-		return m_offset;
-	}
-
-	inline u16 GetCapacity() const
-	{
-		return m_capacity;
-	}
-
-	inline u16 GetSize() const
-	{
-		return m_size;
-	}
+	TValue*			begin()					{ return &m_offset[0]; }
+	TValue*			end()					{ return &m_offset[m_size]; }
+	TValue*			data() const			{ return m_offset; }
+	inline u16		GetCapacity() const		{ return m_capacity; }
+	inline u16		GetSize() const			{ return m_size; }
+	bool			empty()	const			{ return (m_size == 0); }
 
 	TValue& Get(u16 offset)
 	{
@@ -60,59 +42,46 @@ public:
 		{
 			return m_offset[0];
 		}
-
 		return m_offset[offset];
 	}
 
-	TValue& operator[](u16 idx)
-	{
-		if (idx >= m_size)
-		{
-			return m_offset[0];
-		}
-		return m_offset[idx];
-	}
+	TValue& operator[](u16 idx)				{ return Get(idx); }
+	const TValue& operator[](u16 idx) const	{ return Get(idx); }
 
-	void push_back(const TValue& value)
-	{
-		set(m_size, value);
-	}
-	
-	void push_back(TValue&& value)
-	{
-		set(m_size, std::move(value));
-	}
+	void	push_back(const TValue& value)	{ set(m_size, value); }
+	void	push_back(TValue&& value)		{ set(m_size, std::move(value)); }
 
+private:
 	void set(u16 offset, TValue&& value)
 	{
 		if (offset >= m_capacity)
 		{
-			reserve(offset + 1);
+			if (m_capacity == 0)
+				reserve(16);
+			else
+				reserve(offset * 2);
 		}
 		if (offset >= m_size)
 		{
 			m_size = offset + 1;
 		}
-
 		m_offset[offset] = value;
 	}
+public:
 
-	void reserve(u16 newSize)
+	void reserve(u16 new_cap)
 	{
-		if (m_capacity >= newSize)
+		if (m_capacity >= new_cap)
 			return;
 
-		TValue* newOffset = reinterpret_cast<TValue*>(tlsContext::get()->m_allocator->Allocate(newSize * sizeof(TValue), 16, 0));
+		TValue* newOffset = reinterpret_cast<TValue*>(tlsContext::get()->m_allocator->Allocate(new_cap * sizeof(TValue), 16, 0));
 
 		// initialize the new entries
-		std::uninitialized_fill(newOffset, newOffset + newSize, TValue());
-		//mlogger("for loop new (newOffset + i) TValue(std::move(m_offset[i]));");
+		std::uninitialized_fill(newOffset, newOffset + new_cap, TValue());
 
 		//for (u16 i = 0; i < m_size; ++i) {
-		//	mlogger(std::format("i : {}", i));
 		//	new (newOffset + i) TValue(std::move(m_offset[i]));
 		//}
-		//mlogger("for loop new (newOffset + i) TValue(std::move(m_offset[i])); done ");
 
 		if (m_offset)
 		{
@@ -121,39 +90,33 @@ public:
 		}
 
 		m_offset = newOffset;
-		m_capacity = newSize;
+		m_capacity = new_cap;
 	}
 	
 	void pop_back()
 	{
+		m_offset[m_size].~TValue();
+
 		if (m_size > 0)
-		{
-			m_size--;
-			if (m_size == 0)
-			{
-				clear();
-			}
-		}
+			--m_size;
 	}
 
 	void clear()
 	{
-		m_capacity = 0;
+		for (size_t i = 0; i < m_size; ++i) {
+			m_offset[i].~TValue();
+		}
 		m_size = 0;
+	}
+
+	~atArray()
+	{
+		clear();
 
 		if (m_offset)
 		{
 			tlsContext::get()->m_allocator->Free(m_offset);
 			m_offset = nullptr;
 		}
-	}
-
-	~atArray()
-	{
-		for (size_t i = 0; i < m_size; ++i) {
-			m_offset[i].~TValue();
-		}
-
-		clear();
 	}
 };

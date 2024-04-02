@@ -21,10 +21,13 @@ BaseUiWindow::BaseUiWindow()
 {
     // these instances should be static 
     // so they won't be local and they won't be deleted on the constructor exiting
-
+    mlogger("tc");
     static std::unique_ptr<TimecycleUI> TcUi      = std::make_unique<TimecycleUI> (this, "Timecycles");
+    mlogger("cl");
     static std::unique_ptr<CloudSettingsUI> ClUi  = std::make_unique<CloudSettingsUI>(this, "Cloudkeyframes");
+    mlogger("vs");
     static std::unique_ptr<VisualSettingsUi> VsUi = std::make_unique<VisualSettingsUi>(this, "VisualSettings");
+    mlogger("light");
     static std::unique_ptr<VfxLightningUi> LghtUi = std::make_unique<VfxLightningUi>(this, "Lightnings");
 }
 

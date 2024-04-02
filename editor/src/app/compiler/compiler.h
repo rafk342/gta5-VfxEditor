@@ -17,7 +17,7 @@
 #define gameVer2802 2
 #define gameVer2060 3
 
-#define game_version gameVer3095
+#define game_version gameVer2060
 
 #if am_version
 #define AM_EXPORT extern "C" __declspec(dllexport)
