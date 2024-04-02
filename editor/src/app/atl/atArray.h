@@ -29,8 +29,8 @@ public:
 		m_capacity = 0;
 	}
 
-	TValue*			begin()					{ return &m_offset[0]; }
-	TValue*			end()					{ return &m_offset[m_size]; }
+	TValue*			begin()					{ return m_offset; }
+	TValue*			end()					{ return m_offset + m_size; }
 	TValue*			data() const			{ return m_offset; }
 	inline u16		GetCapacity() const		{ return m_capacity; }
 	inline u16		GetSize() const			{ return m_size; }
@@ -68,6 +68,11 @@ private:
 		m_offset[offset] = value;
 	}
 public:
+
+	TValue& find(const TValue& v)
+	{
+
+	}
 
 	void reserve(u16 new_cap)
 	{

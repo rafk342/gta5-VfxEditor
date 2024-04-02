@@ -12,6 +12,7 @@
 #include "scripthook/inc/natives.h"
 #include "logger.h"
 
+#include "compiler/compiler.h"
 
 using ScriptHookDelegate = std::function<void()>;
 
@@ -136,12 +137,20 @@ public:
 	// Must be called from some gta thread because accesses rage allocators in tls
 	static void Start()
 	{
+#if game_version == gameVer3095
 		static gmAddress scrThread_Run_Addr = gmAddress::Scan("48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 41 56 41 57 48 83 EC 20 48 8D 81 D4 00 00 00 48 8B E9");
+#elif game_version == gameVer2060
+		static gmAddress scrThread_Run_Addr = gmAddress::Scan("48 89 6c 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 ec ?? 48 8d 81");
+#endif
 		Hook::Create(scrThread_Run_Addr, scrThread_Run_aImpl, &scrThread_Run_gImpl, "scrThread_Run_Addr");
 
-		static gmAddress scrThread_Execute_Addr = gmAddress::Scan("48 8B C4 4C 89 40 18 48 89 50 10 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D 68 A1 48 81 EC B8");
+#if game_version == gameVer3095
+		static gmAddress scrThread_Execute_Addr = gmAddress::Scan("48 8B C4 4C 89 40 ?? 48 89 50 ?? 48 89 48 ?? 55 53 56 57 41 54 41 55 41 56 41 57 48 8D 68 ?? 48 81 EC B8 00 00 00" /*"48 8B C4 4C 89 40 18 48 89 50 10 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D 68 A1 48 81 EC B8"*/);
+#elif game_version == gameVer2060	
+		static gmAddress scrThread_Execute_Addr = gmAddress::Scan("48 8b c4 4c 89 40 ?? 48 89 50 ?? 48 89 48 ?? 55 53 56 57 41 54 41 55 41 56 41 57 48 8d 68 ?? 48 81 ec ?? ?? ?? ?? 4d 8b f9");
+#endif
 		Hook::Create(scrThread_Execute_Addr, scrThread_Execute_aImpl, &scrThread_Execute_gImpl, "scrThread_Execute_Addr");
-				
+
 		sm_ScriptID = SYSTEM::START_NEW_SCRIPT(sm_ScriptName, 0);
 		
 		if (sm_ScriptID == 0) {

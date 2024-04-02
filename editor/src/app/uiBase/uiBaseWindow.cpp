@@ -21,14 +21,16 @@ BaseUiWindow::BaseUiWindow()
 {
     // these instances should be static 
     // so they won't be local and they won't be deleted on the constructor exiting
-    mlogger("tc");
+
+    mlogger("initialized tc");
     static std::unique_ptr<TimecycleUI> TcUi      = std::make_unique<TimecycleUI> (this, "Timecycles");
-    mlogger("cl");
+    mlogger("initialized clkeyframes");
     static std::unique_ptr<CloudSettingsUI> ClUi  = std::make_unique<CloudSettingsUI>(this, "Cloudkeyframes");
-    mlogger("vs");
+    mlogger("initialized vsettings");
     static std::unique_ptr<VisualSettingsUi> VsUi = std::make_unique<VisualSettingsUi>(this, "VisualSettings");
-    mlogger("light");
+    mlogger("initialized lightnings");
     static std::unique_ptr<VfxLightningUi> LghtUi = std::make_unique<VfxLightningUi>(this, "Lightnings");
+    mlogger("init done");
 }
 
 void BaseUiWindow::setActiveApp(App* app) 

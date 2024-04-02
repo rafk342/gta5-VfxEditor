@@ -36,12 +36,11 @@ AM_EXPORT void Init()
 	mRender::SetCursorImguiUsage(config_params::cursor_imgui_usage);
 
 	Hook::Init();
-	mlogger("scripthook init");
 	ScriptHook::Init();
-	mlogger("done");
+
 	std::thread th(mRender::Init);
 	th.detach();
-
+	
 #endif
 }
 

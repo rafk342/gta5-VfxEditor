@@ -87,4 +87,9 @@ struct VsItemTmp
 
 	VsItemTmp(std::string name, u32 hash) : name(name), hash(hash) {};
 	VsItemTmp(std::string name) : name(name), hash(rage::joaat(name.c_str())) {};
+
+	bool operator==(const VsItemTmp& other) const
+	{
+		return hash == other.hash;
+	}
 };

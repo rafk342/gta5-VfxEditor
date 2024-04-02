@@ -1,5 +1,5 @@
 #include "VfxLightningSettings.h"
-
+#include <format>
 
 bool VfxLightningHandler::lightning_request = false;
 bool VfxLightningHandler::DirBurstS_request = false;
@@ -134,7 +134,8 @@ void initStrike(u64 arg, u64* arg2)
 {
 	mlogger("initstrike call");
 	
-	mlogger(std::to_string(arg));
+	
+	mlogger(std::format("{0} {0:064b} : {0:016X}", arg));
 
 	orig_initStrike(arg, arg2);
 

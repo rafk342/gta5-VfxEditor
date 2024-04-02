@@ -125,11 +125,11 @@ void VisualSettingsHandler::getUsedParamNames()
     static auto getVec3_addr = gmAddress::Scan("E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 8D 54 24 ?? 48 8B CF 0F 28 00").GetRef(1).To<u64*>();
     static auto getColor_addr = gmAddress::Scan("40 53 48 83 EC 50 0F 29 74 24 ?? 0F 29 7C 24 ?? F3 0F 10 3D ?? ?? ?? ?? 48 8D 15").GetAt(801).GetRef(1).To<u64*>();
 
-    Hook::Create(get_addr1, n_get1, &orig_get1, "VSget1");
-    Hook::Create(get_addr2, n_get2, &orig_get2, "VSget2");
-    Hook::Create(getVec4_addr, n_getVec4, &orig_getVec4, "VSgetVec4");
-    Hook::Create(*&getVec3_addr, n_getVec3, &orig_getVec3, "VSgetVec3");
-    Hook::Create(*&getColor_addr, n_getColor, &orig_getColor, "VSgetColor");
+    Hook::Create(get_addr1,             n_get1,         &orig_get1,         "VSget1");
+    Hook::Create(get_addr2,             n_get2,         &orig_get2,         "VSget2");
+    Hook::Create(getVec4_addr,          n_getVec4,      &orig_getVec4,      "VSgetVec4");
+    Hook::Create(*&getVec3_addr,        n_getVec3,      &orig_getVec3,      "VSgetVec3");
+    Hook::Create(*&getColor_addr,       n_getColor,     &orig_getColor,     "VSgetColor");
 
     UsedGameItems.clear();
     UsedGameItems.reserve(1000);
@@ -212,21 +212,30 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
             }
         }
     }
+    
+    std::sort(UsedGameItems.begin(), UsedGameItems.end(), 
+        [](const VsItemTmp& a, const VsItemTmp& b)
+            {
+                return a.hash < b.hash;
+            });
+
+    UsedGameItems.erase(std::unique(UsedGameItems.begin(), UsedGameItems.end()), UsedGameItems.end());
 
     for (auto& inGameItem : UsedGameItems)
     {
-        //bool should_be_in_none_category = true;
+        bool should_be_in_none_category = true;
         
         for (auto& [category, vec] : paramsMap)
         {
             for (auto& item : vec)
             {
-                if (item.is_used)
+                if (item.is_used) {
                     continue;
-
+                }
+                    
                 if (item.hash == inGameItem.hash)
                 {
-                    //should_be_in_none_category = false;
+                    should_be_in_none_category = false;
                     item.is_used = true;
                     inGameItem.already_exists_in_container = true;
 
@@ -235,14 +244,23 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
             }
         }
         
-        //if (should_be_in_none_category)
-        //{
-        //    if ((!inGameItem.already_exists_in_container))
-        //    {
-        //        handler->mContainer.paramsMap["None"]
-        //            .push_back({ inGameItem.name.c_str(), inGameItem.name.c_str(), inGameItem.hash, V_FLOAT ,inGameItem.gPtrItem, true, true });
-        //    }
-        //}
+        if (should_be_in_none_category)
+        {
+            if (inGameItem.already_exists_in_container == false)
+            {
+                gSettingsItem* gItem = std::find_if(handler->p_Vsettings->data.begin(), handler->p_Vsettings->data.end(),
+                    [&](const gSettingsItem& item)
+                    {
+                        return item.hash == inGameItem.hash;
+                    });
+                
+                if (gItem != handler->p_Vsettings->data.end())
+                {
+                    handler->mContainer.paramsMap["None"]
+                        .push_back({ inGameItem.name.c_str(), inGameItem.name.c_str(), inGameItem.hash, V_FLOAT , gItem, true, true });
+                }
+            }
+        }
     }
 
     if (handler->mContainer.paramsMap.contains("None"))
