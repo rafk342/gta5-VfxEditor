@@ -25,6 +25,9 @@ struct gSettingsItem
 {
 	u32 hash;
 	float value;
+	
+	gSettingsItem(u32 hash, float v) : hash(hash), value(v) {}
+
 };
 
 struct gVisualSettings
@@ -38,8 +41,8 @@ struct VScontainer
 {	
 	struct VSitem
 	{
-		const char*		 labelName;
-		const char*		 paramName;
+		std::string		 labelName;
+		std::string		 paramName;
 		u32				 hash;
 		Vs_VarType_e	 vType;
 		gSettingsItem*   gPtrItem = nullptr;
@@ -57,9 +60,16 @@ struct VScontainer
 	void clearContainer();
 };
 
+class VisualSettingsParser
+{
+public:
+	void importData(std::string& path, VisualSettingsHandler* handler);
+	void exportData(std::string& path, VisualSettingsHandler* handler);
+};
 
 class VisualSettingsHandler
-{	
+{
+	friend class VisualSettingsParser;
 	friend struct VScontainer;
 	gVisualSettings* p_Vsettings = nullptr;
 
@@ -68,6 +78,7 @@ class VisualSettingsHandler
 	void getUsedParamNames();
 public:
 	VScontainer	mContainer;
+	VisualSettingsParser parser;
 
 	VisualSettingsHandler();
 	~VisualSettingsHandler();
@@ -81,9 +92,9 @@ public:
 
 struct VsItemTmp
 {
-	std::string name;
-	u32 hash;
-	bool already_exists_in_container = false;
+	std::string		name;
+	u32				hash;
+	bool			already_exists_in_container = false;
 
 	VsItemTmp(std::string name, u32 hash) : name(name), hash(hash) {};
 	VsItemTmp(std::string name) : name(name), hash(rage::joaat(name.c_str())) {};

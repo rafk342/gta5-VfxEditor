@@ -6,6 +6,9 @@
 class VisualSettingsUi : App
 {
 	VisualSettingsHandler mHandler;
+	bool hide_unused = false;
+	bool check_if_category_should_be_shown(const char* category);
+
 public:
 	using App::App;
 	virtual void window() override;

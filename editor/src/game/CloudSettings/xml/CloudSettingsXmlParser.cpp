@@ -17,7 +17,7 @@ void CloudSettingsXmlParser::ImportCloudKfData(const std::string& path, CloudsHa
 		return; 
 	}
 
-	int bits_size = CloudsHandler.GetCloudSettingsVec()[0].bits.size();
+	size_t bits_size = CloudsHandler.GetCloudSettingsVec()[0].bits.size();
 	
 	std::vector<int> mProbabilityVec(bits_size, 0);
 	std::string CloudsName, text;

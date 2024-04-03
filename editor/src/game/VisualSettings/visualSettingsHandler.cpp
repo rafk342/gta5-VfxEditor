@@ -9,10 +9,10 @@ namespace
     u8              origBytes[buff_size];
     u8*             bytesAddr = nullptr;
     
-    char            origSavedPath[64];
-    char*           p_toOrigPath;
-    const char*     newPath = "__VfTmp.dat";
-    u8              origPathLen;
+    //char            origSavedPath[64];
+    //char*           p_toOrigPath;
+    //const char*     newPath = "__VfTmpfile__";
+    //u8              origPathLen;
     
     bool getting_ingame_names = false;
     std::vector<VsItemTmp> UsedGameItems;
@@ -93,26 +93,19 @@ float* n_getColor(u64 arg, float* arg2, const char* name)
 // it will update existing settings stored in the game VisualSettings data array
 VisualSettingsHandler::VisualSettingsHandler()
 {
-    SimpleTimer t1;
-    t1.Start();
-
     static auto addr = gmAddress::Scan("48 83 EC 28 48 8D 15 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 84 C0");
     p_Vsettings         = addr.GetRef(14).To<gVisualSettings*>();
-    p_toOrigPath        = addr.GetRef(7).To<char*>();
-    updateSettings      = addr.ToFunc<bool()>();
-    origPathLen         = strlen(p_toOrigPath) + 1;
-    
-    std::memcpy(origSavedPath, p_toOrigPath, origPathLen);
+    updateSettings = addr.ToFunc<bool()>();
+   
+    //p_toOrigPath        = addr.GetRef(7).To<char*>();
+    //origPathLen         = strlen(p_toOrigPath) + 1;
+    //std::memcpy(origSavedPath, p_toOrigPath, origPathLen);
 
     bytesAddr = reinterpret_cast<u8*>(addr.GetAt(4).Value);
     
     getUsedParamNames();
     mContainer.initContainer(this);
     SetFuncN_Bytes();
-
-    t1.Stop();
-
-    mlogger(std::format("Vs initialized in : {} s", t1.GetElapsedSeconds()));
 }
 
 
@@ -246,7 +239,7 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
         
         if (should_be_in_none_category)
         {
-            if (inGameItem.already_exists_in_container == false)
+            if (!inGameItem.already_exists_in_container)
             {
                 gSettingsItem* gItem = std::find_if(handler->p_Vsettings->data.begin(), handler->p_Vsettings->data.end(),
                     [&](const gSettingsItem& item)
@@ -262,6 +255,7 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
             }
         }
     }
+    std::vector<int> a;
 
     if (handler->mContainer.paramsMap.contains("None"))
         handler->mContainer.categoriesOrder.push_back("None");
@@ -269,16 +263,78 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
 }
 
 
-// No need to write something of our own, game can parse file without us
+namespace {
+    void find_and_erase_till_the_end(std::string& str, char symb)
+    {
+        size_t symb_pos = str.find(symb);
+        if (symb_pos != -1)
+            str.erase(str.begin() + symb_pos, str.end());
+    };
+}
+
+void VisualSettingsParser::importData(std::string& path, VisualSettingsHandler* handler)
+{
+    std::ifstream finput(path);
+
+    if (!finput.is_open())
+        return;
+
+    handler->p_Vsettings->isLoaded = false;
+    auto& inGameArray = handler->p_Vsettings->data;
+    inGameArray.clear();
+
+    std::string line;
+    while (std::getline(finput, line))
+    {
+        line = strip_str(line);
+
+        if (line.empty())
+            continue;
+
+        find_and_erase_till_the_end(line, '#');
+        find_and_erase_till_the_end(line, '//');
+
+        if (line.empty())
+            continue;
+
+        if (!(std::any_of(line.begin(), line.end(), [](const char& c) -> bool { return isdigit(c); })))
+            continue;
+
+        auto v = split_string(line, "\t ");
+
+        if (v.size() < 2)
+            continue;
+
+        float f = atof(v[1].c_str());
+        inGameArray.push_back(gSettingsItem(rage::joaat(v[0].c_str()), f));
+    }
+
+    std::sort(inGameArray.begin(), inGameArray.end(), [](const gSettingsItem& v1, const gSettingsItem& v2)
+        {
+            return v1.hash < v2.hash;
+        });
+
+    handler->p_Vsettings->isLoaded = true;
+}
+
+
 void VisualSettingsHandler::importData(std::string srcPath)
 {
+    mContainer.clearContainer();
+    parser.importData(srcPath,this);
+    mContainer.updateContainer(this);
+
+#if 0
     namespace fs = std::filesystem;
     
     if (!fs::exists(srcPath))
         return;
 
     fs::copy_file(srcPath, newPath, fs::copy_options::overwrite_existing);
-   
+    
+    if (!fs::exists(newPath))
+        mlogger("couldn't copy vSettings file");
+
     RestoreFuncBytes();
 
     std::memset(p_toOrigPath, 0, origPathLen);
@@ -290,20 +346,21 @@ void VisualSettingsHandler::importData(std::string srcPath)
 
     std::memset(p_toOrigPath, 0, origPathLen);
     std::memcpy(p_toOrigPath, origSavedPath, origPathLen);
-
-
+   
     if (!res)
         mlogger("couldn't load visual settings data (an old game version?)");
-    
-    if (fs::exists(newPath))   //i don't wan't to have issues in case if file will dissapear somehow
-        fs::remove(newPath);        // idk how it would happen tho
+
+    if (fs::exists(newPath)) 
+        fs::remove(newPath);  
 
     SetFuncN_Bytes();
+#endif
 }
 
-
-void VisualSettingsHandler::exportData(std::string path)
+void VisualSettingsParser::exportData(std::string& path, VisualSettingsHandler* handler)
 {
+    auto& mContainer = handler->mContainer;
+
     if (check_str_ending(path, ".xml"))
         path = path.replace(path.end() - 4, path.end(), ".dat");
 
@@ -318,7 +375,7 @@ void VisualSettingsHandler::exportData(std::string path)
     {
         if (!mContainer.paramsMap.contains(category))
             continue;
-        
+
         text += std::format("\n# {}\n\n", category);
 
         auto& Items = mContainer.paramsMap.at(category);
@@ -336,6 +393,12 @@ void VisualSettingsHandler::exportData(std::string path)
         outFile.write(text.data(), text.size());
         outFile.close();
     }
+}
+
+
+void VisualSettingsHandler::exportData(std::string path)
+{
+    parser.exportData(path, this);
 }
 
 
@@ -1809,6 +1872,4 @@ void VScontainer::initContainer(VisualSettingsHandler* handler)
    //             print("\t{" + f'"{lable_name}"'.ljust(65) + f', "{line}"'.ljust(65) + f', joaat("{line}")'.ljust(70) + ", " + tType.ljust(8) + "},")
    //            
    //     
-
-
 

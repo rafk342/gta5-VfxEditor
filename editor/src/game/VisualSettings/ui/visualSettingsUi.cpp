@@ -1,10 +1,33 @@
 #include "visualSettingsUi.h"
 
+bool VisualSettingsUi::check_if_category_should_be_shown(const char* category)
+{
+	auto& Params = mHandler.mContainer.paramsMap.at(category);
+
+	for (auto& item : Params)
+	{
+		if (hide_unused)
+		{
+			if (item.found && item.is_used)
+			{
+				return true;
+			}
+		}
+		else
+		{
+			if (item.found)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 
 void VisualSettingsUi::window()
 {
 	static float col3[3];
-	static bool hide_unused = false;
 
 	ImGui::Checkbox("Hide Unused", &hide_unused);
 	ImGui::Separator();
@@ -14,32 +37,12 @@ void VisualSettingsUi::window()
 		if (!mHandler.mContainer.paramsMap.contains(category))
 			continue;
 
-		auto& Params = mHandler.mContainer.paramsMap.at(category);
-
-		bool should_header_be_shown = false;
-
-		for (auto& item : Params)
-		{
-			if (hide_unused)
-			{
-				if (item.found && item.is_used)
-				{
-					should_header_be_shown = true;
-					break;
-				}
-			}
-			else
-			{
-				if (item.found)
-				{
-					should_header_be_shown = true;
-					break;
-				}
-			}
-		}
+		bool should_header_be_shown = check_if_category_should_be_shown(category);
 
 		if (!should_header_be_shown)
 			continue;
+
+		auto& Params = mHandler.mContainer.paramsMap.at(category);
 
 		if (ImGui::CollapsingHeader(category))
 		{
@@ -61,7 +64,7 @@ void VisualSettingsUi::window()
 
 				case Vs_VarType_e::V_FLOAT:
 					
-					if (ImGui::DragFloat(Params[i].labelName, &Params[i].gPtrItem->value, 0.005f)) 
+					if (ImGui::DragFloat(Params[i].labelName.c_str(), &Params[i].gPtrItem->value, 0.005f))
 						mHandler.updateData(); 
 
 					break;
@@ -71,7 +74,7 @@ void VisualSettingsUi::window()
 					for (u8 w = 0; w < 3; w++)
 						col3[w] = Params[i + w].gPtrItem->value;
 
-					if (ImGui::ColorEdit3(Params[i].labelName, col3))
+					if (ImGui::ColorEdit3(Params[i].labelName.c_str(), col3))
 					{
 						for (u8 w = 0; w < 3; w++)
 							Params[i + w].gPtrItem->value = col3[w];
