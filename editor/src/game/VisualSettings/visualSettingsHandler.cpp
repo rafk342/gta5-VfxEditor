@@ -284,7 +284,7 @@ void VisualSettingsParser::importData(std::string& path, VisualSettingsHandler* 
     inGameArray.clear();
 
     std::string line;
-    while (std::getline(finput, line))
+    while (std::getline(finput, line, '\n'))
     {
         line = strip_str(line);
 
@@ -322,6 +322,7 @@ void VisualSettingsHandler::importData(std::string srcPath)
 {
     mContainer.clearContainer();
     parser.importData(srcPath,this);
+    updateData();
     mContainer.updateContainer(this);
 
 #if 0

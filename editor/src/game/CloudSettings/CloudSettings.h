@@ -19,6 +19,14 @@ struct ptxKeyframeEntry
 {
 	float vTime[4];
 	float vValue[4];
+
+	ptxKeyframeEntry(float* time, float* value)
+	{
+		for (int i = 0; i < 4; ++i) {
+			vTime[i] = time[i];
+			vValue[i] = value[i];
+		}
+	}
 };
 
 

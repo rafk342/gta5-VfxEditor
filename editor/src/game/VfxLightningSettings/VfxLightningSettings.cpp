@@ -133,8 +133,8 @@ void (*orig_initStrike)(u64 arg, u64* arg2);
 void initStrike(u64 arg, u64* arg2)
 {
 	mlogger("initstrike call");
-	
-	
+
+
 	mlogger(std::format("{0} {0:064b} : {0:016X}", arg));
 
 	orig_initStrike(arg, arg2);

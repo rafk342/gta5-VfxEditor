@@ -29,7 +29,7 @@ bool    mRender::ImGuiCursorUsage = false;
 bool	mRender::mRenderState = false;
 
 
-void mRender::CreateDevice()
+void mRender::search_for_gDevice()
 {
 	game_ResizeBuffersAddr = gmAddress::Scan("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 81 EC 90 00 00 00 48 8B F1 48 8D 0D");	
 	game_PresentImageAddr = gmAddress::Scan("40 55 53 56 57 41 54 41 56 41 57 48 8B EC 48 83 EC 40 48 8B 0D");	// EndFrame
@@ -54,15 +54,6 @@ void mRender::CreateDevice()
 ////	p_SwapChain = *game_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>();
 ////	//p_SwapChain = *gAddr.GetRef(-194 - 4).To<IDXGISwapChain**>();
 
-////#elif game_version == gameVer2802
-
-////	static gmAddress gAddr = gmAddress::Scan("48 8B C4 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 38 F7");
-////	//p_device = *gAddr.GetRef(0x622 + 0x3).To<ID3D11Device**>();
-////	//p_context = *gAddr.GetRef(0x602 + 0x3).To<ID3D11DeviceContext**>();
-	
-////	p_SwapChain = *game_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>();
-////	//p_SwapChain = *gAddr.GetRef(0x631 + 0x3).To<IDXGISwapChain**>();
-	
 ////#elif game_version == gameVer2060
 	
 ////	//static gmAddress gAddr = gmAddress::Scan("48 8D 05 ?? ?? ?? ?? 45 33 C9 48 89 44 24 58 48 8D 85 D0 08 00 00");
@@ -183,7 +174,7 @@ void mRender::Init()
 		return;
 
 	CClock::Init();	
-	CreateDevice();
+	search_for_gDevice();
 	Hook::Create(game_PresentImageAddr,	mRender::PresentImage,	&orig_PresentImage,	"swapChainPresent");
 	Hook::Create(game_WndProcAddr,		mRender::WndProc,		&orig_WndProc,		"WndProc");
 

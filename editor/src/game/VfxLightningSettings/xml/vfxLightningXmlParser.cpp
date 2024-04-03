@@ -180,7 +180,7 @@ void VfxLightningsXmlParser::LoadKeyframeData(const pugi::xml_node& keyData, ptx
 
     std::string	raw_text;
 
-    auto keyEntryData = keyData.child("keyEntryData");
+    pugi::xml_node keyEntryData = keyData.child("keyEntryData");
     raw_text = keyEntryData.text().get();
 
     std::istringstream iss(raw_text);
@@ -188,18 +188,23 @@ void VfxLightningsXmlParser::LoadKeyframeData(const pugi::xml_node& keyData, ptx
     std::vector<float> temp;
     
     int	idx = 0;
-    while (std::getline(iss, line, '\n') && idx < keyframe.data.GetSize())  //this is wrong, should be remade with the proper atArray impl
+
+    keyframe.data.clear();
+
+    while (std::getline(iss, line, '\n') /*&& idx < keyframe.data.GetSize()*/)  //this is wrong, should be remade with the proper atArray impl
     {
         if (strip_str(line).empty()) 
             continue;
 
         temp = convert_str_to_float_arr(line, 5);
-        keyframe.data[idx].vTime[0] = temp[0];
-        std::copy(temp.begin() + 1, temp.end(), keyframe.data[idx].vValue);
+        
+        float v1[4]{temp[0],0,0,0};
+        float v2[4]{temp[1],temp[2],temp[3],temp[4]};
+        keyframe.data.push_back(ptxKeyframeEntry(v1, v2));
+        
         idx++;
     }
 }
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

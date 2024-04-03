@@ -54,7 +54,7 @@ AM_EXPORT void Shutdown()
 	mRender::Shutdown();
 	ScriptHook::Shutdown();
 	Hook::Shutdown();
-	std::this_thread::sleep_for(std::chrono::milliseconds(300));
+	//std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
 #endif
 }
@@ -69,7 +69,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
 	case DLL_PROCESS_ATTACH:
 		DisableThreadLibraryCalls(hModule);
 		Init();
-		
+		CloseHandle(hModule);
 		break;
 	case DLL_PROCESS_DETACH:
 		Shutdown();
@@ -77,7 +77,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
 		break;
 	}
 #endif // !am_version
-
 	return TRUE;
 }
 
