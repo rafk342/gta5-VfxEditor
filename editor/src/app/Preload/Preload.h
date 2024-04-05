@@ -75,8 +75,6 @@ class CategoriesHandler
 	static std::unordered_map<std::string, std::vector<std::string>> categories_map;
 	static std::string categories_filename;
 
-	static void print_debug_categories_data();
-
 public:
 
 	static void LoadCategories();

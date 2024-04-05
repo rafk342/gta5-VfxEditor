@@ -84,7 +84,8 @@ struct CloudSettingsNamed
 		str_name(name),
 		CloudSettings(settings),
 		bits(bits)
-	{}
+	{
+	}
 
 };
 

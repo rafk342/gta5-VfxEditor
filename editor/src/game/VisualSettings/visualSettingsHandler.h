@@ -89,7 +89,6 @@ public:
 
 };
 
-
 struct VsItemTmp
 {
 	std::string	name;

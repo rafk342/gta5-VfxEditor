@@ -52,9 +52,11 @@ AM_EXPORT void Shutdown()
 #else	
 
 	mRender::Shutdown();
+#if am_version
 	ScriptHook::Shutdown();
+#endif
 	Hook::Shutdown();
-	//std::this_thread::sleep_for(std::chrono::milliseconds(300));
+	std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
 #endif
 }
@@ -74,6 +76,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
 	case DLL_PROCESS_DETACH:
 		Shutdown();
 		FreeLibraryAndExitThread(hModule,0);
+		//std::exit(1);
+		//std::terminate();
 		break;
 	}
 #endif // !am_version

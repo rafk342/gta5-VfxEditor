@@ -70,7 +70,7 @@ void configHandler::WriteDefaultParamsToCfg()
     outfile << "Categories               " << " = " <<     default_cfg_params::default_categories                                   << '\n';
     outfile << "Names_replacement        " << " = " <<     default_cfg_params::default_replace_item_names_with_tooltips_definition  << '\n';
     outfile << "OpenClose_window_button  " << " = " <<     "0x2D"                                                                   << "\n\n";
-    outfile << "// In case there's something wrong with the system cursor - set this to 1 "                                         << '\n';
+    outfile << "// In case if there's something wrong with the system cursor - set this to 1 "                                      << '\n';
     outfile << "CursorImgui_Impl         " << " = " <<     default_cfg_params::default_cursor_imgui_usage                           << '\n';
 
     outfile.close();

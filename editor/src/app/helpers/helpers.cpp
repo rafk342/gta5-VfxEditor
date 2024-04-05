@@ -94,7 +94,6 @@ std::string strip_str(const std::string& inpt)
     if (str.empty())
         return str;
 
-
     size_t start_pos = 0;
     size_t end_pos = str.size() - 1;
 

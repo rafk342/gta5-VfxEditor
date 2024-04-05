@@ -38,7 +38,7 @@ class mRender
 	static IDXGISwapChain* p_SwapChain;
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static void CreateDevice();
+	static void Search_for_gDevice();
 	static void InitBackend();
 	static void PresentImage();
 	static void ImRenderFrame();

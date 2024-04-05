@@ -136,6 +136,8 @@ void VisualSettingsHandler::getUsedParamNames()
     Hook::Remove(getVec4_addr,         " VSget vec4 remove");
     Hook::Remove(*&getVec3_addr,       " VSget vec3 remove");
     Hook::Remove(*&getColor_addr,      " VSget vec3 remove");
+  
+    updateData();
 }
 
 
@@ -206,8 +208,7 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
         }
     }
     
-    std::sort(UsedGameItems.begin(), UsedGameItems.end(), 
-        [](const VsItemTmp& a, const VsItemTmp& b)
+    std::sort(UsedGameItems.begin(), UsedGameItems.end(), [](const VsItemTmp& a, const VsItemTmp& b)
             {
                 return a.hash < b.hash;
             });
@@ -222,9 +223,8 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
         {
             for (auto& item : vec)
             {
-                if (item.is_used) {
+                if (item.is_used) 
                     continue;
-                }
                     
                 if (item.hash == inGameItem.hash)
                 {
@@ -255,7 +255,7 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
             }
         }
     }
-    std::vector<int> a;
+    
 
     if (handler->mContainer.paramsMap.contains("None"))
         handler->mContainer.categoriesOrder.push_back("None");
@@ -305,8 +305,7 @@ void VisualSettingsParser::importData(std::string& path, VisualSettingsHandler* 
         if (v.size() < 2)
             continue;
 
-        float f = atof(v[1].c_str());
-        inGameArray.push_back(gSettingsItem(rage::joaat(v[0].c_str()), f));
+        inGameArray.push_back(gSettingsItem(rage::joaat(v[0].c_str()), atof(v[1].c_str())));
     }
 
     std::sort(inGameArray.begin(), inGameArray.end(), [](const gSettingsItem& v1, const gSettingsItem& v2)
@@ -371,6 +370,8 @@ void VisualSettingsParser::exportData(std::string& path, VisualSettingsHandler* 
     static std::string text;
     text.clear();
     text.reserve(100000);
+
+
 
     for (auto category : mContainer.categoriesOrder)
     {

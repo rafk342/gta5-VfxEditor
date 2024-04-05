@@ -21,14 +21,12 @@ namespace
 #define NEXT_POWER_OF_TWO_32(value) ((value) < 2 ? 2 : ALIGN_POWER_OF_TWO_32((value) + 1))
 }
 
-
-
 template<class TValue>
 class atArray
 {
 	TValue* m_offset = nullptr;
-	u16 m_size;
-	u16 m_capacity;
+	u16 m_size = 0;
+	u16 m_capacity = 0;
 
 public:
 
@@ -39,36 +37,78 @@ public:
 	{
 	}
 
-	TValue*			begin()					{ return m_offset; }
-	TValue*			end()					{ return m_offset + m_size; }
-	TValue*			data() const			{ return m_offset; }
-	u16				GetCapacity() const		{ return m_capacity; }
-	u16				GetSize() const			{ return m_size; }
-	bool			empty()	const			{ return (m_size == 0); }
-
-	TValue& Get(u16 offset) {
-		return (offset < m_size) ? m_offset[offset] : m_offset[0];
+	atArray(u16 count, const TValue& v) :
+		m_offset(nullptr),
+		m_size(0),
+		m_capacity(0)
+	{
+		reserve(count);
+		for (size_t i = 0; i < count; i++){
+			push_back(v);
+		}
 	}
 
-	TValue&		  operator[](u16 idx)		{ return Get(idx); }
-	const TValue& operator[](u16 idx) const	{ return Get(idx); }
+	atArray(u16 count)
+	{
+		reserve(count);
+	}
 
-	void push_back(const TValue& value)
+	atArray(std::initializer_list<TValue> il)
+	{
+		reserve(il.size());
+		for (auto it = il.begin(); it != il.end(); ++it) {
+			push_back(*it);
+		}
+	}
+	
+	template<typename Iter>
+	atArray(Iter start, Iter end)
+	{
+		u16 size = end - start;
+		reserve(size);
+
+		for (u16 i = 0; start < end; ++start, ++i) 
+			m_offset[i] = *start;
+
+		m_size = size;
+	}
+
+	atArray(std::vector<TValue>& vec) : atArray(vec.begin(), vec.end()) {}
+	
+
+	TValue*         begin()                 { return m_offset; }
+	TValue*         end()                   { return m_offset + m_size; }
+	TValue&			Last()					{ return *(end() - 1); }
+	TValue*         data() const            { return m_offset; }
+	u16             GetCapacity() const	    { return m_capacity; }
+	u16	            GetSize() const	        { return m_size; }
+	bool            empty() const           { return (m_size == 0); }
+
+	TValue& Get(u16 offset) { return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
+
+	TValue&	      operator[](u16 idx)       { return Get(idx); }
+	const TValue& operator[](u16 idx) const { return Get(idx); }
+
+	// if we are sure that directly copying the objects memory in case of reallocation is completely safe - we can specify it.
+	// we are not calling destructors and constructors in this case, so it should perform faster, I guess.
+	TValue& push_back(const TValue& value, bool reserve_with_directly_memcpy = false)
 	{ 
 		if (m_capacity == 0)
 			reserve(16);
 
 		else if (m_size >= m_capacity)
-			reserve(NEXT_POWER_OF_TWO_32(m_capacity));
+			reserve(NEXT_POWER_OF_TWO_32(m_capacity), reserve_with_directly_memcpy);
 
 		new (&m_offset[m_size]) TValue(std::move(value));
 		m_size++;
+		return Last();
 	}
 
-	void reserve(u16 new_cap, bool directly_memcpy = true)
+	void reserve(u16 new_cap, bool directly_memcpy = false)
 	{
 		if (new_cap <= m_capacity)
 			return;
+
 		size_t cpySz = 0;
 		size_t alloc_sz = new_cap * sizeof(TValue);
 
@@ -111,7 +151,7 @@ public:
 			return;
 		
 		m_size -= 1;
-		m_offset[m_size].~TValue();
+		end().~TValue();
 	}
 
 	// returns -1 if value was not found
@@ -125,20 +165,35 @@ public:
 		return -1;
 	}
 	
+	bool Contains(const TValue& v)
+	{
+		return (IndexOf(v) != -1);
+	}
+
 	void RemoveAt(u16 idx)
 	{
 		if (idx >= m_size) {
 			mlogger("trying to remove elem at idx >= size");
+			assert(idx <= m_size && "trying to remove elem at idx >= size");
 			return;
 		}
 		m_offset[idx].~TValue();
 		memset(&m_offset[idx], 0, sizeof(TValue));
 		
 		size_t move_size = (m_size - idx - 1) * sizeof(TValue);
-		memmove_s(&m_offset[idx], move_size, &m_offset[idx + 1], move_size);
+		memmove_s(&m_offset[idx], move_size, 
+				  &m_offset[idx + 1], move_size);
+
 		memset(&m_offset[m_size - 1], 0, sizeof(TValue));
 		
 		m_size -= 1;
+	}
+
+	void erase(const TValue& v)
+	{
+		for (size_t i = m_size - 1; i >= 0; --i) 
+			if (v == m_offset[i]) 
+				RemoveAt(i);
 	}
 
 	void clear()
@@ -153,8 +208,10 @@ public:
 
 		if (m_offset)
 		{
+			std::memset(m_offset, 0, m_capacity);
 			tlsContext::get()->m_allocator->Free(m_offset);
 			m_offset = nullptr;
+			m_capacity = 0;
 		}
 	}
 };
