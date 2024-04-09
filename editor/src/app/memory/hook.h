@@ -47,10 +47,10 @@ public:
 	static void Create(TFrom from, TTo to, TBackup* backup, std::string debug_name = "")
 	{
 		MH_STATUS create = MH_CreateHook((LPVOID)from, (LPVOID)to, (LPVOID*)backup);
-		if (create != MH_OK) { mlogger(debug_name + " create hook err"); };
+		if (create != MH_OK) { mlogger("{} create hook err", debug_name); };
 
 		MH_STATUS enable = MH_EnableHook((LPVOID)from);
-		if (enable != MH_OK) { mlogger(debug_name + " enable hook err"); };
+		if (enable != MH_OK) { mlogger("{} enable hook err", debug_name); };
 	}
 
 	/**
@@ -76,9 +76,9 @@ public:
 			return;
 
 		MH_STATUS disable = MH_DisableHook((pVoid)from);
-		if (disable != MH_OK) { mlogger(debug_name + " DisableHook err"); };
+		if (disable != MH_OK) { mlogger("{} DisableHook err" , debug_name); };
 
 		MH_STATUS remove = MH_RemoveHook((pVoid)from);
-		if (remove != MH_OK) { mlogger(debug_name + " RemoveHook err"); };
+		if (remove != MH_OK) { mlogger("{} RemoveHook err ", debug_name); };
 	}
 };

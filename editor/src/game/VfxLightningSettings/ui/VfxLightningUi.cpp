@@ -202,9 +202,9 @@ void VfxLightningUi::CloudBurstSettingsWidgets()
 			ImGui::DragFloat("Light Source Delta Position ##__CLBurstSettings", &rCloudBurstSettings.LightDeltaPos, 0.1f, -5000.f, 5000.f);
 			ImGui::DragFloat("Light Source Distance ##__CLBurstSettings", &rCloudBurstSettings.LightDistance, 0.1f, 0.f, 5000.f);
 
-			col = rCloudBurstSettings.LightColor.GetFloatRGBA();
+			col = rCloudBurstSettings.LightColor.Getf_col4();
 			if (ImGui::ColorEdit4("Light Color", col)) {
-				rCloudBurstSettings.LightColor.SetHexFromFloat(col);
+				rCloudBurstSettings.LightColor.Setf_col4(col);
 			}
 			ImGui::TreePop();
 		}
@@ -264,14 +264,14 @@ void VfxLightningUi::StrikeSettingsWidgets()
 			ImGui::DragFloat("Corona Intensity Multiplier  ##__CLStrikeSettings", &rStrikeSettings.CoronaIntensityMult, 0.1f, 0.0f, 10.0f);
 			ImGui::DragFloat("Corona Size Factor  ##__CLStrikeSettings", &rStrikeSettings.BaseCoronaSize, 0.1f, 0.0, 100.0);
 
-			col = rStrikeSettings.BaseColor.GetFloatRGBA();
+			col = rStrikeSettings.BaseColor.Getf_col4();
 			if (ImGui::ColorEdit4("Base Color  ##__CLStrikeSettings", col)) {
-				rStrikeSettings.BaseColor.SetHexFromFloat(col);
+				rStrikeSettings.BaseColor.Setf_col4(col);
 			}
 
-			col = rStrikeSettings.FogColor.GetFloatRGBA();
+			col = rStrikeSettings.FogColor.Getf_col4();
 			if (ImGui::ColorEdit4("Fog Color  ##__CLStrikeSettings", col)) {
-				rStrikeSettings.FogColor.SetHexFromFloat(col);
+				rStrikeSettings.FogColor.Setf_col4(col);
 			}
 			ImGui::DragFloat("Cloud Light Radius  ##__CLStrikeSettings", &rStrikeSettings.CloudLightRadius, 0.1f, 0.0, 5000.0f);
 			ImGui::DragFloat("Cloud Light Delta Position  ##__CLStrikeSettings", &rStrikeSettings.CloudLightDeltaPos, 0.1f, -5000.0f, 5000.0f);

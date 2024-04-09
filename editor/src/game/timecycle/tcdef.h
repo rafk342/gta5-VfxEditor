@@ -5,4 +5,3 @@
 #define REGIONS_COUNT 2
 #define TC_TIME_SAMPLES 13
 #define TIMECYCLE_VAR_COUNT 429 
-#define debug0 1

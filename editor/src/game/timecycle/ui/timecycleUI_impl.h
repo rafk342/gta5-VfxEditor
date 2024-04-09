@@ -30,12 +30,12 @@ class TimecycleUI : public App
 {
 	 timeñycleHandler m_tcHandler;
 	
-	 std::vector<std::pair<int, const char*>>	time_samples;
-	 std::array<const char*, 2>					regions;
+	 std::vector<std::pair<int, const char*>> time_samples;
+	 std::array<const char*, 2>	regions;
 
 	 tcCycle*	currentCycle;
 	 int		current_weather_index = 0;
-	 int		current_region_index = 0;
+	 Regions	current_region = GLOBAL;
 	 bool		edit_both_regions = false;
 	 bool		edit_all_time_samples = false;
 	 bool		time_override = false;

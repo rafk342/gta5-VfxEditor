@@ -10,9 +10,9 @@ void WaitWhileGameIsStarting();
 
 namespace 
 {
-	gmAddress	game_ResizeBuffersAddr;
-	gmAddress	game_PresentImageAddr;
-	gmAddress	game_WndProcAddr;
+	gmAddress	g_ResizeBuffersAddr;
+	gmAddress	g_PresentImageAddr;
+	gmAddress	g_WndProcAddr;
 
 	bool shutdown_request = false;
 }
@@ -31,13 +31,14 @@ bool	mRender::mRenderState = false;
 
 void mRender::Search_for_gDevice()
 {
-	game_ResizeBuffersAddr = gmAddress::Scan("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 81 EC 90 00 00 00 48 8B F1 48 8D 0D");	
-	game_PresentImageAddr = gmAddress::Scan("40 55 53 56 57 41 54 41 56 41 57 48 8B EC 48 83 EC 40 48 8B 0D");	// EndFrame
-	window = *game_ResizeBuffersAddr.GetRef(54 + 3).To<HWND*>();
+	g_ResizeBuffersAddr = gmAddress::Scan("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 81 EC 90 00 00 00 48 8B F1 48 8D 0D");
+	g_PresentImageAddr = gmAddress::Scan("40 55 53 56 57 41 54 41 56 41 57 48 8B EC 48 83 EC 40 48 8B 0D");	// EndFrame
+	//window = *g_ResizeBuffersAddr.GetRef(54 + 3).To<HWND*>();
+	window = FindWindowW(L"grcWindow", NULL);
 
 #if game_version == gameVer3095
 
-	game_WndProcAddr = gmAddress::Scan("48 8D 05 ?? ?? ?? ?? 33 C9 89 75 20").GetRef(3);
+	g_WndProcAddr = gmAddress::Scan("48 8D 05 ?? ?? ?? ?? 33 C9 89 75 20").GetRef(3);
 
 #elif game_version == gameVer2060
 	
@@ -45,7 +46,7 @@ void mRender::Search_for_gDevice()
 
 #endif 
 
-	p_SwapChain = *game_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>();
+	p_SwapChain = *g_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>();
 
 	if (SUCCEEDED(p_SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void**>(&p_device)))) {
 		p_device->GetImmediateContext(&p_context);
@@ -59,18 +60,18 @@ void mRender::Search_for_gDevice()
 
 
 
-void (*orig_ClipCursor)(LPRECT);
+void (*g_ClipCursor)(LPRECT);
 void mRender::n_ClipCursor(LPRECT rect) 
 {
 	if (!show_window)
-		orig_ClipCursor(rect);
+		g_ClipCursor(rect);
 }
 
-int (*orig_ShowCursor)(bool);
+int (*g_ShowCursor)(bool);
 int mRender::n_ShowCursor(bool visible) 
 {
 	if (!show_window)
-		orig_ShowCursor(visible);
+		g_ShowCursor(visible);
 	
 	return visible ? 0 : -1; 
 }
@@ -78,22 +79,22 @@ int mRender::n_ShowCursor(bool visible)
 void mRender::SetMouseVisible(bool visible)
 {
 	if (visible)
-		while (orig_ShowCursor(true) < 0);
+		while (g_ShowCursor(true) < 0);
 	else
-		while (orig_ShowCursor(false) >= 0);
+		while (g_ShowCursor(false) >= 0);
 }
 
 void ClipCursorToWindowRect(HWND handle, bool clip)
 {
 	RECT rect;
 	GetWindowRect(handle, &rect);
-	orig_ClipCursor(clip ? &rect : NULL);
+	g_ClipCursor(clip ? &rect : NULL);
 }
 
 
 
 
-LRESULT(*orig_WndProc)(HWND, UINT, WPARAM, LPARAM);
+LRESULT(*g_WndProc)(HWND, UINT, WPARAM, LPARAM);
 LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (GetAsyncKeyState(open_window_btn) & 1) 
@@ -117,12 +118,12 @@ LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return true;
 	}
 	
-	/*return*/ orig_WndProc(hWnd, uMsg, wParam, lParam);
+	/*return*/ g_WndProc(hWnd, uMsg, wParam, lParam);
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
 
-void(*orig_PresentImage)();
+void(*g_PresentImage)();
 void mRender::PresentImage()
 {
 	mRenderState = true;
@@ -139,7 +140,7 @@ void mRender::PresentImage()
 	{
 		ImRenderFrame();
 	}
-	orig_PresentImage();
+	g_PresentImage();
 	
 	mRenderState = false;
 }
@@ -157,13 +158,13 @@ void mRender::Init()
 	CClock::Init();	
 	Search_for_gDevice();
 
-	Hook::Create(game_PresentImageAddr,	mRender::PresentImage,	&orig_PresentImage,	"swapChainPresent");
-	Hook::Create(game_WndProcAddr,		mRender::WndProc,		&orig_WndProc,		"WndProc");
+	Hook::Create(g_PresentImageAddr,	mRender::PresentImage,	&g_PresentImage,	"swapChainPresent");
+	Hook::Create(g_WndProcAddr,			mRender::WndProc,		&g_WndProc,			"WndProc");
 
 	if (!ImGuiCursorUsage)
 	{
-		Hook::Create(ClipCursor, mRender::n_ClipCursor, &orig_ClipCursor, "ClipCursor");
-		Hook::Create(ShowCursor, mRender::n_ShowCursor, &orig_ShowCursor, "ShowCursor");
+		Hook::Create(ClipCursor, mRender::n_ClipCursor, &g_ClipCursor, "ClipCursor");
+		Hook::Create(ShowCursor, mRender::n_ShowCursor, &g_ShowCursor, "ShowCursor");
 	}
 }
 
@@ -266,10 +267,9 @@ void mRender::LoadWindowsFont()
 	ImFontConfig regularConfig{};
 	{
 		regularConfig.RasterizerMultiply = 1.3f;
+		regularConfig.RasterizerDensity = 1.2f;
 		regularConfig.OversampleH = 2;
 		regularConfig.OversampleV = 1;
-
-		//regularConfig.RasterizerDensity = 1.2f;
 	}
 
 	io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\calibri.ttf", 15.0f, &regularConfig, fontRange);
@@ -326,7 +326,7 @@ void WaitWhileGameIsStarting()
 ////	//p_context = *gAddr.GetRef(3).To<ID3D11DeviceContext**>();
 ////	//p_device = *gAddr.GetRef(-19 - 4).To<ID3D11Device**>();
 
-////	p_SwapChain = *game_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>();
+////	p_SwapChain = *g_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>();
 ////	//p_SwapChain = *gAddr.GetRef(-194 - 4).To<IDXGISwapChain**>();
 
 ////#elif game_version == gameVer2060

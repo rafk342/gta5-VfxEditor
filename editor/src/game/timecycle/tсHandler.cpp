@@ -31,7 +31,7 @@ void timeñycleHandler::InitCyclesArr()
 	for (size_t i = 0; i < WEATHER_TC_FILES_COUNT; i++)
 	{
 		cyclesArray[i] = LoadCycle(i);
-		weather_names.push_back(GetCycleName(i).c_str());
+		weather_names.push_back(GetCycleName(i));
 	}
 }
 
@@ -48,15 +48,14 @@ tcCycle* timeñycleHandler::LoadCycle(u32 cycleIndex)
 	return fn(tcMngr, cycleIndex);
 }
 
-std::string& timeñycleHandler::GetCycleName(int index)
+const std::string timeñycleHandler::GetCycleName(int index)
 {
-	static std::string none = "None";
 	u32 n_hash = cyclesArray[index]->GetCycleNameHash();
 	
 	if (NamesMap.contains(n_hash)) {
 		return NamesMap.at(n_hash);
 	} else {
-		return none;
+		return std::format("Unknown tcCycle name /hash : 0x{:08X}", n_hash);
 	}
 }
 

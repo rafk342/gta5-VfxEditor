@@ -63,17 +63,36 @@ TimecycleUI::TimecycleUI(BaseUiWindow* base, const char* label) : App(base, labe
 }
 
 
+void TimecycleUI::MainParamsWindow()
+{
+	GetCurrentTimeSample(CClock::GetCurrentHour());
+
+	PushStyleCompact();
+	WeatherAndRegions();
+	PopStyleCompact();
+
+	ImGui::Separator();
+
+	if (config_params::categories)
+		MainParamsWindow_with_Categories();
+	else
+		MainParamsWindow_without_Categories();
+}
+
+
 void TimecycleUI::WeatherAndRegions()
 {
-	static auto& weather_names = m_tcHandler.GetWeatherNamesVec();
+	static std::vector<const char*> weather_names;
 	static bool init = false;
 
 	if (!init)
 	{
 		GAMEPLAY::SET_OVERRIDE_WEATHER((char*)m_tcHandler.GetCycleName(current_weather_index).c_str());
+		for (size_t i = 0; i < m_tcHandler.GetWeatherNamesVec().size(); i++) {
+			weather_names.push_back(m_tcHandler.GetWeatherNamesVec()[i].c_str());
+		}
 		init = true;
 	}
-
 
 	static float regionWidth;
 	static float buttonWidth = 100;
@@ -121,7 +140,7 @@ void TimecycleUI::WeatherAndRegions()
 			ImGui::SetNextItemWidth(result);
 		}
 
-		ImGui::Combo("Regions", (int*)&current_region_index, regions.data(), regions.size());
+		ImGui::Combo("Regions", (int*)&current_region, regions.data(), regions.size());
 
 		ImGui::EndTable();
 	}
@@ -130,9 +149,7 @@ void TimecycleUI::WeatherAndRegions()
 
 void TimecycleUI::GetCurrentTimeSample(int current_hour)
 {
-	static int i = 0;
-
-	for (i = 0; i < time_samples.size(); i++)
+	for (size_t i = 0; i < time_samples.size(); i++)
 	{
 		if (current_hour <= time_samples[i].first)
 		{
@@ -151,23 +168,6 @@ void TimecycleUI::GetCurrentTimeSample(int current_hour)
 }
 
 
-void TimecycleUI::MainParamsWindow()
-{
-	GetCurrentTimeSample(CClock::GetCurrentHour());
-
-	PushStyleCompact();
-	WeatherAndRegions();
-	PopStyleCompact();
-
-	ImGui::Separator();
-
-	if (config_params::categories)
-		MainParamsWindow_with_Categories();
-	else
-		MainParamsWindow_without_Categories();
-}
-
-
 void TimecycleUI::MainParamsWindow_without_Categories()
 {
 	for (size_t i = 0; i < TIMECYCLE_VAR_COUNT; i++)
@@ -177,10 +177,11 @@ void TimecycleUI::MainParamsWindow_without_Categories()
 
 		if (ImGui::TreeNode(g_varInfos[i].labelName))
 		{
-			if (show_only_current_sample)
-				makeJustSingleParamWidget((Regions)current_region_index, i);
-			else
-				makeTable((Regions)current_region_index, i);
+			if (show_only_current_sample) {
+				makeJustSingleParamWidget(current_region, i);
+			} else {
+				makeTable(current_region, i);
+			}
 
 			ImGui::TreePop();
 		}
@@ -207,9 +208,9 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 				if (ImGui::TreeNode(g_varInfos[id].labelName))
 				{
 					if (show_only_current_sample)
-						makeJustSingleParamWidget((Regions)current_region_index, id);
+						makeJustSingleParamWidget(current_region, id);
 					else
-						makeTable((Regions)current_region_index, id);
+						makeTable(current_region, id);
 
 					ImGui::TreePop();
 				}

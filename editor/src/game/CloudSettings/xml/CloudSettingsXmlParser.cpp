@@ -66,7 +66,7 @@ void CloudSettingsXmlParser::ImportCloudKfData(const std::string& path, CloudsHa
 		}
 		else
 		{
-			mlogger("Couldn't find " + CloudsName + " on import CloudKeyframes");
+			mlogger("Couldn't find {} on import CloudKeyframes" , CloudsName);
 		}
 	}
 }

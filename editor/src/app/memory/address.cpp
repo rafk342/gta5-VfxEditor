@@ -1,17 +1,13 @@
 #include "address.h"
 #include "app/logger.h"
 
-
 #include <cstdlib>
 #include <mutex>
-#include <assert.h>
 
 
 
 gmAddress gmAddress::Scan(const char* patternStr, const char* debugName)
 {
-	//mlogger('|' + patternStr + '|');
-
 	static u64 moduleSize;
 	static u64 moduleBase;
 	static bool initialized = false;
@@ -69,6 +65,10 @@ gmAddress gmAddress::Scan(const char* patternStr, const char* debugName)
 		return { moduleBase + i };
 	miss:;
 	}
-	assert(false && "gmAddress::Scan(%s) -> Failed to find pattern %s");
+	if (debugName)
+		mlogger("gmAddress::Scan({}) -> Failed to find pattern for {}", patternStr, debugName);
+	else
+		mlogger("gmAddress::Scan() -> Failed to find pattern {}", patternStr);
+
 	return -1;
 }

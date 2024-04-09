@@ -1,25 +1,14 @@
 #pragma once
-#include "common/types.h"
 #include <cstdint>
 #include <initializer_list>
 #include <vector>
+#include <type_traits>
 
+#include "common/types.h"
+#include "helpers/bits.h"
 #include "base/tlsContext.h"
 #include "logger.h"
-
-namespace
-{
-	using namespace rage;
-	inline u8 BitScanR32(u32 value)
-	{
-		unsigned long maxPageBit;
-		_BitScanReverse(&maxPageBit, value);
-		return static_cast<u8>(maxPageBit);
-	}
-#define IS_POWER_OF_TWO(value) ((value) != 0 && ((value) & ((value) - 1)) == 0)
-#define ALIGN_POWER_OF_TWO_32(value) (u32)(IS_POWER_OF_TWO((value)) ? (value) : 1u << (BitScanR32((value)) + 1))
-#define NEXT_POWER_OF_TWO_32(value) ((value) < 2 ? 2 : ALIGN_POWER_OF_TWO_32((value) + 1))
-}
+#include "helpers/align.h"
 
 template<class TValue>
 class atArray
@@ -30,12 +19,7 @@ class atArray
 
 public:
 
-	atArray() :
-		m_offset(nullptr),
-		m_size(0),
-		m_capacity(0)
-	{
-	}
+	atArray() = default;
 
 	atArray(u16 count, const TValue& v) :
 		m_offset(nullptr),
@@ -64,30 +48,46 @@ public:
 	template<typename Iter>
 	atArray(Iter start, Iter end)
 	{
-		u16 size = end - start;
+		static_assert(std::is_same_v<typename std::iterator_traits<Iter>::value_type, TValue>, "wrong iterator type");
+
+		u16 size = std::distance(start, end);
 		reserve(size);
 
-		for (u16 i = 0; start < end; ++start, ++i) 
-			m_offset[i] = *start;
-
-		m_size = size;
+		while (start != end)
+		{
+			push_back(*start);
+			start++;
+		}
 	}
 
 	atArray(std::vector<TValue>& vec) : atArray(vec.begin(), vec.end()) {}
 	
-
 	TValue*         begin()                 { return m_offset; }
 	TValue*         end()                   { return m_offset + m_size; }
-	TValue&			Last()					{ return *(end() - 1); }
-	TValue*         data() const            { return m_offset; }
-	u16             GetCapacity() const	    { return m_capacity; }
-	u16	            GetSize() const	        { return m_size; }
+	TValue*         Last()                  { return m_size == 0 ? nullptr : end() - 1; }
+	TValue*         data()                  { return m_offset; }
+	u16             GetCapacity() const     { return m_capacity; }
+	u16             GetSize() const	        { return m_size; }
 	bool            empty() const           { return (m_size == 0); }
 
 	TValue& Get(u16 offset) { return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
 
 	TValue&	      operator[](u16 idx)       { return Get(idx); }
 	const TValue& operator[](u16 idx) const { return Get(idx); }
+
+	atArray& operator=(const atArray& other)
+	{
+		if (this == &other)
+			return *this;
+
+		clear();
+		reserve(other.GetSize());
+
+		for (size_t i = 0; i < other.GetSize(); ++i) {
+			push_back(other.m_offset[i]);
+		}
+		return *this;
+	}
 
 	// if we are sure that directly copying the objects memory in case of reallocation is completely safe - we can specify it.
 	// we are not calling destructors and constructors in this case, so it should perform faster, I guess.
@@ -101,7 +101,7 @@ public:
 
 		new (&m_offset[m_size]) TValue(std::move(value));
 		m_size++;
-		return Last();
+		return *Last();
 	}
 
 	void reserve(u16 new_cap, bool directly_memcpy = false)
@@ -112,7 +112,7 @@ public:
 		size_t cpySz = 0;
 		size_t alloc_sz = new_cap * sizeof(TValue);
 
-		TValue* newOffset = reinterpret_cast<TValue*>(tlsContext::get()->m_allocator->Allocate(alloc_sz, 16, 0));
+		TValue* newOffset = reinterpret_cast<TValue*>(rage::tlsContext::get()->m_allocator->Allocate(alloc_sz, 16, 0));
 		memset(newOffset, 0, alloc_sz);
 
 		if (!m_offset)
@@ -125,19 +125,21 @@ public:
 		switch (directly_memcpy)
 		{
 		case true:
+
 			cpySz = m_size * sizeof(TValue);
 			memcpy_s(newOffset, alloc_sz, m_offset, cpySz);
 			memset(m_offset, 0, cpySz);
-			tlsContext::get()->m_allocator->Free(m_offset);
+			rage::tlsContext::get()->m_allocator->Free(m_offset);
 			break;
 
 		case false:
+
 			for (size_t i = 0; i < m_size; ++i) {
 				new (&newOffset[i]) TValue(std::move(m_offset[i]));
 			}
 			std::destroy(begin(), end());
-			memset(m_offset, 0, m_size * sizeof(TValue));
-			tlsContext::get()->m_allocator->Free(m_offset);
+			memset(m_offset, 0, m_capacity * sizeof(TValue));
+			rage::tlsContext::get()->m_allocator->Free(m_offset);
 			break;
 
 		}
@@ -145,15 +147,6 @@ public:
 		m_capacity = new_cap;
 	}
 	
-	void pop_back()
-	{
-		if (m_size == 0)
-			return;
-		
-		m_size -= 1;
-		end().~TValue();
-	}
-
 	// returns -1 if value was not found
 	size_t IndexOf(const TValue& v) const
 	{
@@ -164,40 +157,50 @@ public:
 		}
 		return -1;
 	}
-	
-	bool Contains(const TValue& v)
+
+	bool Contains(const TValue& v) { return (IndexOf(v) != -1); }
+
+	void pop_back()
 	{
-		return (IndexOf(v) != -1);
+		if (empty())
+			return;
+
+		m_size -= 1;
+		end()->~TValue();
 	}
 
 	void RemoveAt(u16 idx)
 	{
 		if (idx >= m_size) {
 			mlogger("trying to remove elem at idx >= size");
-			assert(idx <= m_size && "trying to remove elem at idx >= size");
 			return;
 		}
 		m_offset[idx].~TValue();
 		memset(&m_offset[idx], 0, sizeof(TValue));
 		
 		size_t move_size = (m_size - idx - 1) * sizeof(TValue);
-		memmove_s(&m_offset[idx], move_size, 
+		memmove_s(&m_offset[idx],move_size, 
 				  &m_offset[idx + 1], move_size);
-
-		memset(&m_offset[m_size - 1], 0, sizeof(TValue));
 		
 		m_size -= 1;
+		memset(end(), 0, sizeof(TValue));
 	}
 
 	void erase(const TValue& v)
 	{
+		if (empty())
+			return;
+
 		for (size_t i = m_size - 1; i >= 0; --i) 
-			if (v == m_offset[i]) 
+			if (v == m_offset[i])
 				RemoveAt(i);
 	}
 
 	void clear()
 	{
+		if (empty())
+			return;
+
 		std::destroy(begin(), end());
 		m_size = 0;
 	}
@@ -208,8 +211,8 @@ public:
 
 		if (m_offset)
 		{
-			std::memset(m_offset, 0, m_capacity);
-			tlsContext::get()->m_allocator->Free(m_offset);
+			std::memset(m_offset, 0, m_capacity * sizeof(TValue));
+			rage::tlsContext::get()->m_allocator->Free(m_offset);
 			m_offset = nullptr;
 			m_capacity = 0;
 		}

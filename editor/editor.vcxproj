@@ -224,7 +224,6 @@
     <ClInclude Include="src\app\crypto\float16.h" />
     <ClInclude Include="src\app\crypto\joaat.h" />
     <ClInclude Include="src\app\fileSystem\FileHandler.h" />
-    <ClInclude Include="src\app\helpers\com.h" />
     <ClInclude Include="src\app\helpers\cstr.h" />
     <ClInclude Include="src\app\helpers\helpers.h" />
     <ClInclude Include="src\app\helpers\resharper.h" />

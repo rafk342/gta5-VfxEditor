@@ -4,11 +4,25 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
-#define mlogger(arg) mlogger_(arg)
-inline void mlogger_(const std::string& str)
+inline std::shared_ptr<spdlog::logger>& getLogger()
 {
 	static std::shared_ptr<spdlog::logger> logger = spdlog::basic_logger_mt("log", "__TceLog.log", std::ios_base::trunc);
+	return logger; 
+}
+
+template<typename T>
+inline void mlogger(const T& str)
+{
+	auto& logger = getLogger();
 	logger->info(str);
+	logger->flush();
+}
+
+template<typename... T>
+inline void mlogger(std::format_string<T...> fmt, T&&... args)
+{
+	auto& logger = getLogger();
+	logger->info(std::format(fmt, std::forward<T>(args)...));
 	logger->flush();
 }
 

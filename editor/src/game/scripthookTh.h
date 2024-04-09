@@ -154,7 +154,7 @@ public:
 		sm_ScriptID = SYSTEM::START_NEW_SCRIPT(sm_ScriptName, 0);
 		
 		if (sm_ScriptID == 0) {
-			mlogger("Failed to start script thread; sm_ScriptID = " + std::to_string(sm_ScriptID));
+			mlogger("Failed to start script thread; sm_ScriptID = {} ", sm_ScriptID);
 		}
 		
 		sm_Running = true;

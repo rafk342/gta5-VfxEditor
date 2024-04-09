@@ -164,9 +164,6 @@
     <ClInclude Include="src\app\fileSystem\FileHandler.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\app\helpers\com.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="src\app\helpers\cstr.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>

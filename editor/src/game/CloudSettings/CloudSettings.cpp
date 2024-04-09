@@ -35,7 +35,7 @@ CloudsHandler::CloudsHandler()
 		if (settings) {
 			CloudsSettingsVec.push_back(CloudSettingsNamed(hash, name.c_str(), settings, *(settings->bits.getRawPtr())));
 		} else {
-			mlogger("CloudsHandler::CloudsHandler() could not find " + name);
+			mlogger("CloudsHandler::CloudsHandler() could not find {}", name);
 		}
 	}
 

@@ -6,11 +6,16 @@
 class Color32
 {
 	u32 color;
+	const static u8 r_shift = 16;
+	const static u8 g_shift = 8;
+	const static u8 b_shift = 0;
+	const static u8 a_shift = 24;
+
 public:
 	Color32() = default;
 	Color32(u32 v) : color(v) {}
-	Color32(float _r, float _g, float _b, float _a) { SetHexFromFloat(_r,_g,_b,_a);}
-	Color32(float* p) { SetHexFromFloat(p); }
+	Color32(float _r, float _g, float _b, float _a = 255.0f) { Setf(_r,_g,_b,_a);}
+	Color32(float* p) { Setf_col4(p); }
 
 	Color32& operator= (Color32& other)
 	{
@@ -26,14 +31,29 @@ public:
 		return *this;
 	}
 
-	inline float* GetFloatRGBA() 
+	inline u8 getRed()		{ return (u8)(color >> r_shift); }
+	inline u8 getGreen()	{ return (u8)(color >> g_shift); }
+	inline u8 getBlue()		{ return (u8)(color >> b_shift); }
+	inline u8 getAlpha()	{ return (u8)(color >> a_shift); }
+
+	inline float getRedf()	{ return static_cast<float>(getRed()) / 255.0f; }
+	inline float getGreenf(){ return static_cast<float>(getGreen()) / 255.0f; }
+	inline float getBluef() { return static_cast<float>(getBlue()) / 255.0f; }
+	inline float getAlphaf(){ return static_cast<float>(getAlpha()) / 255.0f; }
+
+	inline void setRedf		(float v) { color = (color & ~(0xff << r_shift) | (static_cast<u8>(v * 255.0f) << r_shift)); }
+	inline void setBluef	(float v) { color = (color & ~(0xff << b_shift) | (static_cast<u8>(v * 255.0f) << b_shift)); }
+	inline void setGreenf	(float v) { color = (color & ~(0xff << g_shift) | (static_cast<u8>(v * 255.0f) << g_shift)); }
+	inline void setAlphaf	(float v) { color = (color & ~(0xff << a_shift) | (static_cast<u8>(v * 255.0f) << a_shift)); }
+
+	inline float* Getf_col4() 
 	{
 		static float col[4];
 
-		u8 r = (color >> 16) & 0xff;
-		u8 g = (color >> 8) & 0xff;
-		u8 b = (color >> 0) & 0xff;
-		u8 a = (color >> 24) & 0xff;
+		u8 r = (color >> r_shift);
+		u8 g = (color >> g_shift);
+		u8 b = (color >> b_shift);
+		u8 a = (color >> a_shift);
 
 		col[0] = static_cast<float>(r) / 255.0f;
 		col[1] = static_cast<float>(g) / 255.0f;
@@ -43,18 +63,37 @@ public:
 		return &col[0];
 	}
 
-	inline void SetHexFromFloat(float _r, float _g, float _b, float _a)
+	inline float* Getf_col3()
+	{
+		static float col[3];
+
+		u8 r = (color >> r_shift);
+		u8 g = (color >> g_shift);
+		u8 b = (color >> b_shift);
+	
+		col[0] = static_cast<float>(r) / 255.0f;
+		col[1] = static_cast<float>(g) / 255.0f;
+		col[2] = static_cast<float>(b) / 255.0f;
+
+		return &col[0];
+	}
+
+	inline void Setf(float _r, float _g, float _b, float _a = 255.0f)
 	{
 		u8 r = static_cast<u8>(_r * 255.0f);
 		u8 g = static_cast<u8>(_g * 255.0f);
 		u8 b = static_cast<u8>(_b * 255.0f);
 		u8 a = static_cast<u8>(_a * 255.0f);
 
-		color = 0 | (a << 24) | (r << 16) | (g << 8) | (b << 0) ;
+		color = 0 | (a << a_shift) | (r << r_shift) | (g << g_shift) | (b << b_shift);
 	}
 
-	inline void SetHexFromFloat(float* colorf) {
-		SetHexFromFloat(colorf[0], colorf[1], colorf[2], colorf[3]);
+	inline void Setf_col4(float* colorf) {
+		Setf(colorf[0], colorf[1], colorf[2], colorf[3]);
+	}
+
+	inline void Setf_col3(float* colorf) {
+		Setf(colorf[0], colorf[1], colorf[2]);
 	}
 
 	inline void SetRawU32Data(u32 v) { color = v; }

@@ -99,17 +99,17 @@ class CloudsHandler
 	private:
 		u8 pad[48];
 	public:
-		atHashMap<CloudHatSettings>				CloudSettings;
-		atArray<float>							TimeData;
+		atMap<CloudHatSettings>		CloudSettings;
+		atArray<float>				TimeData;
 	};
 
-	atArray<CloudHatFragContainer>*				gCloudHatNames;
-	gCloudSettingsMap*							gCloudsMap = nullptr;
-	u8*											gCloudsMngr;				//might be useful to keep it here
+	atArray<CloudHatFragContainer>*	gCloudHatNames;
+	gCloudSettingsMap*				gCloudsMap = nullptr;
+	u8*								gCloudsMngr; // ----- might be useful to keep it here
 
 	// for our usage	
-	std::vector<CloudSettingsNamed>				CloudsSettingsVec;
-	std::vector<std::pair<u32, std::string>>	CloudNames;
+	std::vector<CloudSettingsNamed>	CloudsSettingsVec;
+	std::vector<std::pair<u32, std::string>> CloudNames;
 
 public:
 

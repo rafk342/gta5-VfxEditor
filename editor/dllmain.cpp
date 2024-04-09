@@ -12,8 +12,8 @@
 #include "scripthookTh.h"
 #include "helpers/SimpleTimer.h"
 
-#define test_ver 0
 
+#define test_ver 0
 
 FILE* f;
 
@@ -28,7 +28,7 @@ AM_EXPORT void Init()
 	Console();
 
 #else
-
+	
 	Preload_Integration::Preload();
 
 	FileListUI::setPreBuff(config_params::path_from_cfg);
@@ -50,11 +50,13 @@ AM_EXPORT void Shutdown()
 	fclose(f);
 	FreeConsole();
 #else	
-
+	mlogger("mRender::Shutdown()");
 	mRender::Shutdown();
 #if am_version
+	mlogger("ScriptHook::Shutdown()");
 	ScriptHook::Shutdown();
 #endif
+	mlogger("Hook::Shutdown()");
 	Hook::Shutdown();
 	std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
@@ -71,13 +73,15 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
 	case DLL_PROCESS_ATTACH:
 		DisableThreadLibraryCalls(hModule);
 		Init();
-		CloseHandle(hModule);
 		break;
 	case DLL_PROCESS_DETACH:
+		mlogger("case detach");
+		mlogger("Shutdown...");
 		Shutdown();
+		mlogger("Shutdown done");
+		mlogger("FreeLibraryAndExitThread...");
 		FreeLibraryAndExitThread(hModule,0);
-		//std::exit(1);
-		//std::terminate();
+		mlogger("FreeLibraryAndExitThread done");
 		break;
 	}
 #endif // !am_version

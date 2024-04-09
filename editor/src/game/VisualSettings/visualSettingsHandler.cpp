@@ -263,7 +263,8 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
 }
 
 
-namespace {
+namespace 
+{
     void find_and_erase_till_the_end(std::string& str, char symb)
     {
         size_t symb_pos = str.find(symb);
@@ -297,15 +298,15 @@ void VisualSettingsParser::importData(std::string& path, VisualSettingsHandler* 
         if (line.empty())
             continue;
 
-        if (!(std::any_of(line.begin(), line.end(), [](const char& c) -> bool { return isdigit(c); })))
+        if (!(std::any_of(line.begin(), line.end(), [](const char& c) -> bool { return isdigit(c); } ))) {
             continue;
+        }
 
         auto v = split_string(line, "\t ");
-
         if (v.size() < 2)
             continue;
 
-        inGameArray.push_back(gSettingsItem(rage::joaat(v[0].c_str()), atof(v[1].c_str())));
+        inGameArray.push_back({ rage::joaat(v[0].c_str()), static_cast<float>(atof(v[1].c_str())) }, true);
     }
 
     std::sort(inGameArray.begin(), inGameArray.end(), [](const gSettingsItem& v1, const gSettingsItem& v2)
@@ -370,8 +371,6 @@ void VisualSettingsParser::exportData(std::string& path, VisualSettingsHandler* 
     static std::string text;
     text.clear();
     text.reserve(100000);
-
-
 
     for (auto category : mContainer.categoriesOrder)
     {

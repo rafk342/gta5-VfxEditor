@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Windows.h>
-
 #include "common/types.h"
 
 inline u8 BitScanR64(u64 value)
