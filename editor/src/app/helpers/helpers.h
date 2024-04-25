@@ -18,7 +18,7 @@ std::string                 convert_float_arr_to_str        (std::vector<float>&
 void                        replace_symb                    (std::string& str, char symb1, char symb2);
 std::string                 strip_str                       (const std::string& str);
 std::vector<const char*>    convert_str_to_char_vec         (std::vector<std::string>& vec);
-inline std::vector<std::string> split_string                (const std::string& input, const std::string& delimiters, u16 expected_vec_size = 16);
+std::vector<std::string>    split_string                    (const std::string& input, const std::string& delimiters, u16 expected_vec_size = 16);
 
 
 template <class T>
