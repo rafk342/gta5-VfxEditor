@@ -50,13 +50,10 @@ AM_EXPORT void Shutdown()
 	fclose(f);
 	FreeConsole();
 #else	
-	mlogger("mRender::Shutdown()");
 	mRender::Shutdown();
 #if am_version
-	mlogger("ScriptHook::Shutdown()");
 	ScriptHook::Shutdown();
 #endif
-	mlogger("Hook::Shutdown()");
 	Hook::Shutdown();
 	std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
@@ -75,13 +72,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
 		Init();
 		break;
 	case DLL_PROCESS_DETACH:
-		mlogger("case detach");
-		mlogger("Shutdown...");
 		Shutdown();
-		mlogger("Shutdown done");
-		mlogger("FreeLibraryAndExitThread...");
 		FreeLibraryAndExitThread(hModule,0);
-		mlogger("FreeLibraryAndExitThread done");
 		break;
 	}
 #endif // !am_version
