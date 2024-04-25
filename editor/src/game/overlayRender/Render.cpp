@@ -23,7 +23,7 @@ ID3D11DeviceContext*	mRender::p_context = nullptr;
 IDXGISwapChain*			mRender::p_SwapChain = nullptr;
 
 int		mRender::open_window_btn = 0;
-bool	mRender::show_window = false;
+bool	mRender::isWindowVisible = false;
 bool	mRender::mInitialized = false;
 bool    mRender::ImGuiCursorUsage = false;
 bool	mRender::mRenderState = false;
@@ -33,8 +33,8 @@ void mRender::Search_for_gDevice()
 {
 	g_ResizeBuffersAddr = gmAddress::Scan("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 81 EC 90 00 00 00 48 8B F1 48 8D 0D");
 	g_PresentImageAddr = gmAddress::Scan("40 55 53 56 57 41 54 41 56 41 57 48 8B EC 48 83 EC 40 48 8B 0D");	// EndFrame
-	//window = *g_ResizeBuffersAddr.GetRef(54 + 3).To<HWND*>();
 	window = FindWindowW(L"grcWindow", NULL);
+	SetWindowTextW(window, L"Hello World");
 
 #if game_version == gameVer3095
 
@@ -63,14 +63,14 @@ void mRender::Search_for_gDevice()
 void (*g_ClipCursor)(LPRECT);
 void mRender::n_ClipCursor(LPRECT rect) 
 {
-	if (!show_window)
+	if (!isWindowVisible)
 		g_ClipCursor(rect);
 }
 
 int (*g_ShowCursor)(bool);
 int mRender::n_ShowCursor(bool visible) 
 {
-	if (!show_window)
+	if (!isWindowVisible)
 		g_ShowCursor(visible);
 	
 	return visible ? 0 : -1; 
@@ -99,26 +99,26 @@ LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (GetAsyncKeyState(open_window_btn) & 1) 
 	{
-		show_window = !show_window;
+		isWindowVisible = !isWindowVisible;
 		
 		if (!ImGuiCursorUsage) 
-			ClipCursorToWindowRect(window, !show_window);
+			ClipCursorToWindowRect(window, !isWindowVisible);
 	}
 	
-	if (GetAsyncKeyState(VK_HOME) && show_window)
+	if (GetAsyncKeyState(VK_HOME) && isWindowVisible)
 		return true;
 	
 	if (!ImGuiCursorUsage) 
-		SetMouseVisible(show_window); 
+		SetMouseVisible(isWindowVisible); 
 
-	if (show_window)
+	if (isWindowVisible)
 	{
-		//it handles mouse input even when ui isn't displayed, so i placed it under "show_window" flag
+		//it handles mouse input even when ui isn't displayed, so i placed it under "isVisible" flag
 		if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) 
 			return true;
 	}
 	
-	/*return*/ g_WndProc(hWnd, uMsg, wParam, lParam);
+	g_WndProc(hWnd, uMsg, wParam, lParam);
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
@@ -132,11 +132,12 @@ void mRender::PresentImage()
 	{
 		InitBackend();
 		BaseUiWindow::Create();
-		ScriptHook::Start(); // <-- call from gta thread
+		ScriptHook::Start();
+		CClock::Init();
 
 		mInitialized = true;
 	}
-	if (mInitialized && show_window)
+	if (mInitialized && isWindowVisible)
 	{
 		ImRenderFrame();
 	}
@@ -155,7 +156,6 @@ void mRender::Init()
 	if (shutdown_request)
 		return;
 
-	CClock::Init();	
 	Search_for_gDevice();
 
 	Hook::Create(g_PresentImageAddr,	mRender::PresentImage,	&g_PresentImage,	"swapChainPresent");
@@ -178,7 +178,7 @@ void mRender::InitBackend()
 	ImGuiIO& io = ImGui::GetIO();
 
 	mStyle();
-	LoadWindowsFont();
+	LoadFont();
 
 	if (ImGuiCursorUsage)
 		io.MouseDrawCursor = true;
@@ -213,7 +213,7 @@ void mRender::Shutdown()
 	if (!mInitialized) 
 		return;	
 
-	show_window = false;
+	isWindowVisible = false;
 	while (mRenderState) {};
 
 	BaseUiWindow::Destroy();
@@ -241,7 +241,7 @@ void mRender::Shutdown()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void mRender::LoadWindowsFont()
+void mRender::LoadFont()
 {
 	ImGuiIO& io = ImGui::GetIO();
 
@@ -254,12 +254,12 @@ void mRender::LoadWindowsFont()
 		0x2DE0, 0x2DFF, // Cyrillic Extended-A
 		0xA640, 0xA69F, // Cyrillic Extended-B
 		//Chinese
-			0x2000, 0x206F, // General Punctuation
-			0x3000, 0x30FF, // CJK Symbols and Punctuations, Hiragana, Katakana
-			0x31F0, 0x31FF, // Katakana Phonetic Extensions
-			0xFF00, 0xFFEF, // Half-width characters
-			0xFFFD, 0xFFFD, // Invalid
-			0x4e00, 0x9FAF, // CJK Ideograms
+		0x2000, 0x206F, // General Punctuation
+		0x3000, 0x30FF, // CJK Symbols and Punctuations, Hiragana, Katakana
+		0x31F0, 0x31FF, // Katakana Phonetic Extensions
+		0xFF00, 0xFFEF, // Half-width characters
+		0xFFFD, 0xFFFD, // Invalid
+		0x4e00, 0x9FAF, // CJK Ideograms
 
 		0,
 	};

@@ -41,21 +41,3 @@ public:
 	void ExportCloudKfData(const std::string& path, const std::vector<CloudSettingsNamed>& CloudsData);
 
 };
-
-inline const char* GetStrHexFromU32(u32& num)
-{
-	static char buff[64];
-	std::memset(buff, 0, sizeof(buff));
-	std::format_to(buff, "0x{:08X}", num);
-
-	return buff;
-}
-
-inline const char* GetStrBinaryDataFromU32(u32& num)
-{
-	static char buff[64];
-	std::memset(buff, 0, sizeof(buff));
-	std::format_to(buff, "{:021b}", num);
-
-	return buff;
-}

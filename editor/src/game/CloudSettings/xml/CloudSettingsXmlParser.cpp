@@ -179,10 +179,7 @@ void CloudSettingsXmlParser::FillProbabilityVecFromStr(std::vector<int>& vec, st
 
 void CloudSettingsXmlParser::ExportCloudKfData(const std::string& path, const std::vector<CloudSettingsNamed>& CloudsData)
 {
-	static u32 __bits;
-
 	pugi::xml_document doc;
-
 	pugi::xml_node decl = doc.append_child(pugi::node_declaration);
 	decl.append_attribute("version") = "1.0";
 	decl.append_attribute("encoding") = "UTF-8";
@@ -218,8 +215,7 @@ void CloudSettingsXmlParser::ExportCloudKfData(const std::string& path, const st
 		pugi::xml_node mBits = CloudList.append_child("mBits");
 		mBits.append_attribute("bits") = std::format("{}", clouds.bits.size()).c_str();
 		mBits.append_attribute("content") = content_type::content_type_int_arr;
-		__bits = clouds.bits.to_ulong();
-		mBits.text() = std::format("\n\t\t\t\t\t  {}\n\t\t\t\t\t", GetStrHexFromU32(__bits)).c_str();
+		mBits.text() = std::format("\n\t\t\t\t\t  0x{:08X}\n\t\t\t\t\t", clouds.bits.to_ulong()).c_str();
 
 		
 		{

@@ -121,7 +121,7 @@ void CategoriesHandler::save_hardcoded_params_to_file()
 
 void CategoriesHandler::handle_file_params(std::ifstream& infile)
 {
-    vector<std::string> raw_array;
+    std::vector<std::string> raw_array;
     std::string raw_line;
 
     while (std::getline(infile, raw_line))
@@ -814,7 +814,7 @@ void TooltipsHandler::load_tooltips_from_file()
 {
     std::string line;
     std::vector<std::string> lines;
-    lines.reserve(400);
+    lines.reserve(500);
 
     std::ifstream infile(tooltips_filename);
 
@@ -875,21 +875,11 @@ void TooltipsHandler::write_tooltips_to_file()
     if (!outfile.is_open())
         return;
 
-    //std::string temp_str;
-    //temp_str.reserve(50);
-
     for (auto& tc_name : tooltips_order)
     {
-        //temp_str.clear();
-
         if (!tooltips_map.contains(tc_name))
             continue;
 
-        //for (size_t i = tc_name.size(); i < 50; i++)
-        //{
-        //    temp_str += " ";
-        //}
-        
         outfile << std::format(" {:<50}: {}\n", tc_name, tooltips_map.at(tc_name)); /*" " << tc_name << temp_str << ": " << tooltips_map.at(tc_name) << std::endl;*/
     }
 

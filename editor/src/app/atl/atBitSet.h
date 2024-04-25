@@ -4,17 +4,16 @@
 #include "common/types.h"
 
 
-template <class counterType>
+template <typename counterType>
 class atBitSet
 {
 	u32* m_Bits = nullptr;
-	counterType m_Size;		//NumBitWords
-	counterType m_BitSize;	//bits count
+	counterType m_Size;
+	counterType m_BitSize;
 
 public:
-
 	u32* getRawPtr() { return m_Bits; }
 	void setRawPtrData(u32 data) { *m_Bits = data; }
-	int GetNumBits() const { return m_BitSize; }
-	int GetSize() const { return m_Size; }
+	counterType GetNumBits() const { return m_BitSize; }
+	counterType GetSize() const { return m_Size; }
 };

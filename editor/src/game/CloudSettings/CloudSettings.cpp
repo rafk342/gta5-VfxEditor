@@ -5,21 +5,21 @@
 namespace
 {
 	u16(*_GetNewRandomCloudhatIndex)();
-	int (*_getActiveCloudhatIdx)(u64*);
+	int(*_getActiveCloudhatIdx)(u64*);
 }
 
 
 CloudsHandler::CloudsHandler()
 {
 	CloudNames = {
-		{rage::joaat("HEAVYclouds")		, "HEAVYclouds"		},
-		{rage::joaat("STORMclouds")		, "STORMclouds"		},
-		{rage::joaat("default")			, "default"			},
-		{rage::joaat("LIGHTclouds")		, "LIGHTclouds"		},
-		{rage::joaat("MEDIUMclouds")	, "MEDIUMclouds"	},
-		{rage::joaat("POSTRAINclouds")	, "POSTRAINclouds"	},
-		{rage::joaat("HALLOWEENclouds")	, "HALLOWEENclouds"	},
-		{rage::joaat("SNOWclouds")		, "SNOWclouds"		},
+		"HEAVYclouds",
+		"STORMclouds",
+		"default",
+		"LIGHTclouds",
+		"MEDIUMclouds",
+		"POSTRAINclouds",
+		"HALLOWEENclouds",
+		"SNOWclouds",
 	};
 
 	this->gCloudsMap = gmAddress::Scan("48 83 EC 48 48 8B 05 ?? ?? ?? ?? 4C 8B 0D")
@@ -28,15 +28,15 @@ CloudsHandler::CloudsHandler()
 
 	CloudsSettingsVec.reserve(gCloudsMap->CloudSettings.getSize());
 
-	for (auto& [hash, name] : CloudNames)
+	for (auto& name : CloudNames)
 	{
-		auto* settings = gCloudsMap->CloudSettings.find(hash);
+		auto* settings = gCloudsMap->CloudSettings.at(name);
 		
 		if (settings) {
-			CloudsSettingsVec.push_back(CloudSettingsNamed(hash, name.c_str(), settings, *(settings->bits.getRawPtr())));
+			CloudsSettingsVec.push_back(CloudSettingsNamed(rage::joaat(name), name, settings, *(settings->bits.getRawPtr())));
 		} else {
 			mlogger("CloudsHandler::CloudsHandler() could not find {}", name);
-		}
+		} 
 	}
 
 	gCloudsMngr = *gmAddress::Scan("44 8A 49 ?? 48 8B 0D").GetRef(7).To<u8**>();

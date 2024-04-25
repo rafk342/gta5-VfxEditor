@@ -28,7 +28,7 @@ AM_EXPORT void Init()
 	Console();
 
 #else
-	
+
 	Preload_Integration::Preload();
 
 	FileListUI::setPreBuff(config_params::path_from_cfg);

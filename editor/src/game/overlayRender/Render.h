@@ -27,7 +27,7 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 class mRender
 {
 	static int  open_window_btn;
-	static bool show_window;
+	static bool isWindowVisible;
 	static bool mInitialized;
 	static bool ImGuiCursorUsage;
 	static bool mRenderState;
@@ -47,7 +47,7 @@ class mRender
 	static int	n_ShowCursor(bool visible);
 	static void SetMouseVisible(bool visible);
 
-	static void LoadWindowsFont();
+	static void LoadFont();
 	static void mStyle();
 
 public:

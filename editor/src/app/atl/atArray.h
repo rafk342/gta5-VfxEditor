@@ -10,6 +10,8 @@
 #include "logger.h"
 #include "helpers/align.h"
 
+#define rage_array true
+
 template<class TValue>
 class atArray
 {
@@ -21,10 +23,7 @@ public:
 
 	atArray() = default;
 
-	atArray(u16 count, const TValue& v) :
-		m_offset(nullptr),
-		m_size(0),
-		m_capacity(0)
+	atArray(u16 count, const TValue& v)
 	{
 		reserve(count);
 		for (size_t i = 0; i < count; i++){
@@ -89,17 +88,17 @@ public:
 		return *this;
 	}
 
-	// if we are sure that directly copying the objects memory in case of reallocation is completely safe - we can specify it.
-	// we are not calling destructors and constructors in this case, so it should perform faster, I guess.
+// if we are sure that directly copying the objects memory in case of reallocation is completely safe - we can specify it.
+// we are not calling destructors and constructors in this case, so it should perform faster, I guess.
 	TValue& push_back(const TValue& value, bool reserve_with_directly_memcpy = false)
-	{ 
+	{
 		if (m_capacity == 0)
 			reserve(16);
 
 		else if (m_size >= m_capacity)
 			reserve(NEXT_POWER_OF_TWO_32(m_capacity), reserve_with_directly_memcpy);
-
-		new (&m_offset[m_size]) TValue(std::move(value));
+		
+		new (&m_offset[m_size]) TValue(value);
 		m_size++;
 		return *Last();
 	}
@@ -111,8 +110,11 @@ public:
 
 		size_t cpySz = 0;
 		size_t alloc_sz = new_cap * sizeof(TValue);
-
+#if rage_array 
 		TValue* newOffset = reinterpret_cast<TValue*>(rage::tlsContext::get()->m_allocator->Allocate(alloc_sz, 16, 0));
+#else
+		TValue* newOffset = reinterpret_cast<TValue*>(malloc(alloc_sz));
+#endif
 		memset(newOffset, 0, alloc_sz);
 
 		if (!m_offset)
@@ -129,7 +131,11 @@ public:
 			cpySz = m_size * sizeof(TValue);
 			memcpy_s(newOffset, alloc_sz, m_offset, cpySz);
 			memset(m_offset, 0, cpySz);
+#if rage_array
 			rage::tlsContext::get()->m_allocator->Free(m_offset);
+#else
+			free(m_offset);
+#endif
 			break;
 
 		case false:
@@ -139,7 +145,11 @@ public:
 			}
 			std::destroy(begin(), end());
 			memset(m_offset, 0, m_capacity * sizeof(TValue));
+#if rage_array
 			rage::tlsContext::get()->m_allocator->Free(m_offset);
+#else
+			free(m_offset);
+#endif
 			break;
 
 		}
@@ -172,7 +182,6 @@ public:
 	void RemoveAt(u16 idx)
 	{
 		if (idx >= m_size) {
-			mlogger("trying to remove elem at idx >= size");
 			return;
 		}
 		m_offset[idx].~TValue();
@@ -212,9 +221,14 @@ public:
 		if (m_offset)
 		{
 			std::memset(m_offset, 0, m_capacity * sizeof(TValue));
+#if rage_array
 			rage::tlsContext::get()->m_allocator->Free(m_offset);
+#else
+			free(m_offset);
+#endif
 			m_offset = nullptr;
 			m_capacity = 0;
 		}
 	}
 };
+

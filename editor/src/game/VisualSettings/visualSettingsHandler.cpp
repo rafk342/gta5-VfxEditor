@@ -1,5 +1,6 @@
 #include "visualSettingsHandler.h"
 
+/* It's a bit of a shitcode. Almost all of this has to be remade, and I will remake it, someday... */
 
 namespace
 {
@@ -302,7 +303,7 @@ void VisualSettingsParser::importData(std::string& path, VisualSettingsHandler* 
             continue;
         }
 
-        auto v = split_string(line, "\t ");
+        auto v = split_string(line, "\t ", 2);
         if (v.size() < 2)
             continue;
 
@@ -313,7 +314,7 @@ void VisualSettingsParser::importData(std::string& path, VisualSettingsHandler* 
         {
             return v1.hash < v2.hash;
         });
-
+ 
     handler->p_Vsettings->isLoaded = true;
 }
 
@@ -380,7 +381,7 @@ void VisualSettingsParser::exportData(std::string& path, VisualSettingsHandler* 
         text += std::format("\n# {}\n\n", category);
 
         auto& Items = mContainer.paramsMap.at(category);
-        for (auto Item : Items)
+        for (auto& Item : Items)
         {
             if (Item.found && Item.gPtrItem != nullptr)
                 text += std::format("{:<65} {:.5f}\n", Item.paramName, Item.gPtrItem->value);

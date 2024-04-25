@@ -14,7 +14,7 @@ class Color32
 public:
 	Color32() = default;
 	Color32(u32 v) : color(v) {}
-	Color32(float _r, float _g, float _b, float _a = 255.0f) { Setf(_r,_g,_b,_a);}
+	Color32(float _r, float _g, float _b, float _a = 1) { Setf(_r,_g,_b,_a);}
 	Color32(float* p) { Setf_col4(p); }
 
 	Color32& operator= (Color32& other)
@@ -78,7 +78,7 @@ public:
 		return &col[0];
 	}
 
-	inline void Setf(float _r, float _g, float _b, float _a = 255.0f)
+	inline void Setf(float _r, float _g, float _b, float _a = 1)
 	{
 		u8 r = static_cast<u8>(_r * 255.0f);
 		u8 g = static_cast<u8>(_g * 255.0f);

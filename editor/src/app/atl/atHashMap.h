@@ -1,6 +1,5 @@
 #pragma once
-//#include "base/tlsContext.h"
-#include "atArray.h"
+#include "base/tlsContext.h"
 
 template<typename T>
 struct atMapHashFn
@@ -19,11 +18,7 @@ template<> inline u32 atMapHashFn<s64>::operator()(const s64& value) { return st
 template<> inline u32 atMapHashFn<const char*>::operator()(const ConstString& str) { return rage::joaat(str); }
 template<> inline u32 atMapHashFn<std::string>::operator()(const std::string& str) { return rage::joaat(str.c_str()); }
 
-//template<> inline u32 atMapHashFn<atString>::operator()(const atString& str) { return atStringHash(str); }
-//template<> inline u32 atMapHashFn<atWideString>::operator()(const atWideString& str) { return atStringHash(str); }
-
-
-template<typename TEntry, typename THashFn = atMapHashFn<TEntry>>
+template<typename TKey, typename TEntry, typename THashFn = atMapHashFn<TKey>>
 class atMap
 {
 private:
@@ -37,7 +32,7 @@ private:
 	Entry** m_Buckets = nullptr;
 	u16 m_capacity = 0;
 	u16 m_size = 0;
-	char pad[3];
+	char pad[3]{};
 	bool m_AllowGrowing = false;
 
 public:
@@ -55,17 +50,16 @@ public:
 		return nullptr;
 	}
 	
-	template <typename T>
-	u32 GetHash(const T& value) const
+	inline u32 GetHash(const TKey& value) const
 	{
 		THashFn fn{};
 		return fn(value);
 	}
 
-	template <typename T>
-	inline TEntry* at(const T& v)
+	inline TEntry* at(const TKey& v)
 	{
-		find(GetHash(v));
+		return find(GetHash(v));
 	}
+
 };
 

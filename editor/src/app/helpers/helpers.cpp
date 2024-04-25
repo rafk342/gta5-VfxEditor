@@ -37,10 +37,10 @@ std::string remove_str_last_2_symb(std::string string)
 
 
 
-std::string convert_float_arr_to_str(vector<float>& arr) 
+std::string convert_float_arr_to_str(std::vector<float>& arr)
 {
     std::string temp_str;
-    temp_str.reserve(100);
+    temp_str.reserve(200);
     temp_str += " ";
 
     for (auto& num : arr) 
@@ -51,9 +51,9 @@ std::string convert_float_arr_to_str(vector<float>& arr)
 }
 
 
-vector<float> convert_str_to_float_arr(const std::string& str , int size)
+std::vector<float> convert_str_to_float_arr(const std::string& str , int size)
 {
-    vector<float> arr;
+    std::vector<float> arr;
     std::stringstream iss(str);
     float num;
 
@@ -68,7 +68,7 @@ vector<float> convert_str_to_float_arr(const std::string& str , int size)
     {
         for (size_t i = arr.size(); i < size; i++)
         {
-            arr.push_back(.0f);
+            arr.push_back(0);
         }
     }
     
@@ -87,32 +87,28 @@ void replace_symb(std::string& str, char symb1 , char symb2)
     }
 }
 
-std::string strip_str(const std::string& inpt)
+std::string strip_str(const std::string& str)
 {
-    std::string str = inpt;
+	if (str.empty())
+		return str;
 
-    if (str.empty())
-        return str;
+	size_t start_pos = 0;
+	size_t end_pos = str.size() - 1;
 
-    size_t start_pos = 0;
-    size_t end_pos = str.size() - 1;
+	while (start_pos < str.size() && std::isspace(str[start_pos]))
+		++start_pos;
 
-    while (start_pos < str.size() && std::isspace(str[start_pos])) 
-        ++start_pos;
+	while (end_pos > start_pos && std::isspace(str[end_pos]))
+		--end_pos;
 
-    while (end_pos > start_pos && std::isspace(str[end_pos])) 
-        --end_pos;
-
-
-    str = str.substr(start_pos, end_pos - start_pos + 1);
-    return str;
+	return str.substr(start_pos, end_pos - start_pos + 1);
 }
 
 
-
-std::vector<std::string> split_string(const std::string& input, const std::string& delimiters) {
+std::vector<std::string> split_string(const std::string& input, const std::string& delimiters, u16 expected_vec_size) {
     std::vector<std::string> elements;
     std::size_t start = 0, end = 0;
+    elements.reserve(expected_vec_size);
 
     while ((end = input.find_first_of(delimiters, start)) != std::string::npos) {
         if (end != start) {

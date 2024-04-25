@@ -269,16 +269,6 @@ void ShutdownRageAm()
 }
 
 
-// NOTE: Argument order is preserved.
-// Arguments:
-// -exe Name of executable; default is 'GTA5.exe'
-// -dll Path to rageAm DLL; optional
-// -scylla Path to 'scyllahide' DLL; optional
-// -load Loads dll into the process; optional
-// -unload Unloads dll from the process; optional
-// -manual Requires pressing any key to execute task (loading / unloading) etc; optional
-
-
 int main()
 {
 	bool manual = false;

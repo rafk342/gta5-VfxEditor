@@ -46,7 +46,6 @@ struct VScontainer
 		u32				 hash;
 		Vs_VarType_e	 vType;
 		gSettingsItem*   gPtrItem = nullptr;
-		
 		bool			 found = false;
 		bool			 is_used = false;
 	};

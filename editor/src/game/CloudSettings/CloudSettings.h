@@ -90,7 +90,6 @@ struct CloudSettingsNamed
 };
 
 
-
 class CloudsHandler
 {
 	// game related things
@@ -99,17 +98,17 @@ class CloudsHandler
 	private:
 		u8 pad[48];
 	public:
-		atMap<CloudHatSettings>		CloudSettings;
-		atArray<float>				TimeData;
+		atMap<const char*, CloudHatSettings> CloudSettings;
+		atArray<float>					TimeData;
 	};
 
-	atArray<CloudHatFragContainer>*	gCloudHatNames;
-	gCloudSettingsMap*				gCloudsMap = nullptr;
-	u8*								gCloudsMngr; // ----- might be useful to keep it here
+	atArray<CloudHatFragContainer>*		gCloudHatNames;
+	gCloudSettingsMap*					gCloudsMap = nullptr;
+	u8*									gCloudsMngr; // ----- might be useful to keep it here
 
 	// for our usage	
-	std::vector<CloudSettingsNamed>	CloudsSettingsVec;
-	std::vector<std::pair<u32, std::string>> CloudNames;
+	std::vector<CloudSettingsNamed>		CloudsSettingsVec;
+	std::array<const char*, 8>			CloudNames;
 
 public:
 
@@ -120,7 +119,6 @@ public:
 	atArray<CloudHatFragContainer>&		GetCloudHatNamesArray() { return *(this->gCloudHatNames); }
 	u8*									Get_raw_gCloudsMngrPtr() { return this->gCloudsMngr; }
 	u16									GetNewRandomCloudhatIndex();
-
 	void								RequestClearCloudHat();
 	void								RequestCloudHat(const char* name, float time);
 	int									GetActiveCloudhatIndex();

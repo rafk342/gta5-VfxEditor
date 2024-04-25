@@ -50,7 +50,7 @@ void BaseUiWindow::OnRender()
 
     file_section();
     ImGui::SameLine();
-    ClockUi::timeCheckBoxWindow();
+    ClockUi::timeWindowCheckBox();
 
     if (ImGui::BeginTabBar("TabBarEditor", ImGuiTabBarFlags_Reorderable))
     {

@@ -9,6 +9,6 @@ class ClockUi
 	static int curr_min;
 	static bool showTimeWindow;
 public:
-	static void timeCheckBoxWindow();
+	static void timeWindowCheckBox();
 };
 

@@ -7,19 +7,18 @@
 #include <format>
 #include <set>
 #include <iomanip>
+#include "common/types.h"
 
-
-using std::vector;
 
 bool                        check_str_ending                (const std::string& fullstr, const std::string& ending);
 bool                        check_str_ending                (const char* fullstr, const char* ending);
 std::string                 remove_str_last_2_symb          (std::string string);
-vector<float>               convert_str_to_float_arr        (const std::string& str, int size);
-std::string                 convert_float_arr_to_str        (vector<float>& arr);
+std::vector<float>          convert_str_to_float_arr        (const std::string& str, int size);
+std::string                 convert_float_arr_to_str        (std::vector<float>& arr);
 void                        replace_symb                    (std::string& str, char symb1, char symb2);
 std::string                 strip_str                       (const std::string& str);
 std::vector<const char*>    convert_str_to_char_vec         (std::vector<std::string>& vec);
-std::vector<std::string>    split_string                    (const std::string& input, const std::string& delimiters);
+inline std::vector<std::string> split_string                (const std::string& input, const std::string& delimiters, u16 expected_vec_size = 16);
 
 
 template <class T>
