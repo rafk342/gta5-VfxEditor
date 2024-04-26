@@ -94,11 +94,11 @@ void FileListUI::fill_file_sel_window()
     }
 
     static size_t i;
-    auto& char_files_vec = fhandler.to_string_file_names_vec();
+    auto& char_files_vec = fhandler.get_files_vec();
 
     for (i = 0; i < char_files_vec.size(); i++)
     {
-        ImGui::RadioButton(char_files_vec[i].c_str(), &selected_radio_btn, i);
+        ImGui::RadioButton(char_files_vec[i].first.c_str(), &selected_radio_btn, i);
     }
 }
 

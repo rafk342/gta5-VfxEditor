@@ -10,13 +10,12 @@
 class FileHandler
 {
 	//vec filename -> path
-	std::vector<std::pair<std::wstring, std::filesystem::path>> files_vec;
+	std::vector<std::pair<std::string, std::filesystem::path>> files_vec;
 	bool invalid_path = false;
-	bool new_vec_requested = false;
-public:
-	std::vector<std::pair<std::wstring, std::filesystem::path>>& get_files_vec();
-	std::vector<std::string>& to_string_file_names_vec();
 
+public:
+
+	std::vector<std::pair<std::string, std::filesystem::path>>& get_files_vec();
 	void fill_files_vec(std::filesystem::path wpath);
 	bool invalid_path_check();
 };
