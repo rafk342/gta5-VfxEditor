@@ -1,5 +1,5 @@
 #include "Preload.h"
-
+#include "logger.h"
 
 std::string                     config_params::path_from_cfg = "";
 bool                            config_params::categories; 
@@ -7,12 +7,13 @@ bool                            config_params::categories;
 bool                            config_params::replace_item_names_with_tooltips_definition;
 int                             config_params::open_window_btn_key = 0x2D;
 bool                            config_params::cursor_imgui_usage = false;
+float                           config_params::font_size;
 
 std::vector<std::string>                                    CategoriesHandler::category_names;
 std::unordered_map<std::string, std::vector<std::string>>   CategoriesHandler::categories_map;
 
 
-std::string default_cfg_params::default_path = "E:\\GTAV\\timecycles";
+//std::string default_cfg_params::default_path = "E:\\GTAV\\timecycles";
 
 
 std::string                                     configHandler::config_name = "__TcEditorConfig.ini";
@@ -35,6 +36,7 @@ void configHandler::readCfg()
     if (reader.ParseError() < 0)
     {
         WriteDefaultParamsToCfg();
+        useDefaultParams();
         return;
     }
     
@@ -43,6 +45,7 @@ void configHandler::readCfg()
     config_params::replace_item_names_with_tooltips_definition= reader.GetBoolean("Settings",   "Names_replacement",        default_cfg_params::default_replace_item_names_with_tooltips_definition);
     config_params::open_window_btn_key =                        reader.GetInteger("Settings",   "OpenClose_window_button",  default_cfg_params::default_open_window_btn_key);
     config_params::cursor_imgui_usage =                         reader.GetBoolean("Settings",   "CursorImgui_Impl",         default_cfg_params::default_cursor_imgui_usage);
+    config_params::font_size =                                  reader.GetReal   ("Settings",   "Font_size",                default_cfg_params::default_font_size);
 
     if (config_params::path_from_cfg.empty())
     {
@@ -50,6 +53,15 @@ void configHandler::readCfg()
     }
 }
 
+void configHandler::useDefaultParams()
+{
+    config_params::categories = default_cfg_params::default_categories;
+    config_params::path_from_cfg = default_cfg_params::default_path;
+    config_params::replace_item_names_with_tooltips_definition = default_cfg_params::default_replace_item_names_with_tooltips_definition;
+    config_params::open_window_btn_key = default_cfg_params::default_open_window_btn_key;
+    config_params::cursor_imgui_usage = default_cfg_params::default_cursor_imgui_usage;
+    config_params::font_size = default_cfg_params::default_font_size;
+}
 
 void configHandler::WriteDefaultParamsToCfg()
 {
@@ -69,10 +81,13 @@ void configHandler::WriteDefaultParamsToCfg()
     outfile << "Default_path             " << " = " <<     default_cfg_params::default_path                                         << '\n';
     outfile << "Categories               " << " = " <<     default_cfg_params::default_categories                                   << '\n';
     outfile << "Names_replacement        " << " = " <<     default_cfg_params::default_replace_item_names_with_tooltips_definition  << '\n';
-    outfile << "OpenClose_window_button  " << " = " <<     "0x2D"                                                                   << "\n\n";
-    outfile << "// In case if there's something wrong with the system cursor - set this to 1 "                                      << '\n';
+    outfile << "OpenClose_window_button  " << " = " <<     "0x2D"                                                                   << "\n";
+    outfile << "Font_size                " << " = " <<     default_cfg_params::default_font_size                                    << '\n';
+    
+    outfile << "\n// In case if there's something wrong with the system cursor - set this to 1 "                                    << '\n';
     outfile << "CursorImgui_Impl         " << " = " <<     default_cfg_params::default_cursor_imgui_usage                           << '\n';
 
+    
     outfile.close();
 }
 

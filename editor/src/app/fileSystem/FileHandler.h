@@ -9,15 +9,14 @@
 
 class FileHandler
 {
-	//map filename -> path
-	std::vector<std::pair<std::string, std::string>> files_vec;
-	std::unordered_map<std::string, std::string> files;
-	bool invalid_path;
-
+	//vec filename -> path
+	std::vector<std::pair<std::wstring, std::filesystem::path>> files_vec;
+	bool invalid_path = false;
+	bool new_vec_requested = false;
 public:
-	std::vector<std::pair<std::string, std::string>>& get_files_vec();
+	std::vector<std::pair<std::wstring, std::filesystem::path>>& get_files_vec();
+	std::vector<std::string>& to_string_file_names_vec();
 
-	void set_files_map(std::filesystem::path wpath, std::string extension);
+	void fill_files_vec(std::filesystem::path wpath);
 	bool invalid_path_check();
 };
-

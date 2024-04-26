@@ -25,18 +25,6 @@ bool check_str_ending(const char* fullstr, const char* ending)
 }
 
 
-std::string remove_str_last_2_symb(std::string string) 
-{
-    if (string.length() < 2) {
-        return "";  
-    } else {
-        string.resize(string.length() - 2);
-        return string;  
-    }
-}
-
-
-
 std::string convert_float_arr_to_str(std::vector<float>& arr)
 {
     std::string temp_str;
@@ -122,16 +110,5 @@ std::vector<std::string> split_string(const std::string& input, const std::strin
     }
 
     return elements;
-}
-
-
-std::vector<const char*> convert_str_to_char_vec(std::vector<std::string>& vec)
-{
-    std::vector<const char*> temp;
-
-    for (const std::string& str : vec)
-        temp.push_back(str.c_str());
-
-    return temp;
 }
 

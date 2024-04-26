@@ -27,8 +27,8 @@ public:
 	using App::App;
 
 	virtual void window() override;
-	virtual void importData(std::string path) override;
-	virtual void exportData(std::string path) override;
+	virtual void importData(std::filesystem::path path) override;
+	virtual void exportData(std::filesystem::path path) override;
 };
 
 extern void keyframeTable(const char* label, ptxKeyframe& keyframe, u8 idx);

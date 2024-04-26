@@ -274,7 +274,7 @@ namespace
     };
 }
 
-void VisualSettingsParser::importData(std::string& path, VisualSettingsHandler* handler)
+void VisualSettingsParser::importData(const std::filesystem::path& path, VisualSettingsHandler* handler)
 {
     std::ifstream finput(path);
 
@@ -319,7 +319,7 @@ void VisualSettingsParser::importData(std::string& path, VisualSettingsHandler* 
 }
 
 
-void VisualSettingsHandler::importData(std::string srcPath)
+void VisualSettingsHandler::importData(std::filesystem::path srcPath)
 {
     mContainer.clearContainer();
     parser.importData(srcPath,this);
@@ -359,15 +359,11 @@ void VisualSettingsHandler::importData(std::string srcPath)
 #endif
 }
 
-void VisualSettingsParser::exportData(std::string& path, VisualSettingsHandler* handler)
+void VisualSettingsParser::exportData(std::filesystem::path& path, VisualSettingsHandler* handler)
 {
     auto& mContainer = handler->mContainer;
 
-    if (check_str_ending(path, ".xml"))
-        path = path.replace(path.end() - 4, path.end(), ".dat");
-
-    if (!check_str_ending(path, ".dat"))
-        path += ".dat";
+    path.replace_extension("dat");
 
     static std::string text;
     text.clear();
@@ -398,7 +394,7 @@ void VisualSettingsParser::exportData(std::string& path, VisualSettingsHandler* 
 }
 
 
-void VisualSettingsHandler::exportData(std::string path)
+void VisualSettingsHandler::exportData(std::filesystem::path path)
 {
     parser.exportData(path, this);
 }

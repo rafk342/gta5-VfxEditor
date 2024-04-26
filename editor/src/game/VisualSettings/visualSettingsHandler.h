@@ -62,8 +62,8 @@ struct VScontainer
 class VisualSettingsParser
 {
 public:
-	void importData(std::string& path, VisualSettingsHandler* handler);
-	void exportData(std::string& path, VisualSettingsHandler* handler);
+	void importData(const std::filesystem::path& path, VisualSettingsHandler* handler);
+	void exportData(std::filesystem::path& path, VisualSettingsHandler* handler);
 };
 
 class VisualSettingsHandler
@@ -75,15 +75,17 @@ class VisualSettingsHandler
 	void RestoreFuncBytes();
 	void SetFuncN_Bytes();
 	void getUsedParamNames();
+
 public:
+
 	VScontainer	mContainer;
 	VisualSettingsParser parser;
 
 	VisualSettingsHandler();
 	~VisualSettingsHandler();
 	
-	void importData(std::string srcPath);
-	void exportData(std::string path);
+	void importData(std::filesystem::path srcPath);
+	void exportData(std::filesystem::path path);
 	bool updateData();
 
 };

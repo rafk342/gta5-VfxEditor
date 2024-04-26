@@ -12,7 +12,7 @@ class VisualSettingsUi : App
 public:
 	using App::App;
 	virtual void window() override;
-	virtual void importData(std::string path) override;
-	virtual void exportData(std::string path) override;
+	virtual void importData(std::filesystem::path path) override;
+	virtual void exportData(std::filesystem::path path) override;
 };
 

@@ -421,12 +421,12 @@ void TimecycleUI::window()
 	MainParamsWindow();
 }
 
-void TimecycleUI::importData(std::string path)
+void TimecycleUI::importData(std::filesystem::path path)
 {
 	m_tcHandler.xmlParser.load_tcData(path, this->currentCycle);
 }
 
-void TimecycleUI::exportData(std::string path)
+void TimecycleUI::exportData(std::filesystem::path path)
 {
 	m_tcHandler.xmlParser.export_tcData(path, this->currentCycle, m_tcHandler.GetCycleName(this->current_weather_index));
 }

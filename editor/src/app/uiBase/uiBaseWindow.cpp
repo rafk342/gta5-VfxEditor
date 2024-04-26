@@ -28,6 +28,11 @@ BaseUiWindow::BaseUiWindow()
     static std::unique_ptr<VfxLightningUi>   LghtUi = std::make_unique<VfxLightningUi>(this, "Lightnings");
 }
 
+const char* App::get_label()
+{
+    return label;
+}
+
 void BaseUiWindow::setActiveApp(App* app) 
 {
     activeApp = app;
@@ -72,6 +77,11 @@ void BaseUiWindow::OnRender()
     ImGui::End();
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                          export/import
+
+
 void BaseUiWindow::LoadSelectedBtn()
 {
     activeApp->importData(getPathOfSelectedFile());
@@ -85,7 +95,7 @@ void BaseUiWindow::SaveAsBtn()
 
     auto path = selectPathForSaveAsBtn();
     
-    if (!path.empty())
+    if (!path.empty() && path.has_filename())
         activeApp->exportData(path);
 
     io.WantCaptureKeyboard = true;
@@ -96,6 +106,10 @@ void BaseUiWindow::SaveBtn()
 {
     activeApp->exportData(getPathOfSelectedFile());
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                          singleton stuff
 
 
 void BaseUiWindow::Create()
@@ -118,8 +132,3 @@ BaseUiWindow* BaseUiWindow::GetInstance()
 }
 
 BaseUiWindow::~BaseUiWindow() {}
-
-const char* App::get_label()
-{
-    return label;
-}

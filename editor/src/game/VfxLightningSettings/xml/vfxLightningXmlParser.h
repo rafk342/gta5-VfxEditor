@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <filesystem>
 
 #include "pugixml/pugixml.hpp"
 #include "helpers/helpers.h"
@@ -21,8 +22,8 @@ public:
 	void LoadCloudBurstCommonSettings(CloudBurstCommonSettings& settings, const pugi::xml_node& node);
 	void LoadKeyframeData(const pugi::xml_node& keyData, ptxKeyframe& keyframe);
 
-	void mImportLightningData(std::string path, gVfxLightningSettings* settings);
-	void mExportLightningData(std::string path, gVfxLightningSettings* settings);
+	void mImportLightningData(const std::filesystem::path& path, gVfxLightningSettings* settings);
+	void mExportLightningData(const std::filesystem::path& path, gVfxLightningSettings* settings);
 
 };
 

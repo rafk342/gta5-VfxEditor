@@ -91,12 +91,12 @@ void VisualSettingsUi::window()
 	}
 }
 
-void VisualSettingsUi::importData(std::string path)
+void VisualSettingsUi::importData(std::filesystem::path path)
 {
 	mHandler.importData(path);
 }
 
-void VisualSettingsUi::exportData(std::string path)
+void VisualSettingsUi::exportData(std::filesystem::path path)
 {
 	mHandler.exportData(path);
 }

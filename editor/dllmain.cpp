@@ -34,6 +34,7 @@ AM_EXPORT void Init()
 	FileListUI::setPreBuff(config_params::path_from_cfg);
 	mRender::SetOpenWindowBtn(config_params::open_window_btn_key);
 	mRender::SetCursorImguiUsage(config_params::cursor_imgui_usage);
+	mRender::SetFontSize(config_params::font_size);
 
 	Hook::Init();
 	ScriptHook::Init();

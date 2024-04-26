@@ -11,7 +11,7 @@
 //									Import
 
 
-void CloudSettingsXmlParser::ImportCloudKfData(const std::string& path, CloudsHandler& CloudsHandler)
+void CloudSettingsXmlParser::ImportCloudKfData(const std::filesystem::path& path, CloudsHandler& CloudsHandler)
 {
 	if (CloudsHandler.GetCloudSettingsVec().empty()) {
 		return; 
@@ -177,7 +177,7 @@ void CloudSettingsXmlParser::FillProbabilityVecFromStr(std::vector<int>& vec, st
 //									Export
 
 
-void CloudSettingsXmlParser::ExportCloudKfData(const std::string& path, const std::vector<CloudSettingsNamed>& CloudsData)
+void CloudSettingsXmlParser::ExportCloudKfData(const std::filesystem::path& path, const std::vector<CloudSettingsNamed>& CloudsData)
 {
 	pugi::xml_document doc;
 	pugi::xml_node decl = doc.append_child(pugi::node_declaration);

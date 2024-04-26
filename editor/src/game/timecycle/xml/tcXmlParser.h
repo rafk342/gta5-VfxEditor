@@ -19,7 +19,7 @@ class tcXmlParser
 {
 	std::string& getTcParamsLine(const tcCycle* cycle, Regions region, int paramId);
 public:
-	void load_tcData(const std::string& path, tcCycle* cycle_to_load);
-	void export_tcData(std::filesystem::path path, const tcCycle* cycle, std::string cycle_name);
+	void load_tcData(const std::filesystem::path& path, tcCycle* cycle_to_load);
+	void export_tcData(const std::filesystem::path& path, const tcCycle* cycle, std::string cycle_name);
 };
 

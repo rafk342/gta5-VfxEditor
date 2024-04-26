@@ -12,11 +12,11 @@ public:
     App(BaseUiWindow* base, const char* label);
     virtual ~App() {};
 
-    const char*  get_label();
+    const char* get_label();
    
     virtual void window() = 0;
-    virtual void importData(std::string path) = 0;
-    virtual void exportData(std::string path) = 0;
+    virtual void importData(std::filesystem::path path) = 0;
+    virtual void exportData(std::filesystem::path path) = 0;
 };
 
 class BaseUiWindow : private FileListUI

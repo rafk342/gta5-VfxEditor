@@ -3,17 +3,20 @@
 #include <mutex>
 
 #include "FileListUI.h"
+#include "logger.h"
 
 char FileListUI::pre_buff[255];
 
 void FileListUI::setPreBuff(const std::string& str)
 {
+    std::memset(pre_buff, 0, 255);
     strcat_s(pre_buff, str.c_str());
 }
 
 
 FileListUI::FileListUI()
 {
+    std::memset(buff, 0, 255);
     strcat_s(this->buff, FileListUI::pre_buff);
 }
 
@@ -21,7 +24,7 @@ FileListUI::FileListUI()
 void FileListUI::file_section()
 {
     ImGui::InputText("path", buff, sizeof(buff));
-
+    
     if (ImGui::Button("Check files"))
     {
         check_files_btn_foo(buff);
@@ -38,7 +41,7 @@ void FileListUI::file_section()
 
     if (ImGui::Button("Load selected"))
     {
-        if (!files_vec.empty())
+        if (!fhandler.get_files_vec().empty())
         {
             LoadSelectedBtn();
         }
@@ -48,7 +51,7 @@ void FileListUI::file_section()
 
     if (ImGui::Button("Save to selected"))
     {
-        if (!files_vec.empty())
+        if (!fhandler.get_files_vec().empty())
         {
             SaveBtn();
         }
@@ -68,15 +71,10 @@ void FileListUI::file_section()
 }
 
 
-void FileListUI::check_files_btn_foo(char* buf)
+void FileListUI::check_files_btn_foo(char* buff)
 {
-    path.assign(buf);
-
-    fhandler.set_files_map(path, ".xml");
-    files_vec = fhandler.get_files_vec();
-    
-    convert_str_pair_to_char();
-
+    m_path.assign(buff);
+    fhandler.fill_files_vec(m_path);
     check_if_check_files_btn_was_pressed = true;
 }
 
@@ -89,34 +87,36 @@ void FileListUI::fill_file_sel_window()
         return;
     }
 
-    if (files_vec.empty())
+    if (fhandler.get_files_vec().empty())
     {
         ImGui::Text("No files found");
         return;
     }
 
     static size_t i;
-    for (i = 0; i < files_vec.size(); i++)
+    auto& char_files_vec = fhandler.to_string_file_names_vec();
+
+    for (i = 0; i < char_files_vec.size(); i++)
     {
-        ImGui::RadioButton(char_files_vec[i].first, &selected_radio_btn, i);
+        ImGui::RadioButton(char_files_vec[i].c_str(), &selected_radio_btn, i);
     }
 }
 
 
-std::string FileListUI::getPathOfSelectedFile()
+std::filesystem::path FileListUI::getPathOfSelectedFile()
 {
-    return files_vec[selected_radio_btn].second;
+    return fhandler.get_files_vec()[selected_radio_btn].second;
 }
 
-std::string FileListUI::GetCurrentSelectedFileName()
+std::filesystem::path FileListUI::GetCurrentSelectedFileName()
 {
-    return files_vec[selected_radio_btn].first;
+    return fhandler.get_files_vec()[selected_radio_btn].first;
 }
 
 
-std::string FileListUI::selectPathForSaveAsBtn()   
+std::filesystem::path FileListUI::selectPathForSaveAsBtn()   
 {
-    std::string strFilePath = ""; 
+    std::filesystem::path fPath;
    
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     IFileSaveDialog* pFileSave;
@@ -146,9 +146,7 @@ std::string FileListUI::selectPathForSaveAsBtn()
 
                 if (SUCCEEDED(hr)) 
                 {
-                    std::wstring wstrFilePath(pszFilePath);
-                    std::string str(wstrFilePath.begin(), wstrFilePath.end());
-                    strFilePath = str;
+                    fPath = pszFilePath;
                     CoTaskMemFree(pszFilePath);
                 }
                 pItem->Release();
@@ -157,22 +155,9 @@ std::string FileListUI::selectPathForSaveAsBtn()
         pFileSave->Release();
     }
     CoUninitialize();
-    
-    if (strFilePath.empty())
-        return strFilePath;
+   
+    if (!fPath.empty())
+        fPath.replace_extension("xml");
 
-    if (!check_str_ending(strFilePath, ".xml") && !check_str_ending(strFilePath, ".dat"))
-        strFilePath += ".xml";
-
-    return strFilePath;
-}
-
-
-void FileListUI::convert_str_pair_to_char()
-{
-    char_files_vec.clear();
-    for (size_t i = 0; i < files_vec.size(); i++)
-    {
-        char_files_vec.push_back({ files_vec[i].first.c_str(), files_vec[i].second.c_str() });
-    }
+    return fPath;
 }

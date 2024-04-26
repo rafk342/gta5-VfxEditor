@@ -6,7 +6,7 @@
 
 
 //No, I wasn't doing everything here manually
-void VfxLightningsXmlParser::mImportLightningData(std::string path, gVfxLightningSettings* settings)
+void VfxLightningsXmlParser::mImportLightningData(const std::filesystem::path& path, gVfxLightningSettings* settings)
 {
     if (!settings)
         return;
@@ -211,7 +211,7 @@ void VfxLightningsXmlParser::LoadKeyframeData(const pugi::xml_node& keyData, ptx
 ///                                         Export
 
 
-void VfxLightningsXmlParser::mExportLightningData(std::string path, gVfxLightningSettings* settings)
+void VfxLightningsXmlParser::mExportLightningData(const std::filesystem::path& path, gVfxLightningSettings* settings)
 {
 
     pugi::xml_document doc;

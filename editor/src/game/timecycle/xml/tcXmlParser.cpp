@@ -37,7 +37,7 @@ struct AttributePredicate
 	}
 };
 
-void tcXmlParser::load_tcData(const std::string& path, tcCycle* cycle_to_load)
+void tcXmlParser::load_tcData(const std::filesystem::path& path, tcCycle* cycle_to_load)
 {
 	if (cycle_to_load == nullptr) 
 		return;
@@ -92,7 +92,7 @@ void tcXmlParser::load_tcData(const std::string& path, tcCycle* cycle_to_load)
 }
 
 
-void tcXmlParser::export_tcData(std::filesystem::path path, const tcCycle* cycle, std::string cycle_name)
+void tcXmlParser::export_tcData(const std::filesystem::path& path, const tcCycle* cycle, std::string cycle_name)
 {
 	if (fileNames.contains(path.filename().string()))
 		cycle_name = fileNames.at(path.filename().string());

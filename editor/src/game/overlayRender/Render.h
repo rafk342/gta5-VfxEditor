@@ -31,6 +31,9 @@ class mRender
 	static bool mInitialized;
 	static bool ImGuiCursorUsage;
 	static bool mRenderState;
+	static float font_size;
+
+	static bool font_scale_expected_to_be_changed;
 
 	static HWND	window;
 	static ID3D11Device* p_device;
@@ -47,11 +50,12 @@ class mRender
 	static int	n_ShowCursor(bool visible);
 	static void SetMouseVisible(bool visible);
 
+	static void ChangeFontSize();
 	static void LoadFont();
 	static void mStyle();
 
 public:
-
+	static void SetFontSize(float sz);
 	static void SetCursorImguiUsage(bool state);
 	static void SetOpenWindowBtn(int btn);
 	static void Init();

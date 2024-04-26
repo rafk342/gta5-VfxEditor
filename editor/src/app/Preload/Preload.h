@@ -18,7 +18,7 @@ class configHandler
 {
 	static std::string config_name;
 	static void WriteDefaultParamsToCfg();
-
+	static void useDefaultParams();
 public:
 	static void readCfg();
 
@@ -35,21 +35,20 @@ struct config_params
 	static bool replace_item_names_with_tooltips_definition;
 	static int open_window_btn_key;
 	static bool cursor_imgui_usage;
-
+	static float font_size;
 };
 
 
 struct default_cfg_params
 {
-	static std::string default_path;
-	const static int default_categories = 1;
-	//const static int default_tooltips = 0;
-	const static int default_replace_item_names_with_tooltips_definition = 1;
-	const static int default_open_window_btn_key = 0x2D; //insert	
-	const static bool default_cursor_imgui_usage = false;
-
+	static constexpr const char* default_path = "E:\\GTAV\\timecycles";
+	static constexpr int default_categories = 1;
+	// static int default_tooltips = 0;
+	static constexpr int default_replace_item_names_with_tooltips_definition = 1;
+	static constexpr int default_open_window_btn_key = 0x2D; //insert	
+	static constexpr bool default_cursor_imgui_usage = false;
+	static constexpr float default_font_size = 15.0f;
 };
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////                    

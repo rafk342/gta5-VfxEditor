@@ -489,12 +489,12 @@ void CloudSettingsUI::window()
 	ParamsWindow();
 }
 
-void CloudSettingsUI::importData(std::string path)
+void CloudSettingsUI::importData(std::filesystem::path path)
 {
 	mXmlParser.ImportCloudKfData(path, mCloudsHandler);
 }
 
-void CloudSettingsUI::exportData(std::string path)
+void CloudSettingsUI::exportData(std::filesystem::path path)
 {
 	mXmlParser.ExportCloudKfData(path, mCloudsHandler.GetCloudSettingsVec());
 }

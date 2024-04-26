@@ -7,6 +7,7 @@
 #include <format>
 #include <unordered_map>
 #include <map>
+#include <filesystem>
 
 #include "pugixml/pugixml.hpp"
 #include "CloudSettings/CloudSettings.h"
@@ -37,7 +38,7 @@ class CloudSettingsXmlParser
 
 public:
 
-	void ImportCloudKfData(const std::string& path, CloudsHandler& CloudsHandler);
-	void ExportCloudKfData(const std::string& path, const std::vector<CloudSettingsNamed>& CloudsData);
+	void ImportCloudKfData(const std::filesystem::path& path, CloudsHandler& CloudsHandler);
+	void ExportCloudKfData(const std::filesystem::path& path, const std::vector<CloudSettingsNamed>& CloudsData);
 
 };

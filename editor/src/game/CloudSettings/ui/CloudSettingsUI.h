@@ -38,8 +38,8 @@ class CloudSettingsUI : public App
 	void CloudSettingsVariablesSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
 
 	virtual void	window() override;
-	virtual void	importData(std::string path) override;
-	virtual void	exportData(std::string path) override;
+	virtual void	importData(std::filesystem::path path) override;
+	virtual void	exportData(std::filesystem::path path) override;
 
 public:
 	CloudSettingsXmlParser	mXmlParser;

@@ -473,12 +473,12 @@ void keyframeTable(const char* label, ptxKeyframe& keyframe, u8 idx)
 }
 
 
-void VfxLightningUi::importData(std::string path)
+void VfxLightningUi::importData(std::filesystem::path path)
 {
 	mXmlParser.mImportLightningData(path, mVfxLightingHandler.mVfxLightningSettings);
 }
 
-void VfxLightningUi::exportData(std::string path)
+void VfxLightningUi::exportData(std::filesystem::path path)
 {
 	mXmlParser.mExportLightningData(path, mVfxLightingHandler.mVfxLightningSettings);
 }

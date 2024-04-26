@@ -27,12 +27,13 @@ bool	mRender::isWindowVisible = false;
 bool	mRender::mInitialized = false;
 bool    mRender::ImGuiCursorUsage = false;
 bool	mRender::mRenderState = false;
-
+float	mRender::font_size = 15.0f;
+bool	mRender::font_scale_expected_to_be_changed = false;
 
 void mRender::Search_for_gDevice()
 {
 	g_ResizeBuffersAddr = gmAddress::Scan("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 81 EC 90 00 00 00 48 8B F1 48 8D 0D");
-	g_PresentImageAddr = gmAddress::Scan("40 55 53 56 57 41 54 41 56 41 57 48 8B EC 48 83 EC 40 48 8B 0D");	// EndFrame
+	g_PresentImageAddr = gmAddress::Scan("40 55 53 56 57 41 54 41 56 41 57 48 8B EC 48 83 EC 40 48 8B 0D");
 	window = FindWindowW(L"grcWindow", NULL);
 	SetWindowTextW(window, L"Hello World");
 
@@ -197,10 +198,25 @@ void mRender::ImRenderFrame()
 	ImGui::NewFrame();
 
 	BaseUiWindow::GetInstance()->OnRender();
-	
+
+	if (ImGui::Begin("tmp window"))
+	{
+		if (ImGui::DragFloat("font sz", &font_size, 0.1f, 1, 100))
+		{
+			font_scale_expected_to_be_changed = true;
+		}
+		ImGui::End();
+	}
+
+
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	
+	if (font_scale_expected_to_be_changed) {
+		ChangeFontSize();
+		font_scale_expected_to_be_changed = false;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,9 +257,9 @@ void mRender::Shutdown()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void mRender::LoadFont()
+namespace 
 {
-	ImGuiIO& io = ImGui::GetIO();
+	const char* font_path = "c:\\Windows\\Fonts\\calibri.ttf";
 
 	// latin& cyrillic& chinese
 	static const ImWchar fontRange[] =
@@ -263,16 +279,41 @@ void mRender::LoadFont()
 
 		0,
 	};
+}
 
-	ImFontConfig regularConfig{};
+void mRender::ChangeFontSize()
+{
+	auto& io = ImGui::GetIO();
+	
+	ImFontConfig newFontConfig{};
 	{
-		regularConfig.RasterizerMultiply = 1.3f;
-		regularConfig.RasterizerDensity = 1.2f;
-		regularConfig.OversampleH = 2;
-		regularConfig.OversampleV = 1;
+		newFontConfig.RasterizerMultiply = 1.3f;
+		newFontConfig.RasterizerDensity = log(font_size) / 5 + 1;
+		newFontConfig.OversampleH = 2;
+		newFontConfig.OversampleV = 1;
 	}
 
-	io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\calibri.ttf", 15.0f, &regularConfig, fontRange);
+	io.Fonts->Clear();
+	io.Fonts->AddFontFromFileTTF(font_path, font_size, &newFontConfig, fontRange);
+	io.Fonts->Build();
+
+	ImGui_ImplDX11_InvalidateDeviceObjects();
+	ImGui_ImplDX11_CreateDeviceObjects();
+}
+
+void mRender::LoadFont()
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	ImFontConfig regularConfig{};
+	//{
+	//	regularConfig.RasterizerMultiply = 1.3f;
+	//	regularConfig.RasterizerDensity = 1.2f;
+	//	regularConfig.OversampleH = 2;
+	//	regularConfig.OversampleV = 1;
+	//}
+
+	io.Fonts->AddFontFromFileTTF(font_path, font_size, &regularConfig, fontRange);
 }
 
 
@@ -287,6 +328,12 @@ void mRender::mStyle()
 	style->Colors[ImGuiCol_PopupBg] = { 45.0f/255.0f, 45.0f/255.0f, 45.0f/255.0f, 1.0f };
 }
 
+
+void mRender::SetFontSize(float sz)
+{
+	font_scale_expected_to_be_changed = true;
+	font_size = sz;	
+}
 
 void mRender::SetCursorImguiUsage(bool state)
 {
