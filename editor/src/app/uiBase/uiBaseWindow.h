@@ -9,7 +9,7 @@ class App
 {
     const char* label;
 public:
-    App(BaseUiWindow* base, const char* label);
+    App(const char* label);
     virtual ~App() {};
 
     const char* get_label();
@@ -25,9 +25,10 @@ class BaseUiWindow : private FileListUI
     friend std::default_delete<BaseUiWindow>;
     static std::unique_ptr<BaseUiWindow> selfInstance;
 
-    const char*         MainWindowLabel = "VisualEffects Editor";
-    std::vector<App*>   appsVec;
-    App*                activeApp = nullptr;
+    const char* MainWindowLabel = "VisualEffects Editor";
+   
+    std::vector<std::unique_ptr<App>>   appsVec;
+    App*                                activeApp = nullptr;
 
     void setActiveApp(App* app);
     App* getActiveApp() const;
@@ -45,6 +46,5 @@ public:
     static void Destroy();
     static BaseUiWindow* GetInstance();
 
-    void PushApp(App* app);
     void OnRender();
 };

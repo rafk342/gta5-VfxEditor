@@ -28,6 +28,11 @@ INIReader::INIReader(const char *buffer, size_t buffer_size)
   _error = ini_parse_string(content.c_str(), ValueHandler, this);
 }
 
+INI_API void INIReader::ParseFile(const std::string& filename)
+{
+    _error = ini_parse(filename.c_str(), ValueHandler, (void*)this);
+}
+
 int INIReader::ParseError() const
 {
     return _error;

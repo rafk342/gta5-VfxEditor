@@ -1,914 +1,28 @@
 #include "Preload.h"
 #include "logger.h"
 
-std::string                     config_params::path_from_cfg = "";
-bool                            config_params::categories; 
-//bool                            config_params::tooltips;
-bool                            config_params::replace_item_names_with_tooltips_definition;
-int                             config_params::open_window_btn_key = 0x2D;
-bool                            config_params::cursor_imgui_usage = false;
-float                           config_params::font_size;
 
-std::vector<std::string>                                    CategoriesHandler::category_names;
-std::unordered_map<std::string, std::vector<std::string>>   CategoriesHandler::categories_map;
-
-
-//std::string default_cfg_params::default_path = "E:\\GTAV\\timecycles";
-
-
-std::string                                     configHandler::config_name = "__TcEditorConfig.ini";
-std::string                                     CategoriesHandler::categories_filename = "__TcEditorCategories.txt";
-std::string                                     TooltipsHandler::tooltips_filename = "__TcEditorNamesReplacement.txt";
-
-std::unordered_map<std::string, std::string>    TooltipsHandler::tooltips_map;
-std::vector<std::string>                        TooltipsHandler::tooltips_order;
-
-
-///////////////////////////////////////////////////////////////////////////////////////////                    
-//                               config
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//											TcParameter Names replacement
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
-void configHandler::readCfg()
+//void TcNamesReplacemantHandler::print()
+//{
+//    for (auto& var : g_varInfos)
+//    {
+//        if (var.varType == VARTYPE_NONE)
+//            continue;
+//
+//        std::println("{}", var.labelName);
+//    }
+//}
+
+void TcNamesReplacemantHandler::save_hardcoded_params_to_file(const char* filename)
 {
-    INIReader reader(config_name);
-
-    if (reader.ParseError() < 0)
-    {
-        WriteDefaultParamsToCfg();
-        useDefaultParams();
-        return;
-    }
-    
-    config_params::categories =                                 reader.GetBoolean("Settings",   "Categories",               default_cfg_params::default_categories);
-    config_params::path_from_cfg =                              reader.GetString ("Settings",   "Default_path",             default_cfg_params::default_path);
-    config_params::replace_item_names_with_tooltips_definition= reader.GetBoolean("Settings",   "Names_replacement",        default_cfg_params::default_replace_item_names_with_tooltips_definition);
-    config_params::open_window_btn_key =                        reader.GetInteger("Settings",   "OpenClose_window_button",  default_cfg_params::default_open_window_btn_key);
-    config_params::cursor_imgui_usage =                         reader.GetBoolean("Settings",   "CursorImgui_Impl",         default_cfg_params::default_cursor_imgui_usage);
-    config_params::font_size =                                  reader.GetReal   ("Settings",   "Font_size",                default_cfg_params::default_font_size);
-
-    if (config_params::path_from_cfg.empty())
-    {
-        config_params::path_from_cfg = default_cfg_params::default_path;
-    }
-}
-
-void configHandler::useDefaultParams()
-{
-    config_params::categories = default_cfg_params::default_categories;
-    config_params::path_from_cfg = default_cfg_params::default_path;
-    config_params::replace_item_names_with_tooltips_definition = default_cfg_params::default_replace_item_names_with_tooltips_definition;
-    config_params::open_window_btn_key = default_cfg_params::default_open_window_btn_key;
-    config_params::cursor_imgui_usage = default_cfg_params::default_cursor_imgui_usage;
-    config_params::font_size = default_cfg_params::default_font_size;
-}
-
-void configHandler::WriteDefaultParamsToCfg()
-{
-    std::ofstream outfile(config_name, std::ios::trunc);
-    
-    if (!outfile.is_open())
-        return;
-
-    config_params::path_from_cfg =                                  default_cfg_params::default_path;
-    config_params::categories =                                     default_cfg_params::default_categories;
-    config_params::replace_item_names_with_tooltips_definition =    default_cfg_params::default_replace_item_names_with_tooltips_definition;
-
-    outfile << "// All key codes can be found here: https://msdn.microsoft.com/library/windows/desktop/dd375731.aspx\n\n";
-
-    outfile << "[Settings]" << std::endl;
-
-    outfile << "Default_path             " << " = " <<     default_cfg_params::default_path                                         << '\n';
-    outfile << "Categories               " << " = " <<     default_cfg_params::default_categories                                   << '\n';
-    outfile << "Names_replacement        " << " = " <<     default_cfg_params::default_replace_item_names_with_tooltips_definition  << '\n';
-    outfile << "OpenClose_window_button  " << " = " <<     "0x2D"                                                                   << "\n";
-    outfile << "Font_size                " << " = " <<     default_cfg_params::default_font_size                                    << '\n';
-    
-    outfile << "\n// In case if there's something wrong with the system cursor - set this to 1 "                                    << '\n';
-    outfile << "CursorImgui_Impl         " << " = " <<     default_cfg_params::default_cursor_imgui_usage                           << '\n';
-
-    
-    outfile.close();
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////                    
-//                               categories
-
-
-
-void CategoriesHandler::LoadCategories()
-{
-    if (!config_params::categories)
-        return;
-
-    CategoriesHandler::load_file_categories();
-
-    if (categories_map.empty())
-    {
-        CategoriesHandler::load_hardcoded_categories();
-        CategoriesHandler::save_hardcoded_params_to_file();
-    }
-}
-
-
-void CategoriesHandler::save_hardcoded_params_to_file()
-{
-    std::ofstream outfile(CategoriesHandler::categories_filename, std::ios::trunc);
-
-    if (!outfile.is_open())
-        return;
-
-
-    for (auto& category : CategoriesHandler::category_names)
-    {
-        outfile << "\n\n" << '@' << category << "\n\n";
-
-        for (auto& param_name : CategoriesHandler::categories_map.at(category))
-        {
-            outfile << param_name << "\n";
-        }
-    }
-    outfile.close();
-}
-
-
-void CategoriesHandler::handle_file_params(std::ifstream& infile)
-{
-    std::vector<std::string> raw_array;
-    std::string raw_line;
-
-    while (std::getline(infile, raw_line))
-    {
-        auto line = strip_str(raw_line);
-        
-        if (!line.empty())
-            raw_array.push_back(line);
-    }
-
-    auto& c_names = CategoriesHandler::category_names;
-    auto& c_map = CategoriesHandler::categories_map;
-
-    c_names.clear();
-    c_map.clear();
-
-    std::string none_name = "None";
-    std::string category = none_name;
-
-    c_names.push_back(category);
-
-    for (auto& line : raw_array)
-    {
-        if (line[0] == '@')
-        {
-            category = line.erase(0, 1);
-            c_names.push_back(category);
-        }
-        else
-        {
-            c_map[category].push_back(line);
-        }
-    }
-
-    remove_repeatings_from_map();
-
-    if (!c_map.contains(none_name))
-    {
-        c_names.erase(std::remove(c_names.begin(), c_names.end(), none_name), c_names.end());
-    }
-    else 
-    {
-        if (c_names[0] == none_name)
-        {
-            c_names.erase(c_names.begin());
-            c_names.push_back(none_name);
-        }
-    }
-
-    for (auto& [category, names_vec] : c_map) 
-    {
-        if (names_vec.empty())
-        {
-            c_map.erase(category);
-            c_names.erase(std::remove(c_names.begin(), c_names.end(), category), c_names.end());
-        }
-    }
-}
-
-
-
-
-
-void CategoriesHandler::remove_repeatings_from_map()
-{
-
-    RemoveDuplicatesInVector(CategoriesHandler::category_names);
-    
-    for (auto& [category, names_vec] : CategoriesHandler::categories_map)
-    {
-        RemoveDuplicatesInVector(names_vec);
-    }
-
-    for (auto& [key, value] : CategoriesHandler::categories_map)
-    {
-        int count = 0;
-        for (auto& [key1, value1] : CategoriesHandler::categories_map) 
-        {
-            if (!value1.empty() && key1 != key) 
-            {
-                std::vector<std::string> temp_value = value1;
-                for (const auto& item : value) 
-                {
-                    auto iter = std::find(temp_value.begin(), temp_value.end(), item);
-                    if (iter != temp_value.end()) 
-                    {
-                        count++;
-                        //std::cout << std::to_string(count) << "\t\tduplicate " << *iter << " in " << key1 << "\n";
-                        temp_value.erase(iter);
-                    }
-                }
-                CategoriesHandler::categories_map[key1] = temp_value;
-            }
-        }
-    }
-}
-
-
-
-void CategoriesHandler::load_file_categories()
-{
-    std::ifstream infile(CategoriesHandler::categories_filename);
-
-    if (!infile.is_open()) {
-        return;
-    } else {
-        handle_file_params(infile);
-    }
-
-    infile.close();
-}
-
-
-
-void CategoriesHandler::load_hardcoded_categories()
-{
-    CategoriesHandler::categories_map.clear();
-    CategoriesHandler::category_names.clear();
-    
-    {
-        CategoriesHandler::category_names =
-        {
-            "light variables" ,
-            "Sun pos override" ,
-            "light ray variables" ,
-            "Screen Space Light rays data" ,
-            "post fx variables" ,
-            "vignetting intensity" ,
-            "colour gradient variables" ,
-            "depth of field variables" ,
-            "night vision variables" ,
-            "heat haze variables" ,
-            "lens distortion" ,
-            "blur vignetting" ,
-            "screen blur" ,
-            "Sky colouring" ,
-            "Sun variables" ,
-            "Stars / Moon variables" ,
-            "Cloud generation" ,
-            "Main clouds" ,
-            "cloud shadows" ,
-            "directional (cascade) shadows" ,
-            "sprite (corona and distant lights) variables" ,
-            "water variables" ,
-            "mirror variables" ,
-            "fog variables" ,
-            "Linear piecewise fog." ,
-            "fog shadows" ,
-            "volumetric lights" ,
-            "fog ray" ,
-            "refection variables" ,
-            "misc variables" };
-
-        CategoriesHandler::categories_map["light variables"] =
-        {
-            "light_dir_col",
-            "light_dir_mult",
-            "light_directional_amb_col",
-            "light_directional_amb_intensity",
-            "light_directional_amb_intensity_mult",
-            "light_directional_amb_bounce_enabled",
-            "light_amb_down_wrap",
-            "light_natural_amb_down_col",
-            "light_natural_amb_down_intensity",
-            "light_natural_amb_up_col",
-            "light_natural_amb_up_intensity",
-            "light_natural_amb_up_intensity_mult",
-            "light_natural_push",
-            "light_ambient_bake_ramp",
-            "light_artificial_int_down_col",
-            "light_artificial_int_down_intensity",
-            "light_artificial_int_up_col",
-            "light_artificial_int_up_intensity",
-            "light_artificial_ext_down_col",
-            "light_artificial_ext_down_intensity",
-            "light_artificial_ext_up_col",
-            "light_artificial_ext_up_intensity",
-            "ped_light_col",
-            "ped_light_mult",
-            "ped_light_direction_x",
-            "ped_light_direction_y",
-            "ped_light_direction_z",
-            "light_amb_occ_mult",
-            "light_amb_occ_mult_ped",
-            "light_amb_occ_mult_veh",
-            "light_amb_occ_mult_prop",
-            "light_amb_volumes_in_diffuse",
-            "ssao_inten",
-            "ssao_type",
-            "ssao_cp_strength",
-            "ssao_qs_strength",
-            "light_ped_rim_mult",
-            "light_dynamic_bake_tweak",
-            "light_vehicle_second_spec_override",
-            "light_vehicle_intenity_scale"
-        };
-
-
-        CategoriesHandler::categories_map["Sun pos override"] =
-        {
-            "light_direction_override",
-            "light_direction_override_overrides_sun",
-            "sun_direction_x",
-            "sun_direction_y",
-            "sun_direction_z",
-            "moon_direction_x",
-            "moon_direction_y",
-            "moon_direction_z"
-        };
-
-
-        CategoriesHandler::categories_map["light ray variables"] =
-        {
-            "light_ray_col",
-            "light_ray_mult",
-            "light_ray_underwater_mult",
-            "light_ray_dist",
-            "light_ray_heightfalloff",
-            "light_ray_height_falloff_start"
-        };
-
-
-        CategoriesHandler::categories_map["Screen Space Light rays data"] =
-        {
-            "light_ray_add_reducer",
-            "light_ray_blit_size",
-            "light_ray_length"
-        };
-
-
-        CategoriesHandler::categories_map["post fx variables"] =
-        {
-            "postfx_exposure",
-            "postfx_exposure_min",
-            "postfx_exposure_max",
-            "postfx_bright_pass_thresh_width",
-            "postfx_bright_pass_thresh",
-            "postfx_intensity_bloom",
-            "postfx_correct_col",
-            "postfx_correct_cutoff",
-            "postfx_shift_col",
-            "postfx_shift_cutoff",
-            "postfx_desaturation",
-            "postfx_noise",
-            "postfx_noise_size",
-            "postfx_tonemap_filmic_override_dark",
-            "postfx_tonemap_filmic_exposure_dark",
-            "postfx_tonemap_filmic_a",
-            "postfx_tonemap_filmic_b",
-            "postfx_tonemap_filmic_c",
-            "postfx_tonemap_filmic_d",
-            "postfx_tonemap_filmic_e",
-            "postfx_tonemap_filmic_f",
-            "postfx_tonemap_filmic_w",
-            "postfx_tonemap_filmic_override_bright",
-            "postfx_tonemap_filmic_exposure_bright",
-            "postfx_tonemap_filmic_a_bright",
-            "postfx_tonemap_filmic_b_bright",
-            "postfx_tonemap_filmic_c_bright",
-            "postfx_tonemap_filmic_d_bright",
-            "postfx_tonemap_filmic_e_bright",
-            "postfx_tonemap_filmic_f_bright",
-            "postfx_tonemap_filmic_w_bright"
-        };
-
-
-        CategoriesHandler::categories_map["vignetting intensity"] =
-        {
-            "postfx_vignetting_intensity",
-            "postfx_vignetting_radius",
-            "postfx_vignetting_contrast",
-            "postfx_vignetting_col"
-        };
-
-
-        CategoriesHandler::categories_map["colour gradient variables"] =
-        {
-            "postfx_grad_top_col",
-            "postfx_grad_middle_col",
-            "postfx_grad_bottom_col",
-            "postfx_grad_midpoint",
-            "postfx_grad_top_middle_midpoint",
-            "postfx_grad_middle_bottom_midpoint",
-            "postfx_scanlineintensity",
-            "postfx_scanline_frequency_0",
-            "postfx_scanline_frequency_1",
-            "postfx_scanline_speed",
-            "postfx_motionblurlength"
-        };
-
-
-        CategoriesHandler::categories_map["depth of field variables"] =
-        {
-            "dof_far",
-            "dof_blur_mid",
-            "dof_blur_far",
-            "dof_enable_hq",
-            "dof_hq_smallblur",
-            "dof_hq_shallowdof",
-            "dof_hq_nearplane_out",
-            "dof_hq_nearplane_in",
-            "dof_hq_farplane_out",
-            "dof_hq_farplane_in",
-            "environmental_blur_in",
-            "environmental_blur_out",
-            "environmental_blur_size",
-            "bokeh_brightness_min",
-            "bokeh_brightness_max",
-            "bokeh_fade_min",
-            "bokeh_fade_max"
-        };
-
-
-        CategoriesHandler::categories_map["night vision variables"] =
-        {
-            "nv_light_dir_mult",
-            "nv_light_amb_down_mult",
-            "nv_light_amb_up_mult",
-            "nv_lowLum",
-            "nv_highLum",
-            "nv_topLum",
-            "nv_scalerLum",
-            "nv_offsetLum",
-            "nv_offsetLowLum",
-            "nv_offsetHighLum",
-            "nv_noiseLum",
-            "nv_noiseLowLum",
-            "nv_noiseHighLum",
-            "nv_bloomLum",
-            "nv_colorLum",
-            "nv_colorLowLum",
-            "nv_colorHighLum"
-        };
-
-
-        CategoriesHandler::categories_map["heat haze variables"] =
-        {
-            "hh_startRange",
-            "hh_farRange",
-            "hh_minIntensity",
-            "hh_maxIntensity",
-            "hh_displacementU",
-            "hh_displacementV",
-            "hh_tex1UScale",
-            "hh_tex1VScale",
-            "hh_tex1UOffset",
-            "hh_tex1VOffset",
-            "hh_tex2UScale",
-            "hh_tex2VScale",
-            "hh_tex2UOffset",
-            "hh_tex2VOffset",
-            "hh_tex1UFrequencyOffset",
-            "hh_tex1UFrequency",
-            "hh_tex1UAmplitude",
-            "hh_tex1VScrollingSpeed",
-            "hh_tex2UFrequencyOffset",
-            "hh_tex2UFrequency",
-            "hh_tex2UAmplitude",
-            "hh_tex2VScrollingSpeed"
-        };
-
-        CategoriesHandler::categories_map["lens distortion"] =
-        {
-            "lens_dist_coeff",
-            "lens_dist_cube_coeff",
-            "chrom_aberration_coeff",
-            "chrom_aberration_coeff2",
-            "lens_artefacts_intensity",
-            "lens_artefacts_min_exp_intensity",
-            "lens_artefacts_max_exp_intensity"
-        };
-
-
-        CategoriesHandler::categories_map["blur vignetting"] =
-        {
-            "blur_vignetting_radius",
-            "blur_vignetting_intensity"
-        };
-
-
-        CategoriesHandler::categories_map["screen blur"] =
-        {
-             "screen_blur_intensity"
-        };
-
-
-
-        CategoriesHandler::categories_map["Sky colouring"] =
-        {
-            "sky_zenith_transition_position",
-            "sky_zenith_transition_east_blend",
-            "sky_zenith_transition_west_blend",
-            "sky_zenith_blend_start",
-            "sky_zenith_col",
-            "sky_zenith_col_inten",
-            "sky_zenith_transition_col",
-            "sky_zenith_transition_col_inten",
-            "sky_azimuth_transition_position",
-            "sky_azimuth_east_col",
-            "sky_azimuth_east_col_inten",
-            "sky_azimuth_transition_col",
-            "sky_azimuth_transition_col_inten",
-            "sky_azimuth_west_col",
-            "sky_azimuth_west_col_inten",
-            "sky_hdr",
-            "sky_plane",
-            "sky_plane_inten"
-        };
-
-
-        CategoriesHandler::categories_map["Sun variables"] =
-        {
-            "sky_sun_col",
-            "sky_sun_disc_col",
-            "sky_sun_disc_size",
-            "sky_sun_hdr",
-            "sky_sun_miephase",
-            "sky_sun_miescatter",
-            "sky_sun_mie_intensity_mult",
-            "sky_sun_influence_radius",
-            "sky_sun_scatter_inten"
-        };
-
-
-        CategoriesHandler::categories_map["Stars / Moon variables"] =
-        {
-            "sky_moon_col",
-            "sky_moon_disc_size",
-            "sky_moon_iten",
-            "sky_stars_iten",
-            "sky_moon_influence_radius",
-            "sky_moon_scatter_inten"
-        };
-
-
-        CategoriesHandler::categories_map["Cloud generation"] =
-        {
-            "sky_cloud_gen_frequency",
-            "sky_cloud_gen_scale",
-            "sky_cloud_gen_threshold",
-            "sky_cloud_gen_softness",
-            "sky_cloud_density_mult",
-            "sky_cloud_density_bias"
-        };
-
-
-        CategoriesHandler::categories_map["Main clouds"] =
-        {
-            "sky_cloud_mid_col",
-            "sky_cloud_base_col",
-            "sky_cloud_base_strength",
-            "sky_cloud_shadow_col",
-            "sky_cloud_shadow_strength",
-            "sky_cloud_gen_density_offset",
-            "sky_cloud_offset",
-            "sky_cloud_overall_strength",
-            "sky_cloud_overall_color",
-            "sky_cloud_edge_strength",
-            "sky_cloud_fadeout",
-            "sky_cloud_hdr",
-            "sky_cloud_dither_strength",
-            "sky_small_cloud_col",
-            "sky_small_cloud_detail_strength",
-            "sky_small_cloud_detail_scale",
-            "sky_small_cloud_density_mult",
-            "sky_small_cloud_density_bias"
-        };
-
-
-        CategoriesHandler::categories_map["cloud shadows"] =
-        {
-            "cloud_shadow_density",
-            "cloud_shadow_softness",
-            "cloud_shadow_opacity"
-        };
-
-
-        CategoriesHandler::categories_map["directional (cascade) shadows"] =
-        {
-            "dir_shadow_num_cascades",
-            "dir_shadow_distance_multiplier",
-            "dir_shadow_softness",
-            "dir_shadow_cascade0_scale"
-        };
-
-
-        CategoriesHandler::categories_map["sprite (corona and distant lights) variables"] =
-        {
-            "sprite_brightness",
-            "sprite_size",
-            "sprite_corona_screenspace_expansion",
-            "Lensflare_visibility",
-            "sprite_distant_light_twinkle"
-        };
-
-
-        CategoriesHandler::categories_map["water variables"] =
-        {
-            "water_reflection",
-            "water_reflection_far_clip",
-            "water_reflection_lod",
-            "water_reflection_sky_flod_range",
-            "water_reflection_lod_range_enabled",
-            "water_reflection_lod_range_hd_start",
-            "water_reflection_lod_range_hd_end",
-            "water_reflection_lod_range_orphanhd_start",
-            "water_reflection_lod_range_orphanhd_end",
-            "water_reflection_lod_range_lod_start",
-            "water_reflection_lod_range_lod_end",
-            "water_reflection_lod_range_slod1_start",
-            "water_reflection_lod_range_slod1_end",
-            "water_reflection_lod_range_slod2_start",
-            "water_reflection_lod_range_slod2_end",
-            "water_reflection_lod_range_slod3_start",
-            "water_reflection_lod_range_slod3_end",
-            "water_reflection_lod_range_slod4_start",
-            "water_reflection_lod_range_slod4_end",
-            "water_reflection_height_offset",
-            "water_reflection_height_override",
-            "water_reflection_height_override_amount",
-            "water_reflection_distant_light_intensity",
-            "water_reflection_corona_intensity",
-            "water_foglight",
-            "water_interior",
-            "water_fogstreaming",
-            "water_foam_intensity_mult",
-            "water_drying_speed_mult",
-          "water_specular_intensity"
-        };
-
-
-        CategoriesHandler::categories_map["mirror variables"] =
-        {
-            "mirror_reflection_local_light_intensity"
-        };
-
-
-        CategoriesHandler::categories_map["fog variables"] =
-        {
-            "fog_start",
-            "fog_near_col",
-            "fog_near_col_a",
-            "fog_col",
-            "fog_col_a",
-            "fog_sun_lighting_calc_pow",
-            "fog_moon_col",
-            "fog_moon_col_a",
-            "fog_moon_lighting_calc_pow",
-            "fog_east_col",
-            "fog_east_col_a",
-            "fog_density",
-            "fog_falloff",
-            "fog_base_height",
-            "fog_alpha",
-            "fog_horizon_tint_scale",
-            "fog_hdr",
-            "fog_haze_col",
-            "fog_haze_density",
-            "fog_haze_alpha",
-            "fog_haze_hdr",
-            "fog_haze_start"
-        };
-
-
-        CategoriesHandler::categories_map["Linear piecewise fog."] =
-        {
-            "fog_shape_bottom",
-            "fog_shape_top",
-            "fog_shape_log_10_of_visibility",
-            "fog_shape_weight_0",
-            "fog_shape_weight_1",
-            "fog_shape_weight_2",
-            "fog_shape_weight_3"
-        };
-
-
-        CategoriesHandler::categories_map["fog shadows"] =
-        {
-            "fog_shadow_amount",
-            "fog_shadow_falloff",
-            "fog_shadow_base_height"
-        };
-
-        CategoriesHandler::categories_map["volumetric lights"] =
-        {
-            "fog_volume_light_range",
-            "fog_volume_light_fade",
-            "fog_volume_light_intensity",
-            "fog_volume_light_size"
-        };
-
-
-        CategoriesHandler::categories_map["fog ray"] =
-        {
-            "fogray_contrast",
-            "fogray_intensity",
-            "fogray_density",
-            "fogray_nearfade",
-            "fogray_farfade"
-        };
-
-
-        CategoriesHandler::categories_map["refection variables"] =
-        {
-            "reflection_lod_range_start",
-            "reflection_lod_range_end",
-            "reflection_slod_range_start",
-            "reflection_slod_range_end",
-            "reflection_interior_range",
-            "reflection_tweak_interior_amb",
-            "reflection_tweak_exterior_amb",
-            "reflection_tweak_emissive",
-            "reflection_tweak_directional",
-            "reflection_hdr_mult"
-        };
-
-
-        CategoriesHandler::categories_map["misc variables"] =
-        {
-            "far_clip",
-            "temperature",
-            "particle_emissive_intensity_mult",
-            "vfxlightning_intensity_mult",
-            "vfxlightning_visibility",
-            "particle_light_intensity_mult",
-            "natural_ambient_multiplier",
-            "artificial_int_ambient_multiplier",
-            "fog_cut_off",
-            "no_weather_fx",
-            "no_gpu_fx",
-            "no_rain",
-            "no_rain_ripples",
-            "fogvolume_density_scalar",
-            "fogvolume_density_scalar_interior",
-            "fogvolume_fog_scaler",
-            "time_offset",
-            "vehicle_dirt_mod",
-            "wind_speed_mult",
-            "entity_reject",
-            "lod_mult",
-            "enable_occlusion",
-            "enable_shadow_occlusion",
-            "render_exterior",
-            "portal_weight",
-            "light_falloff_mult",
-            "lodlight_range_mult",
-            "shadow_distance_mult",
-            "lod_mult_hd",
-            "lod_mult_orphanhd",
-            "lod_mult_lod",
-            "lod_mult_slod1",
-            "lod_mult_slod2",
-            "lod_mult_slod3",
-            "lod_mult_slod4"
-        };
-      
-    }
-
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////								Tooltips
-
-
-
-
-void TooltipsHandler::load_tooltips()
-{
-    if (!(/*config_params::tooltips ||*/ config_params::replace_item_names_with_tooltips_definition))
-        return;
-
-    load_tooltips_from_file();
-
-    if (tooltips_map.empty())
-    {
-        load_hardcoded_tooltips();
-        write_tooltips_to_file();
-    }
-}
-
-
-std::unordered_map<std::string, std::string>& TooltipsHandler::get_tooltip_map()
-{
-    return tooltips_map;
-}
-
-
-void TooltipsHandler::load_tooltips_from_file()
-{
-    std::string line;
-    std::vector<std::string> lines;
-    lines.reserve(500);
-
-    std::ifstream infile(tooltips_filename);
-
-    if (!infile.is_open())
-        return;
-
-
-    while (std::getline(infile, line))
-    {
-        lines.push_back(line);
-    }
-
-    infile.close();
-
-
-    std::string tooltip;
-    std::string tc_item_name;
-    size_t colon_pos;
-
-    for (auto& line : lines)
-    {
-        colon_pos = line.find(':');
-
-        if (colon_pos == std::string::npos)
-            continue;
-
-        tc_item_name = strip_str(line.substr(0, colon_pos));
-        tooltip = strip_str(line.substr(colon_pos + 1, line.size()));
-
-        if (!tc_item_name.empty() && !tooltip.empty())
-        {
-            tooltips_map.insert({ tc_item_name , tooltip});
-        }
-    }
-    int count = 0;
-    for (auto& [v1, v2] : tooltips_map)
-    {
-        count = 0;
-        for (auto& [v11, v22] : tooltips_map)
-        {
-            if (v2 == v22)
-            {
-                count += 1;
-                if (count > 1)
-                {
-                    v22 += " ";
-                }
-            }
-        }
-    }
-}
-
-
-void TooltipsHandler::write_tooltips_to_file()
-{
-    std::ofstream outfile(tooltips_filename, std::ios::trunc);
-
-    if (!outfile.is_open())
-        return;
-
-    for (auto& tc_name : tooltips_order)
-    {
-        if (!tooltips_map.contains(tc_name))
-            continue;
-
-        outfile << std::format(" {:<50}: {}\n", tc_name, tooltips_map.at(tc_name)); /*" " << tc_name << temp_str << ": " << tooltips_map.at(tc_name) << std::endl;*/
-    }
-
-    outfile.close();
-}
-
-
-void TooltipsHandler::load_hardcoded_tooltips()
-{
-
-    tooltips_map.clear();
-    tooltips_order.clear();
-
-    tooltips_map =
+    params_map =
     {
         {"light_dir_col"                                  , "Directional Colour"                              },
         {"light_dir_mult"                                 , "Directional Intensity"                           },
@@ -1204,9 +318,9 @@ void TooltipsHandler::load_hardcoded_tooltips()
         {"fog_shape_top"                                  , "Fog shape top"                                   },
         {"fog_shape_log_10_of_visibility"                 , "Fog log10(visibility)"                           },
         {"fog_shape_weight_0"                             , "weight 0"                                        },
-        {"fog_shape_weight_1"                             , "weight 0"                                        },
-        {"fog_shape_weight_2"                             , "weight 0"                                        },
-        {"fog_shape_weight_3"                             , "weight 0"                                        },
+        {"fog_shape_weight_1"                             , "weight 1"                                        },
+        {"fog_shape_weight_2"                             , "weight 2"                                        },
+        {"fog_shape_weight_3"                             , "weight 3"                                        },
         {"fog_shadow_amount"                              , "Fog Shadow Amount"                               },
         {"fog_shadow_falloff"                             , "Fog Shadow Falloff"                              },
         {"fog_shadow_base_height"                         , "Fog Shadow Base Height"                          },
@@ -1266,385 +380,881 @@ void TooltipsHandler::load_hardcoded_tooltips()
         {"lod_mult_slod4"                                 , "Lod Mult SLOD4"                                  }
     };
 
+    std::ofstream output(filename, std::ios::trunc);
 
-    int count = 0;
-    for (auto& [v1, v2] : tooltips_map)
+    if (!output.is_open())
+        return;
+
+    std::string var_name;
+    var_name.reserve(50);
+
+    for (auto& var : g_varInfos)
     {
-        count = 0;
-        for (auto& [v11, v22] : tooltips_map)
-        {
-            if (v2 == v22)
-            {
+        if (var.varType == VARTYPE_NONE)
+            continue;
+
+        var_name = var.name;
+
+        if (var_name.ends_with("_r"))
+            var_name.resize(var_name.size() - 2);
+
+        auto it = params_map.find(var_name);
+        if (it != params_map.end())
+            output << std::format(" {:<50}: {}\n", it->first, it->second);
+        else
+            output << std::format(" {:<50}: \n", var_name);
+    }
+    output.close();
+}
+
+void TcNamesReplacemantHandler::load_names_replacement(const char* filename)
+{
+    if (!load_from_file(filename))
+    {
+        save_hardcoded_params_to_file(filename);
+        load_from_file(filename);
+    }
+}
+
+bool TcNamesReplacemantHandler::load_from_file(const char* filename)
+{
+    params_map.clear();
+    std::ifstream file(filename);
+    std::string line;
+
+    if (!file.is_open())
+        return false;
+
+    while (std::getline(file, line))
+    {
+        size_t colon_pos = line.find(':');
+
+        if (colon_pos != -1)
+            params_map.insert({ strip_str(line.substr(0, colon_pos)), strip_str(line.substr(colon_pos + 1, line.size() - colon_pos)) });
+    }
+
+    for (auto& [v1, v2] : params_map) {
+        size_t count = 0;
+        for (auto& [v11, v22] : params_map) {
+            if (v2 == v22) {
                 count += 1;
                 if (count > 1)
-                {
-                    v22 += " ";
-                }
+                    v22 += ' ';
             }
         }
     }
 
+    std::string var_name;
+    var_name.reserve(50);
 
-
-    tooltips_order = 
+    for (auto& var : g_varInfos)
     {
-        "light_dir_col",
-        "light_dir_mult",
-        "light_directional_amb_col",
-        "light_directional_amb_intensity",
-        "light_directional_amb_intensity_mult",
-        "light_directional_amb_bounce_enabled",
-        "light_amb_down_wrap",
-        "light_natural_amb_down_col",
-        "light_natural_amb_down_intensity",
-        "light_natural_amb_up_col",
-        "light_natural_amb_up_intensity",
-        "light_natural_amb_up_intensity_mult",
-        "light_natural_push",
-        "light_ambient_bake_ramp",
-        "light_artificial_int_down_col",
-        "light_artificial_int_down_intensity",
-        "light_artificial_int_up_col",
-        "light_artificial_int_up_intensity",
-        "light_artificial_ext_down_col",
-        "light_artificial_ext_down_intensity",
-        "light_artificial_ext_up_col",
-        "light_artificial_ext_up_intensity",
-        "ped_light_col",
-        "ped_light_mult",
-        "ped_light_direction_x",
-        "ped_light_direction_y",
-        "ped_light_direction_z",
-        "light_amb_occ_mult",
-        "light_amb_occ_mult_ped",
-        "light_amb_occ_mult_veh",
-        "light_amb_occ_mult_prop",
-        "light_amb_volumes_in_diffuse",
-        "ssao_inten",
-        "ssao_type",
-        "ssao_cp_strength",
-        "ssao_qs_strength",
-        "light_ped_rim_mult",
-        "light_dynamic_bake_tweak",
-        "light_vehicle_second_spec_override",
-        "light_vehicle_intenity_scale",
-        "light_direction_override",
-        "light_direction_override_overrides_sun",
-        "sun_direction_x",
-        "sun_direction_y",
-        "sun_direction_z",
-        "moon_direction_x",
-        "moon_direction_y",
-        "moon_direction_z",
-        "light_ray_col",
-        "light_ray_mult",
-        "light_ray_underwater_mult",
-        "light_ray_dist",
-        "light_ray_heightfalloff",
-        "light_ray_height_falloff_start",
-        "light_ray_add_reducer",
-        "light_ray_blit_size",
-        "light_ray_length",
-        "postfx_exposure",
-        "postfx_exposure_min",
-        "postfx_exposure_max",
-        "postfx_bright_pass_thresh_width",
-        "postfx_bright_pass_thresh",
-        "postfx_intensity_bloom",
-        "postfx_correct_col",
-        "postfx_correct_cutoff",
-        "postfx_shift_col",
-        "postfx_shift_cutoff",
-        "postfx_desaturation",
-        "postfx_noise",
-        "postfx_noise_size",
-        "postfx_tonemap_filmic_override_dark",
-        "postfx_tonemap_filmic_exposure_dark",
-        "postfx_tonemap_filmic_a",
-        "postfx_tonemap_filmic_c",
-        "postfx_tonemap_filmic_d",
-        "postfx_tonemap_filmic_e",
-        "postfx_tonemap_filmic_f",
-        "postfx_tonemap_filmic_w",
-        "postfx_tonemap_filmic_override_bright",
-        "postfx_tonemap_filmic_exposure_bright",
-        "postfx_tonemap_filmic_a_bright",
-        "postfx_tonemap_filmic_b_bright",
-        "postfx_tonemap_filmic_c_bright",
-        "postfx_tonemap_filmic_d_bright",
-        "postfx_tonemap_filmic_e_bright",
-        "postfx_tonemap_filmic_f_bright",
-        "postfx_tonemap_filmic_w_bright",
-        "postfx_vignetting_intensity",
-        "postfx_vignetting_radius",
-        "postfx_vignetting_contrast",
-        "postfx_vignetting_col",
-        "postfx_grad_top_col",
-        "postfx_grad_middle_col",
-        "postfx_grad_bottom_col",
-        "postfx_grad_midpoint",
-        "postfx_grad_top_middle_midpoint",
-        "postfx_grad_middle_bottom_midpoint",
-        "postfx_scanlineintensity",
-        "postfx_scanline_frequency_0",
-        "postfx_scanline_frequency_1",
-        "postfx_scanline_speed",
-        "postfx_motionblurlength",
-        "dof_far",
-        "dof_blur_mid",
-        "dof_blur_far",
-        "dof_enable_hq",
-        "dof_hq_smallblur",
-        "dof_hq_shallowdof",
-        "dof_hq_nearplane_out",
-        "dof_hq_nearplane_in",
-        "dof_hq_farplane_out",
-        "dof_hq_farplane_in",
-        "environmental_blur_in",
-        "environmental_blur_out",
-        "environmental_blur_size",
-        "bokeh_brightness_min",
-        "bokeh_brightness_max",
-        "bokeh_fade_min",
-        "bokeh_fade_max",
-        "nv_light_dir_mult",
-        "nv_light_amb_down_mult",
-        "nv_light_amb_up_mult",
-        "nv_lowLum",
-        "nv_highLum",
-        "nv_topLum",
-        "nv_scalerLum",
-        "nv_offsetLum",
-        "nv_offsetLowLum",
-        "nv_offsetHighLum",
-        "nv_noiseLum",
-        "nv_noiseLowLum",
-        "nv_noiseHighLum",
-        "nv_bloomLum",
-        "nv_colorLum",
-        "nv_colorLowLum",
-        "nv_colorHighLum",
-        "hh_startRange",
-        "hh_farRange",
-        "hh_minIntensity",
-        "hh_maxIntensity",
-        "hh_displacementU",
-        "hh_displacementV",
-        "hh_tex1UScale",
-        "hh_tex1VScale",
-        "hh_tex1UOffset",
-        "hh_tex1VOffset",
-        "hh_tex2UScale",
-        "hh_tex2VScale",
-        "hh_tex2UOffset",
-        "hh_tex2VOffset",
-        "hh_tex1UFrequencyOffset",
-        "hh_tex1UFrequency",
-        "hh_tex1UAmplitude",
-        "hh_tex1VScrollingSpeed",
-        "hh_tex2UFrequencyOffset",
-        "hh_tex2UFrequency",
-        "hh_tex2UAmplitude",
-        "hh_tex2VScrollingSpeed",
-        "lens_dist_coeff",
-        "lens_dist_cube_coeff",
-        "chrom_aberration_coeff",
-        "chrom_aberration_coeff2",
-        "lens_artefacts_intensity",
-        "lens_artefacts_min_exp_intensity",
-        "lens_artefacts_max_exp_intensity",
-        "blur_vignetting_radius",
-        "blur_vignetting_intensity",
-        "screen_blur_intensity",
-        "sky_zenith_transition_position",
-        "sky_zenith_transition_east_blend",
-        "sky_zenith_transition_west_blend",
-        "sky_zenith_blend_start",
-        "sky_zenith_col",
-        "sky_zenith_col_inten",
-        "sky_zenith_transition_col",
-        "sky_zenith_transition_col_inten",
-        "sky_azimuth_transition_position",
-        "sky_azimuth_east_col",
-        "sky_azimuth_east_col_inten",
-        "sky_azimuth_transition_col",
-        "sky_azimuth_transition_col_inten",
-        "sky_azimuth_west_col",
-        "sky_azimuth_west_col_inten",
-        "sky_hdr",
-        "sky_plane",
-        "sky_plane_inten",
-        "sky_sun_col",
-        "sky_sun_disc_col",
-        "sky_sun_disc_size",
-        "sky_sun_hdr",
-        "sky_sun_miephase",
-        "sky_sun_miescatter",
-        "sky_sun_mie_intensity_mult",
-        "sky_sun_influence_radius",
-        "sky_sun_scatter_inten",
-        "sky_moon_col",
-        "sky_moon_disc_size",
-        "sky_moon_iten",
-        "sky_stars_iten",
-        "sky_moon_influence_radius",
-        "sky_moon_scatter_inten",
-        "sky_cloud_gen_frequency",
-        "sky_cloud_gen_scale",
-        "sky_cloud_gen_threshold",
-        "sky_cloud_gen_softness",
-        "sky_cloud_density_mult",
-        "sky_cloud_density_bias",
-        "sky_cloud_mid_col",
-        "sky_cloud_base_col",
-        "sky_cloud_base_strength",
-        "sky_cloud_shadow_col",
-        "sky_cloud_shadow_strength",
-        "sky_cloud_gen_density_offset",
-        "sky_cloud_offset",
-        "sky_cloud_overall_strength",
-        "sky_cloud_overall_color",
-        "sky_cloud_edge_strength",
-        "sky_cloud_fadeout",
-        "sky_cloud_hdr",
-        "sky_cloud_dither_strength",
-        "sky_small_cloud_col",
-        "sky_small_cloud_detail_strength",
-        "sky_small_cloud_detail_scale",
-        "sky_small_cloud_density_mult",
-        "sky_small_cloud_density_bias",
-        "cloud_shadow_density",
-        "cloud_shadow_softness",
-        "cloud_shadow_opacity",
-        "dir_shadow_num_cascades",
-        "dir_shadow_distance_multiplier",
-        "dir_shadow_softness",
-        "dir_shadow_cascade0_scale",
-        "sprite_brightness",
-        "sprite_size",
-        "sprite_corona_screenspace_expansion",
-        "Lensflare_visibility",
-        "sprite_distant_light_twinkle",
-        "water_reflection",
-        "water_reflection_far_clip",
-        "water_reflection_lod",
-        "water_reflection_sky_flod_range",
-        "water_reflection_lod_range_enabled",
-        "water_reflection_lod_range_hd_start",
-        "water_reflection_lod_range_hd_end",
-        "water_reflection_lod_range_orphanhd_start",
-        "water_reflection_lod_range_orphanhd_end",
-        "water_reflection_lod_range_lod_start",
-        "water_reflection_lod_range_lod_end",
-        "water_reflection_lod_range_slod1_start",
-        "water_reflection_lod_range_slod1_end",
-        "water_reflection_lod_range_slod2_start",
-        "water_reflection_lod_range_slod2_end",
-        "water_reflection_lod_range_slod3_start",
-        "water_reflection_lod_range_slod3_end",
-        "water_reflection_lod_range_slod4_start",
-        "water_reflection_lod_range_slod4_end",
-        "water_reflection_height_offset",
-        "water_reflection_height_override",
-        "water_reflection_height_override_amount",
-        "water_reflection_distant_light_intensity",
-        "water_reflection_corona_intensity",
-        "water_foglight",
-        "water_interior",
-        "water_fogstreaming",
-        "water_foam_intensity_mult",
-        "water_drying_speed_mult",
-        "water_specular_intensity",
-        "mirror_reflection_local_light_intensity",
-        "fog_start",
-        "fog_near_col",
-        "fog_near_col_a",
-        "fog_col",
-        "fog_col_a",
-        "fog_sun_lighting_calc_pow",
-        "fog_moon_col",
-        "fog_moon_col_a",
-        "fog_moon_lighting_calc_pow",
-        "fog_east_col",
-        "fog_east_col_a",
-        "fog_density",
-        "fog_falloff",
-        "fog_base_height",
-        "fog_alpha",
-        "fog_horizon_tint_scale",
-        "fog_hdr",
-        "fog_haze_col",
-        "fog_haze_density",
-        "fog_haze_alpha",
-        "fog_haze_hdr",
-        "fog_haze_start",
-        "fog_shape_bottom",
-        "fog_shape_top",
-        "fog_shape_log_10_of_visibility",
-        "fog_shape_weight_0",
-        "fog_shape_weight_1",
-        "fog_shape_weight_2",
-        "fog_shape_weight_3",
-        "fog_shadow_amount",
-        "fog_shadow_falloff",
-        "fog_shadow_base_height",
-        "fog_volume_light_range",
-        "fog_volume_light_fade",
-        "fog_volume_light_intensity",
-        "fog_volume_light_size",
-        "fogray_contrast",
-        "fogray_intensity",
-        "fogray_density",
-        "fogray_nearfade",
-        "fogray_farfade",
-        "reflection_lod_range_start",
-        "reflection_lod_range_end",
-        "reflection_slod_range_start",
-        "reflection_slod_range_end",
-        "reflection_interior_range",
-        "reflection_tweak_interior_amb",
-        "reflection_tweak_exterior_amb",
-        "reflection_tweak_emissive",
-        "reflection_tweak_directional",
-        "reflection_hdr_mult",
-        "far_clip",
-        "temperature",
-        "particle_emissive_intensity_mult",
-        "vfxlightning_intensity_mult",
-        "vfxlightning_visibility",
-        "particle_light_intensity_mult",
-        "natural_ambient_multiplier",
-        "artificial_int_ambient_multiplier",
-        "fog_cut_off",
-        "no_weather_fx",
-        "no_gpu_fx",
-        "no_rain",
-        "no_rain_ripples",
-        "fogvolume_density_scalar",
-        "fogvolume_density_scalar_interior",
-        "fogvolume_fog_scaler",
-        "time_offset",
-        "vehicle_dirt_mod",
-        "wind_speed_mult",
-        "entity_reject",
-        "lod_mult",
-        "enable_occlusion",
-        "enable_shadow_occlusion",
-        "render_exterior",
-        "portal_weight",
-        "light_falloff_mult",
-        "lodlight_range_mult",
-        "shadow_distance_mult",
-        "lod_mult_hd",
-        "lod_mult_orphanhd",
-        "lod_mult_lod",
-        "lod_mult_slod1",
-        "lod_mult_slod2",
-        "lod_mult_slod3",
-        "lod_mult_slod4"
-    };
+        if (var.varType == VARTYPE_NONE)
+            continue;
+
+        var_name = var.name;
+
+        if (var_name.ends_with("_r"))
+            var_name.resize(var_name.size() - 2);
+
+        auto it = params_map.find(var_name);
+
+        if (it != params_map.end() && !it->second.empty())
+            var.labelName = it->second.c_str();
+    }
+
+    return true;
 }
 
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//											TcCategories
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//
+//void TcCategoriesHandler::print()
+//{
+//    for (auto& category : CategoriesOrder)
+//    {
+//        std::println("\n\n{}\n\n\n", category);
+//
+//        for (auto& item : CategoriesMap.at(category))
+//        {
+//            std::println("{}\t {}", item.second, item.first);
+//        }
+//    }
+//}
+
+
+std::vector<std::string>& TcCategoriesHandler::getCategoriesOrder() { return CategoriesOrder; }
+std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>& TcCategoriesHandler::getCategoriesMap() { return CategoriesMap; }
+
+
+void TcCategoriesHandler::load_categories(const char* filename)
+{
+    if (!load_from_file(filename))
+    {
+        save_hardcoded_categories_to_file(filename);
+        load_from_file(filename);
+    }
+}
+
+
+bool TcCategoriesHandler::load_from_file(const char* filename)
+{
+    CategoriesOrder.clear();
+    CategoriesMap.clear();
+
+    std::ifstream input(filename);
+
+    if (!input.is_open())
+        return false;
+
+    std::string line;
+    std::vector<std::string> raw_lines;
+    raw_lines.reserve(1000);
+    line.reserve(100);
+
+    while (std::getline(input, line))
+    {
+        line = strip_str(line);
+        if (line.empty())
+            continue;
+
+        raw_lines.push_back(line);
+    }
+    RemoveDuplicatesInVector(raw_lines);
+
+    std::string var_name;
+    size_t category_idx = -1;
+    size_t varId;
+    for (auto& line : raw_lines)
+    {
+        if (line[0] == '@')
+        {
+            CategoriesOrder.push_back(line.substr(1, line.size()));
+            category_idx++;
+            continue;
+        }
+
+        if (std::find_if(g_varInfos, g_varInfos + std::size(g_varInfos), [&](tcVarInfo& var) -> bool
+            {
+                var_name = var.name;
+
+                if (var_name.ends_with("_r"))
+                    var_name.resize(var_name.size() - 2);
+
+                if (var_name == line)
+                {
+                    varId = var.varId;
+                    var.InCategory = true;
+                    return true;
+                }
+                return false;
+            }) != g_varInfos + std::size(g_varInfos))
+        {
+            if (category_idx != -1)
+            {
+                CategoriesMap[CategoriesOrder[category_idx]].push_back({ line ,varId });
+            }
+            else
+            {
+                CategoriesMap["None"].push_back({ line , varId });
+            }
+        }
+    }
+
+    for (auto& var : g_varInfos)
+    {
+        if (var.varType == VARTYPE_NONE || var.InCategory)
+            continue;
+        varId = var.varId;
+        var_name = var.name;
+        if (var_name.ends_with("_r"))
+            var_name.resize(var_name.size() - 2);
+
+        CategoriesMap["None"].push_back({ var_name , varId });
+    }
+
+    if (CategoriesMap.contains("None"))
+        CategoriesOrder.push_back("None");
+
+    return true;
+}
+
+
+void TcCategoriesHandler::save_hardcoded_categories_to_file(const char* filename)
+{
+    CategoriesOrder.clear();
+    std::unordered_map<std::string, std::vector<std::string>> TmpMap;
+
+    {
+        CategoriesOrder =
+        {
+            "light variables" ,
+            "Sun pos override" ,
+            "light ray variables" ,
+            "Screen Space Light rays data" ,
+            "post fx variables" ,
+            "vignetting intensity" ,
+            "colour gradient variables" ,
+            "depth of field variables" ,
+            "night vision variables" ,
+            "heat haze variables" ,
+            "lens distortion" ,
+            "blur vignetting" ,
+            "screen blur" ,
+            "Sky colouring" ,
+            "Sun variables" ,
+            "Stars / Moon variables" ,
+            "Cloud generation" ,
+            "Main clouds" ,
+            "cloud shadows" ,
+            "directional (cascade) shadows" ,
+            "sprite (corona and distant lights) variables" ,
+            "water variables" ,
+            "mirror variables" ,
+            "fog variables" ,
+            "Linear piecewise fog." ,
+            "fog shadows" ,
+            "volumetric lights" ,
+            "fog ray" ,
+            "refection variables" ,
+            "misc variables" };
+
+        TmpMap["light variables"] =
+        {
+            "light_dir_col",
+            "light_dir_mult",
+            "light_directional_amb_col",
+            "light_directional_amb_intensity",
+            "light_directional_amb_intensity_mult",
+            "light_directional_amb_bounce_enabled",
+            "light_amb_down_wrap",
+            "light_natural_amb_down_col",
+            "light_natural_amb_down_intensity",
+            "light_natural_amb_up_col",
+            "light_natural_amb_up_intensity",
+            "light_natural_amb_up_intensity_mult",
+            "light_natural_push",
+            "light_ambient_bake_ramp",
+            "light_artificial_int_down_col",
+            "light_artificial_int_down_intensity",
+            "light_artificial_int_up_col",
+            "light_artificial_int_up_intensity",
+            "light_artificial_ext_down_col",
+            "light_artificial_ext_down_intensity",
+            "light_artificial_ext_up_col",
+            "light_artificial_ext_up_intensity",
+            "ped_light_col",
+            "ped_light_mult",
+            "ped_light_direction_x",
+            "ped_light_direction_y",
+            "ped_light_direction_z",
+            "light_amb_occ_mult",
+            "light_amb_occ_mult_ped",
+            "light_amb_occ_mult_veh",
+            "light_amb_occ_mult_prop",
+            "light_amb_volumes_in_diffuse",
+            "ssao_inten",
+            "ssao_type",
+            "ssao_cp_strength",
+            "ssao_qs_strength",
+            "light_ped_rim_mult",
+            "light_dynamic_bake_tweak",
+            "light_vehicle_second_spec_override",
+            "light_vehicle_intenity_scale"
+        };
+
+
+        TmpMap["Sun pos override"] =
+        {
+            "light_direction_override",
+            "light_direction_override_overrides_sun",
+            "sun_direction_x",
+            "sun_direction_y",
+            "sun_direction_z",
+            "moon_direction_x",
+            "moon_direction_y",
+            "moon_direction_z"
+        };
+
+
+        TmpMap["light ray variables"] =
+        {
+            "light_ray_col",
+            "light_ray_mult",
+            "light_ray_underwater_mult",
+            "light_ray_dist",
+            "light_ray_heightfalloff",
+            "light_ray_height_falloff_start"
+        };
+
+
+        TmpMap["Screen Space Light rays data"] =
+        {
+            "light_ray_add_reducer",
+            "light_ray_blit_size",
+            "light_ray_length"
+        };
+
+
+        TmpMap["post fx variables"] =
+        {
+            "postfx_exposure",
+            "postfx_exposure_min",
+            "postfx_exposure_max",
+            "postfx_bright_pass_thresh_width",
+            "postfx_bright_pass_thresh",
+            "postfx_intensity_bloom",
+            "postfx_correct_col",
+            "postfx_correct_cutoff",
+            "postfx_shift_col",
+            "postfx_shift_cutoff",
+            "postfx_desaturation",
+            "postfx_noise",
+            "postfx_noise_size",
+            "postfx_tonemap_filmic_override_dark",
+            "postfx_tonemap_filmic_exposure_dark",
+            "postfx_tonemap_filmic_a",
+            "postfx_tonemap_filmic_b",
+            "postfx_tonemap_filmic_c",
+            "postfx_tonemap_filmic_d",
+            "postfx_tonemap_filmic_e",
+            "postfx_tonemap_filmic_f",
+            "postfx_tonemap_filmic_w",
+            "postfx_tonemap_filmic_override_bright",
+            "postfx_tonemap_filmic_exposure_bright",
+            "postfx_tonemap_filmic_a_bright",
+            "postfx_tonemap_filmic_b_bright",
+            "postfx_tonemap_filmic_c_bright",
+            "postfx_tonemap_filmic_d_bright",
+            "postfx_tonemap_filmic_e_bright",
+            "postfx_tonemap_filmic_f_bright",
+            "postfx_tonemap_filmic_w_bright"
+        };
+
+
+        TmpMap["vignetting intensity"] =
+        {
+            "postfx_vignetting_intensity",
+            "postfx_vignetting_radius",
+            "postfx_vignetting_contrast",
+            "postfx_vignetting_col"
+        };
+
+
+        TmpMap["colour gradient variables"] =
+        {
+            "postfx_grad_top_col",
+            "postfx_grad_middle_col",
+            "postfx_grad_bottom_col",
+            "postfx_grad_midpoint",
+            "postfx_grad_top_middle_midpoint",
+            "postfx_grad_middle_bottom_midpoint",
+            "postfx_scanlineintensity",
+            "postfx_scanline_frequency_0",
+            "postfx_scanline_frequency_1",
+            "postfx_scanline_speed",
+            "postfx_motionblurlength"
+        };
+
+
+        TmpMap["depth of field variables"] =
+        {
+            "dof_far",
+            "dof_blur_mid",
+            "dof_blur_far",
+            "dof_enable_hq",
+            "dof_hq_smallblur",
+            "dof_hq_shallowdof",
+            "dof_hq_nearplane_out",
+            "dof_hq_nearplane_in",
+            "dof_hq_farplane_out",
+            "dof_hq_farplane_in",
+            "environmental_blur_in",
+            "environmental_blur_out",
+            "environmental_blur_size",
+            "bokeh_brightness_min",
+            "bokeh_brightness_max",
+            "bokeh_fade_min",
+            "bokeh_fade_max"
+        };
+
+
+        TmpMap["night vision variables"] =
+        {
+            "nv_light_dir_mult",
+            "nv_light_amb_down_mult",
+            "nv_light_amb_up_mult",
+            "nv_lowLum",
+            "nv_highLum",
+            "nv_topLum",
+            "nv_scalerLum",
+            "nv_offsetLum",
+            "nv_offsetLowLum",
+            "nv_offsetHighLum",
+            "nv_noiseLum",
+            "nv_noiseLowLum",
+            "nv_noiseHighLum",
+            "nv_bloomLum",
+            "nv_colorLum",
+            "nv_colorLowLum",
+            "nv_colorHighLum"
+        };
+
+
+        TmpMap["heat haze variables"] =
+        {
+            "hh_startRange",
+            "hh_farRange",
+            "hh_minIntensity",
+            "hh_maxIntensity",
+            "hh_displacementU",
+            "hh_displacementV",
+            "hh_tex1UScale",
+            "hh_tex1VScale",
+            "hh_tex1UOffset",
+            "hh_tex1VOffset",
+            "hh_tex2UScale",
+            "hh_tex2VScale",
+            "hh_tex2UOffset",
+            "hh_tex2VOffset",
+            "hh_tex1UFrequencyOffset",
+            "hh_tex1UFrequency",
+            "hh_tex1UAmplitude",
+            "hh_tex1VScrollingSpeed",
+            "hh_tex2UFrequencyOffset",
+            "hh_tex2UFrequency",
+            "hh_tex2UAmplitude",
+            "hh_tex2VScrollingSpeed"
+        };
+
+        TmpMap["lens distortion"] =
+        {
+            "lens_dist_coeff",
+            "lens_dist_cube_coeff",
+            "chrom_aberration_coeff",
+            "chrom_aberration_coeff2",
+            "lens_artefacts_intensity",
+            "lens_artefacts_min_exp_intensity",
+            "lens_artefacts_max_exp_intensity"
+        };
+
+
+        TmpMap["blur vignetting"] =
+        {
+            "blur_vignetting_radius",
+            "blur_vignetting_intensity"
+        };
+
+
+        TmpMap["screen blur"] =
+        {
+             "screen_blur_intensity"
+        };
+
+
+
+        TmpMap["Sky colouring"] =
+        {
+            "sky_zenith_transition_position",
+            "sky_zenith_transition_east_blend",
+            "sky_zenith_transition_west_blend",
+            "sky_zenith_blend_start",
+            "sky_zenith_col",
+            "sky_zenith_col_inten",
+            "sky_zenith_transition_col",
+            "sky_zenith_transition_col_inten",
+            "sky_azimuth_transition_position",
+            "sky_azimuth_east_col",
+            "sky_azimuth_east_col_inten",
+            "sky_azimuth_transition_col",
+            "sky_azimuth_transition_col_inten",
+            "sky_azimuth_west_col",
+            "sky_azimuth_west_col_inten",
+            "sky_hdr",
+            "sky_plane",
+            "sky_plane_inten"
+        };
+
+
+        TmpMap["Sun variables"] =
+        {
+            "sky_sun_col",
+            "sky_sun_disc_col",
+            "sky_sun_disc_size",
+            "sky_sun_hdr",
+            "sky_sun_miephase",
+            "sky_sun_miescatter",
+            "sky_sun_mie_intensity_mult",
+            "sky_sun_influence_radius",
+            "sky_sun_scatter_inten"
+        };
+
+
+        TmpMap["Stars / Moon variables"] =
+        {
+            "sky_moon_col",
+            "sky_moon_disc_size",
+            "sky_moon_iten",
+            "sky_stars_iten",
+            "sky_moon_influence_radius",
+            "sky_moon_scatter_inten"
+        };
+
+
+        TmpMap["Cloud generation"] =
+        {
+            "sky_cloud_gen_frequency",
+            "sky_cloud_gen_scale",
+            "sky_cloud_gen_threshold",
+            "sky_cloud_gen_softness",
+            "sky_cloud_density_mult",
+            "sky_cloud_density_bias"
+        };
+
+
+        TmpMap["Main clouds"] =
+        {
+            "sky_cloud_mid_col",
+            "sky_cloud_base_col",
+            "sky_cloud_base_strength",
+            "sky_cloud_shadow_col",
+            "sky_cloud_shadow_strength",
+            "sky_cloud_gen_density_offset",
+            "sky_cloud_offset",
+            "sky_cloud_overall_strength",
+            "sky_cloud_overall_color",
+            "sky_cloud_edge_strength",
+            "sky_cloud_fadeout",
+            "sky_cloud_hdr",
+            "sky_cloud_dither_strength",
+            "sky_small_cloud_col",
+            "sky_small_cloud_detail_strength",
+            "sky_small_cloud_detail_scale",
+            "sky_small_cloud_density_mult",
+            "sky_small_cloud_density_bias"
+        };
+
+
+        TmpMap["cloud shadows"] =
+        {
+            "cloud_shadow_density",
+            "cloud_shadow_softness",
+            "cloud_shadow_opacity"
+        };
+
+
+        TmpMap["directional (cascade) shadows"] =
+        {
+            "dir_shadow_num_cascades",
+            "dir_shadow_distance_multiplier",
+            "dir_shadow_softness",
+            "dir_shadow_cascade0_scale"
+        };
+
+
+        TmpMap["sprite (corona and distant lights) variables"] =
+        {
+            "sprite_brightness",
+            "sprite_size",
+            "sprite_corona_screenspace_expansion",
+            "Lensflare_visibility",
+            "sprite_distant_light_twinkle"
+        };
+
+
+        TmpMap["water variables"] =
+        {
+            "water_reflection",
+            "water_reflection_far_clip",
+            "water_reflection_lod",
+            "water_reflection_sky_flod_range",
+            "water_reflection_lod_range_enabled",
+            "water_reflection_lod_range_hd_start",
+            "water_reflection_lod_range_hd_end",
+            "water_reflection_lod_range_orphanhd_start",
+            "water_reflection_lod_range_orphanhd_end",
+            "water_reflection_lod_range_lod_start",
+            "water_reflection_lod_range_lod_end",
+            "water_reflection_lod_range_slod1_start",
+            "water_reflection_lod_range_slod1_end",
+            "water_reflection_lod_range_slod2_start",
+            "water_reflection_lod_range_slod2_end",
+            "water_reflection_lod_range_slod3_start",
+            "water_reflection_lod_range_slod3_end",
+            "water_reflection_lod_range_slod4_start",
+            "water_reflection_lod_range_slod4_end",
+            "water_reflection_height_offset",
+            "water_reflection_height_override",
+            "water_reflection_height_override_amount",
+            "water_reflection_distant_light_intensity",
+            "water_reflection_corona_intensity",
+            "water_foglight",
+            "water_interior",
+            "water_fogstreaming",
+            "water_foam_intensity_mult",
+            "water_drying_speed_mult",
+          "water_specular_intensity"
+        };
+
+
+        TmpMap["mirror variables"] =
+        {
+            "mirror_reflection_local_light_intensity"
+        };
+
+
+        TmpMap["fog variables"] =
+        {
+            "fog_start",
+            "fog_near_col",
+            "fog_near_col_a",
+            "fog_col",
+            "fog_col_a",
+            "fog_sun_lighting_calc_pow",
+            "fog_moon_col",
+            "fog_moon_col_a",
+            "fog_moon_lighting_calc_pow",
+            "fog_east_col",
+            "fog_east_col_a",
+            "fog_density",
+            "fog_falloff",
+            "fog_base_height",
+            "fog_alpha",
+            "fog_horizon_tint_scale",
+            "fog_hdr",
+            "fog_haze_col",
+            "fog_haze_density",
+            "fog_haze_alpha",
+            "fog_haze_hdr",
+            "fog_haze_start"
+        };
+
+
+        TmpMap["Linear piecewise fog."] =
+        {
+            "fog_shape_bottom",
+            "fog_shape_top",
+            "fog_shape_log_10_of_visibility",
+            "fog_shape_weight_0",
+            "fog_shape_weight_1",
+            "fog_shape_weight_2",
+            "fog_shape_weight_3"
+        };
+
+
+        TmpMap["fog shadows"] =
+        {
+            "fog_shadow_amount",
+            "fog_shadow_falloff",
+            "fog_shadow_base_height"
+        };
+
+        TmpMap["volumetric lights"] =
+        {
+            "fog_volume_light_range",
+            "fog_volume_light_fade",
+            "fog_volume_light_intensity",
+            "fog_volume_light_size"
+        };
+
+
+        TmpMap["fog ray"] =
+        {
+            "fogray_contrast",
+            "fogray_intensity",
+            "fogray_density",
+            "fogray_nearfade",
+            "fogray_farfade"
+        };
+
+
+        TmpMap["refection variables"] =
+        {
+            "reflection_lod_range_start",
+            "reflection_lod_range_end",
+            "reflection_slod_range_start",
+            "reflection_slod_range_end",
+            "reflection_interior_range",
+            "reflection_tweak_interior_amb",
+            "reflection_tweak_exterior_amb",
+            "reflection_tweak_emissive",
+            "reflection_tweak_directional",
+            "reflection_hdr_mult"
+        };
+
+
+        TmpMap["misc variables"] =
+        {
+            "far_clip",
+            "temperature",
+            "particle_emissive_intensity_mult",
+            "vfxlightning_intensity_mult",
+            "vfxlightning_visibility",
+            "particle_light_intensity_mult",
+            "natural_ambient_multiplier",
+            "artificial_int_ambient_multiplier",
+            "fog_cut_off",
+            "no_weather_fx",
+            "no_gpu_fx",
+            "no_rain",
+            "no_rain_ripples",
+            "fogvolume_density_scalar",
+            "fogvolume_density_scalar_interior",
+            "fogvolume_fog_scaler",
+            "time_offset",
+            "vehicle_dirt_mod",
+            "wind_speed_mult",
+            "entity_reject",
+            "lod_mult",
+            "enable_occlusion",
+            "enable_shadow_occlusion",
+            "render_exterior",
+            "portal_weight",
+            "light_falloff_mult",
+            "lodlight_range_mult",
+            "shadow_distance_mult",
+            "lod_mult_hd",
+            "lod_mult_orphanhd",
+            "lod_mult_lod",
+            "lod_mult_slod1",
+            "lod_mult_slod2",
+            "lod_mult_slod3",
+            "lod_mult_slod4"
+        };
+    }
+
+    std::ofstream output(filename);
+    if (!output.is_open())
+        return;
+
+    std::string text;
+    text.reserve(20000); // should be enough to avoid realloc
+
+    for (auto& category : CategoriesOrder)
+    {
+        text += std::format("\n\n@{}\n\n\n", category);
+
+        for (auto& name : TmpMap.at(category))
+        {
+            text += std::format("{}\n", name);
+        }
+    }
+
+    output.write(text.c_str(), text.size());
+    output.close();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//											Config
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+void ConfigWrapper::readCfg(const char* filename)
+{
+    reader.ParseFile(filename);
+
+    if (reader.ParseError() < 0)
+    {
+        writeCfg(filename);
+        reader.ParseFile(filename);
+    }
+}
+
+void ConfigWrapper::writeCfg(const char* filename)
+{
+    std::ofstream cfg(filename, std::ios::trunc);
+
+    if (!cfg.is_open())
+        return;
+
+    cfg << "// All key codes can be found here: https://msdn.microsoft.com/library/windows/desktop/dd375731.aspx\n\n";
+    cfg << "[Settings]" << "\n\n";
+
+    cfg << "Default_path             " << " = " << "E:\\GTAV\\timecycles"   << '\n';
+    cfg << "Categories               " << " = " << "1"                      << '\n';
+    cfg << "Names_replacement        " << " = " << "1"                      << '\n';
+    cfg << "OpenClose_window_button  " << " = " << "0x2D"                   << "\n";
+    cfg << "Font_size                " << " = " << "15"                     << '\n';
+
+    cfg << "\n// In case if there's something wrong with the system cursor - set this to 1 " << '\n';
+    cfg << "CursorImgui_Impl         " << " = " << "0"                      << '\n';
+
+    cfg.close();
+}
+
+INIReader* ConfigWrapper::getCfgReader()
+{
+    return &reader;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//											Preload
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if 1
+Preload* Preload::self = nullptr;
+
+void Preload::Create()
+{
+    if (!self)
+        self = new Preload();
+}
+
+void Preload::Destroy()
+{
+    if (self) {
+        delete self;
+        self = nullptr;
+    }
+}
+
+Preload* Preload::Get()
+{
+    return self;
+}
+#endif
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+void Preload::preload()
+{
+    if (preload_done)
+        return;
+
+    //auto start = std::chrono::high_resolution_clock::now();
+   
+    CfgWrapper.readCfg(fileNames::config_file);
+    auto* cfg = CfgWrapper.getCfgReader();
+
+    if (cfg->GetBoolean("Settings", "Names_replacement", true))
+        TcNamesLoader.load_names_replacement(fileNames::tcNames_repl_file);
+
+    if (cfg->GetBoolean("Settings", "Categories", true))
+        TcCategories.load_categories(fileNames::tcCategories_file);
+   
+   // std::println("Preload took : {}", std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start));
+
+    //TcCategories.print();
+    //std::print("\n\n\n\n\n\n");
+    //TcNamesLoader.print();
+
+    preload_done = true;
+}
+
+INIReader* Preload::getConfigParser() { return CfgWrapper.getCfgReader(); }
+TcCategoriesHandler* Preload::getTcCategoriesHandler() { return &TcCategories; }
 

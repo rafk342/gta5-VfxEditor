@@ -21,10 +21,9 @@
 #include "uiBase/ImguiHelpers.h"
 
 #include "app/Preload/Preload_Integration.h"
-
-
 #include "app/uiBase/uiBaseWindow.h"
 
+#include "Preload/Preload.h"
 
 class TimecycleUI : public App
 {
@@ -41,6 +40,7 @@ class TimecycleUI : public App
 	 bool		time_override = false;
 	 bool		show_only_current_sample = false;
 	 u8			current_time_sample = 0;
+	 bool		Categories_usage = false;
 
 	 void GetCurrentTimeSample(int curr_hour);
 
@@ -65,7 +65,7 @@ class TimecycleUI : public App
 
 public:
 	
-	TimecycleUI(BaseUiWindow* base, const char* label);
+	TimecycleUI(const char* label);
 	void MainParamsWindow();
 
 };

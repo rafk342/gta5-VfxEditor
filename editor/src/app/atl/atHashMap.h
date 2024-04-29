@@ -26,7 +26,7 @@ private:
 	{
 		u32 hash;
 		TEntry data;
-		Entry* next;
+		Entry* next = nullptr;
 	};
 
 	Entry** m_Buckets = nullptr;

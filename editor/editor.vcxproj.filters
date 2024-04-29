@@ -36,9 +36,6 @@
     <ClCompile Include="src\app\Preload\Preload.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\app\Preload\Preload_Integration.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="src\game\gameClock\CClock.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -177,9 +174,6 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\app\Preload\Preload.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="src\app\Preload\Preload_Integration.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\game\gameClock\CClock.h">

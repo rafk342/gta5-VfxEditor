@@ -9,102 +9,112 @@
 
 #include "inih/INIReader.h"
 #include "app/helpers/helpers.h"
-///////////////////////////////////////////////////////////////////////////////////////////                    
-//                               config
+#include "timecycle/tcData.h"
 
 
 
-class configHandler
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//											TcParameter Names replacement
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+class TcNamesReplacemantHandler
 {
-	static std::string config_name;
-	static void WriteDefaultParamsToCfg();
-	static void useDefaultParams();
+	// param -> new_name
+	std::unordered_map<std::string, std::string> params_map;
+
+	bool load_from_file(const char* filename);
+	void save_hardcoded_params_to_file(const char* filename);
 public:
-	static void readCfg();
 
+	void load_names_replacement(const char* filename);
+	void print();
 };
 
 
-struct config_params
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//											TcCategories
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+class TcCategoriesHandler
 {
-	config_params() = default;
+	std::vector<std::string> CategoriesOrder;
+	//category name -> param_names_vec //category name -> vec ( pair (param_label , varId))
+	std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> CategoriesMap;
 
-	static std::string path_from_cfg;
-	static bool categories;
-	//static bool tooltips;
-	static bool replace_item_names_with_tooltips_definition;
-	static int open_window_btn_key;
-	static bool cursor_imgui_usage;
-	static float font_size;
-};
-
-
-struct default_cfg_params
-{
-	static constexpr const char* default_path = "E:\\GTAV\\timecycles";
-	static constexpr int default_categories = 1;
-	// static int default_tooltips = 0;
-	static constexpr int default_replace_item_names_with_tooltips_definition = 1;
-	static constexpr int default_open_window_btn_key = 0x2D; //insert	
-	static constexpr bool default_cursor_imgui_usage = false;
-	static constexpr float default_font_size = 15.0f;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////////////////                    
-//                               categories
-
-
-
-
-
-
-class CategoriesHandler 
-{
-	static void save_hardcoded_params_to_file();
-	static void handle_file_params(std::ifstream& infile);
-	static void remove_repeatings_from_map();
-	
-	static void load_hardcoded_categories();
-	static void load_file_categories();
-
-	static std::vector<std::string> category_names;
-
-	//category name --> tc item names vec
-	static std::unordered_map<std::string, std::vector<std::string>> categories_map;
-	static std::string categories_filename;
+	bool load_from_file(const char* filename);
+	void save_hardcoded_categories_to_file(const char* filename);
 
 public:
 
-	static void LoadCategories();
-	static std::vector<std::string>&	get_categories_names() { return category_names; }
-	static std::unordered_map<std::string, std::vector<std::string>>&	get_categories_map() { return categories_map; }
-
+	//void print();
+	void load_categories(const char* filename);
+	std::vector<std::string>& getCategoriesOrder();
+	std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>& getCategoriesMap();
 };
 
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//											Config
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////								Tooltips
-
-
-
-class TooltipsHandler
+class ConfigWrapper
 {
+	INIReader reader;
 
-	static void load_hardcoded_tooltips();
-	static void write_tooltips_to_file();
-	static void load_tooltips_from_file();
-	static std::unordered_map<std::string, std::string> tooltips_map;
-	static std::string tooltips_filename;
-	static std::vector<std::string> tooltips_order;
+public:
+	ConfigWrapper() = default;
+	void readCfg(const char* filename);
+	void writeCfg(const char* filename);
+	INIReader* getCfgReader();
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//											Preload
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+class Preload
+{
+	static Preload* self;
+	Preload() = default;
+	~Preload() = default;
+
+	struct fileNames
+	{
+		static constexpr const char* tcNames_repl_file = "__TcEditorNamesReplacement.txt";
+		static constexpr const char* tcCategories_file = "__TcEditorCategories.txt";
+		static constexpr const char* config_file = "__TcEditorConfig.ini";
+	};
+
+	TcNamesReplacemantHandler	TcNamesLoader;
+	TcCategoriesHandler			TcCategories;
+	ConfigWrapper				CfgWrapper;
+
+	bool preload_done = false;
 
 public:
 
-	static void load_tooltips();
-	static std::unordered_map<std::string, std::string>& get_tooltip_map();
-	
+	static void Create();
+	static void Destroy();
+	static Preload* Get();
+
+	void preload();
+
+	TcCategoriesHandler* getTcCategoriesHandler();
+	INIReader* getConfigParser();
 };

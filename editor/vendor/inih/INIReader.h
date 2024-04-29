@@ -42,6 +42,8 @@
 class INIReader
 {
 public:
+    INIReader() = default;
+
     // Construct INIReader and parse given filename. See ini.h for more info
     // about the parsing.
     INI_API explicit INIReader(const std::string& filename);
@@ -49,6 +51,8 @@ public:
     // Construct INIReader and parse given buffer. See ini.h for more info
     // about the parsing.
     INI_API explicit INIReader(const char *buffer, size_t buffer_size);
+
+    INI_API void ParseFile(const std::string& filename);
 
     // Return the result of ini_parse(), i.e., 0 on success, line number of
     // first error on parse error, or -1 on file open error.

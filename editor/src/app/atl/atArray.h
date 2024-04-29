@@ -63,7 +63,7 @@ public:
 	
 	TValue*         begin()                 { return m_offset; }
 	TValue*         end()                   { return m_offset + m_size; }
-	TValue*         Last()                  { return m_size == 0 ? nullptr : end() - 1; }
+	TValue*         back()                  { return m_size == 0 ? nullptr : end() - 1; }
 	TValue*         data()                  { return m_offset; }
 	u16             GetCapacity() const     { return m_capacity; }
 	u16             GetSize() const	        { return m_size; }
@@ -100,7 +100,7 @@ public:
 		
 		new (&m_offset[m_size]) TValue(value);
 		m_size++;
-		return *Last();
+		return *back();
 	}
 
 	void reserve(u16 new_cap, bool directly_memcpy = false)

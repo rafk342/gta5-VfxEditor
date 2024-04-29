@@ -7,25 +7,16 @@
 #include "VisualSettings/ui/visualSettingsUi.h"
 
 
-//BaseUiWindow* BaseUiWindow::instance = nullptr;
-
 std::unique_ptr<BaseUiWindow> BaseUiWindow::selfInstance = nullptr;
 
-
-App::App(BaseUiWindow* base, const char* label) : label(label)
-{
-    base->PushApp(this);
-}
+App::App(const char* label) : label(label) {}
 
 BaseUiWindow::BaseUiWindow()
 {
-    // these instances should be static 
-    // so they won't be local and they won't be deleted on the constructor exiting
-
-    static std::unique_ptr<TimecycleUI>      TcUi   = std::make_unique<TimecycleUI> (this, "Timecycles");
-    static std::unique_ptr<CloudSettingsUI>  ClUi   = std::make_unique<CloudSettingsUI>(this, "Cloudkeyframes");
-    static std::unique_ptr<VisualSettingsUi> VsUi   = std::make_unique<VisualSettingsUi>(this, "VisualSettings");
-    static std::unique_ptr<VfxLightningUi>   LghtUi = std::make_unique<VfxLightningUi>(this, "Lightnings");
+    appsVec.push_back(std::make_unique<TimecycleUI>("Timecycles"));
+    appsVec.push_back(std::make_unique<CloudSettingsUI>("Cloudkeyframes"));
+    appsVec.push_back(std::make_unique<VisualSettingsUi>("VisualSettings"));
+    appsVec.push_back(std::make_unique<VfxLightningUi>("Lightnings"));
 }
 
 const char* App::get_label()
@@ -33,19 +24,14 @@ const char* App::get_label()
     return label;
 }
 
-void BaseUiWindow::setActiveApp(App* app) 
+void BaseUiWindow::setActiveApp(App* app)
 {
     activeApp = app;
 }
 
-void BaseUiWindow::PushApp(App* app) 
-{ 
-    appsVec.push_back(app);
-}
-
-App* BaseUiWindow::getActiveApp() const 
+App* BaseUiWindow::getActiveApp() const
 {
-    return activeApp; 
+    return activeApp;
 }
 
 void BaseUiWindow::OnRender()
@@ -59,13 +45,13 @@ void BaseUiWindow::OnRender()
 
     if (ImGui::BeginTabBar("TabBarEditor", ImGuiTabBarFlags_Reorderable))
     {
-        for (App* app : appsVec)
+        for (auto& app : appsVec)
         {
             if (ImGui::BeginTabItem(app->get_label()))
             {
                 if (ImGui::BeginChild("MainParamsWindow_Base", ImVec2(-FLT_MIN, -FLT_MIN), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar))
                 {
-                    setActiveApp(app);
+                    setActiveApp(app.get());
                     app->window();
                     ImGui::EndChild();
                 }
@@ -79,12 +65,14 @@ void BaseUiWindow::OnRender()
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                          export/import
+//                                          export/import
 
 
 void BaseUiWindow::LoadSelectedBtn()
 {
-    activeApp->importData(getPathOfSelectedFile());
+    auto path = getPathOfSelectedFile();
+    if (!path.empty())
+        activeApp->importData(path);
 }
 
 void BaseUiWindow::SaveAsBtn()
@@ -104,12 +92,14 @@ void BaseUiWindow::SaveAsBtn()
 
 void BaseUiWindow::SaveBtn()
 {
-    activeApp->exportData(getPathOfSelectedFile());
+    auto path = getPathOfSelectedFile();
+    if (!path.empty())
+        activeApp->exportData(path);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                          singleton stuff
+//                                          singleton stuff
 
 
 void BaseUiWindow::Create()
@@ -121,7 +111,8 @@ void BaseUiWindow::Create()
 
 void BaseUiWindow::Destroy()
 {
-    if (selfInstance) {
+    if (selfInstance) 
+    {
         selfInstance.reset();
     }
 }

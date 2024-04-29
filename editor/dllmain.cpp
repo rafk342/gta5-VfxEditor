@@ -4,7 +4,8 @@
 #include <format>
 #include <fstream>
 
-#include "app/Preload/Preload_Integration.h"
+#include "Preload/Preload.h"
+//#include "app/Preload/Preload_Integration.h"
 #include "game/overlayRender/Render.h"
 #include "app/logger.h"
 #include "app/compiler/compiler.h"
@@ -29,12 +30,14 @@ AM_EXPORT void Init()
 
 #else
 
-	Preload_Integration::Preload();
+	Preload::Create();
+	Preload::Get()->preload();
+	INIReader* cfg = Preload::Get()->getConfigParser();
 
-	FileListUI::setPreBuff(config_params::path_from_cfg);
-	mRender::SetOpenWindowBtn(config_params::open_window_btn_key);
-	mRender::SetCursorImguiUsage(config_params::cursor_imgui_usage);
-	mRender::SetFontSize(config_params::font_size);
+	FileListUI::setPreBuff(cfg->GetString("Settings","Default_path","E:\\GTAV\\timecycles"));
+	mRender::SetOpenWindowBtn(cfg->GetInteger("Settings", "OpenClose_window_button", 0x2D));
+	mRender::SetCursorImguiUsage(cfg->GetBoolean("Settings", "CursorImgui_Impl", false));
+	mRender::SetFontSize(cfg->GetInteger("Settings", "Font_size", 15));
 
 	Hook::Init();
 	ScriptHook::Init();
@@ -52,6 +55,7 @@ AM_EXPORT void Shutdown()
 	FreeConsole();
 #else	
 	mRender::Shutdown();
+	Preload::Destroy();
 #if am_version
 	ScriptHook::Shutdown();
 #endif

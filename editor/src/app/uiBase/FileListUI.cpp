@@ -105,12 +105,12 @@ void FileListUI::fill_file_sel_window()
 
 std::filesystem::path FileListUI::getPathOfSelectedFile()
 {
-    return fhandler.get_files_vec()[selected_radio_btn].second;
+    return fhandler.get_files_vec().empty() ? std::filesystem::path() : fhandler.get_files_vec()[selected_radio_btn].second;
 }
 
 std::filesystem::path FileListUI::GetCurrentSelectedFileName()
 {
-    return fhandler.get_files_vec()[selected_radio_btn].first;
+    return fhandler.get_files_vec().empty() ? std::filesystem::path() : fhandler.get_files_vec()[selected_radio_btn].first;
 }
 
 

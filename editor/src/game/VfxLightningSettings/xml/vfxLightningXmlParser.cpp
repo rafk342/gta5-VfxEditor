@@ -191,7 +191,7 @@ void VfxLightningsXmlParser::LoadKeyframeData(const pugi::xml_node& keyData, ptx
 
     keyframe.data.clear();
 
-    while (std::getline(iss, line, '\n') /*&& idx < keyframe.data.GetSize()*/)  //this is wrong, should be remade with the proper atArray impl
+    while (std::getline(iss, line, '\n')) 
     {
         if (strip_str(line).empty()) 
             continue;

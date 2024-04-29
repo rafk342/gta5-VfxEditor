@@ -41,7 +41,7 @@ struct TcImguiFlags
 };
 
 
-TimecycleUI::TimecycleUI(BaseUiWindow* base, const char* label) : App(base, label)
+TimecycleUI::TimecycleUI(const char* label) : App(label)
 {
 	currentCycle = m_tcHandler.GetCycle(0);
 	regions = { "Global", "Urban" };
@@ -60,6 +60,7 @@ TimecycleUI::TimecycleUI(BaseUiWindow* base, const char* label) : App(base, labe
 		 {21, " 21:00"},
 		 {22, " 22:00"},
 	};
+	Categories_usage = Preload::Get()->getConfigParser()->GetBoolean("Settings","Categories",false);
 }
 
 
@@ -73,7 +74,7 @@ void TimecycleUI::MainParamsWindow()
 
 	ImGui::Separator();
 
-	if (config_params::categories)
+	if (Categories_usage)
 		MainParamsWindow_with_Categories();
 	else
 		MainParamsWindow_without_Categories();
@@ -192,8 +193,11 @@ void TimecycleUI::MainParamsWindow_without_Categories()
 void TimecycleUI::MainParamsWindow_with_Categories()
 {
 	static char buff[128];
-	static auto& categoryNames = CategoriesIntegrated::getNamesVec();
-	static auto& categoriesMap = CategoriesIntegrated::getCategoriesMap();
+	//static auto& categoryNames = CategoriesIntegrated::getNamesVec();
+	//static auto& categoriesMap = CategoriesIntegrated::getCategoriesMap();
+	
+	static auto& categoryNames = Preload::Get()->getTcCategoriesHandler()->getCategoriesOrder();
+	static auto& categoriesMap = Preload::Get()->getTcCategoriesHandler()->getCategoriesMap();
 
 //					category name -> vec ( pair (param_label , varId))
 //std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> CategoriesMapIngr;

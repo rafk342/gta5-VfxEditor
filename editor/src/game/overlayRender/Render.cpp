@@ -208,7 +208,6 @@ void mRender::ImRenderFrame()
 		ImGui::End();
 	}
 
-
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -260,7 +259,8 @@ void mRender::Shutdown()
 namespace 
 {
 	const char* font_path = "c:\\Windows\\Fonts\\calibri.ttf";
-
+	ImFontConfig fontConfig{};
+	
 	// latin& cyrillic& chinese
 	static const ImWchar fontRange[] =
 	{
@@ -276,7 +276,6 @@ namespace
 		0xFF00, 0xFFEF, // Half-width characters
 		0xFFFD, 0xFFFD, // Invalid
 		0x4e00, 0x9FAF, // CJK Ideograms
-
 		0,
 	};
 }
@@ -284,17 +283,11 @@ namespace
 void mRender::ChangeFontSize()
 {
 	auto& io = ImGui::GetIO();
-	
-	ImFontConfig newFontConfig{};
-	{
-		newFontConfig.RasterizerMultiply = 1.3f;
-		newFontConfig.RasterizerDensity = log(font_size) / 5 + 1;
-		newFontConfig.OversampleH = 2;
-		newFontConfig.OversampleV = 1;
-	}
+
+	fontConfig.RasterizerDensity = log(font_size) / 5 + 1;
 
 	io.Fonts->Clear();
-	io.Fonts->AddFontFromFileTTF(font_path, font_size, &newFontConfig, fontRange);
+	io.Fonts->AddFontFromFileTTF(font_path, font_size, &fontConfig, fontRange);
 	io.Fonts->Build();
 
 	ImGui_ImplDX11_InvalidateDeviceObjects();
@@ -305,17 +298,13 @@ void mRender::LoadFont()
 {
 	ImGuiIO& io = ImGui::GetIO();
 
-	ImFontConfig regularConfig{};
-	//{
-	//	regularConfig.RasterizerMultiply = 1.3f;
-	//	regularConfig.RasterizerDensity = 1.2f;
-	//	regularConfig.OversampleH = 2;
-	//	regularConfig.OversampleV = 1;
-	//}
+	fontConfig.RasterizerMultiply = 1.3f;
+	fontConfig.RasterizerDensity = 1.2f;
+	fontConfig.OversampleH = 2;
+	fontConfig.OversampleV = 1;
 
-	io.Fonts->AddFontFromFileTTF(font_path, font_size, &regularConfig, fontRange);
+	io.Fonts->AddFontFromFileTTF(font_path, font_size, &fontConfig, fontRange);
 }
-
 
 void mRender::mStyle()
 {

@@ -47,9 +47,7 @@ namespace
 }
 
 
-CloudSettingsUI::CloudSettingsUI(BaseUiWindow* base, const char* label) :
-	App(base, label),
-	CloudsVec(mCloudsHandler.GetCloudSettingsVec())
+CloudSettingsUI::CloudSettingsUI(const char* label) : App(label), CloudsVec(mCloudsHandler.GetCloudSettingsVec())
 {
 	auto& gHatsNames = mCloudsHandler.GetCloudHatNamesArray();
 	CloudHatNames.reserve(gHatsNames.GetSize() + 1);	
@@ -122,7 +120,7 @@ void CloudSettingsUI::ParamsWindow()
 
 	current_hat = mCloudsHandler.GetActiveCloudhatIndex();
 	if (current_hat == -1) {
-		CloudsComboIndex = 20;
+		CloudsComboIndex = CloudHatNames.size() - 1;
 	} else {
 		CloudsComboIndex = current_hat;
 	}

@@ -55,6 +55,7 @@ class mRender
 	static void mStyle();
 
 public:
+
 	static void SetFontSize(float sz);
 	static void SetCursorImguiUsage(bool state);
 	static void SetOpenWindowBtn(int btn);
