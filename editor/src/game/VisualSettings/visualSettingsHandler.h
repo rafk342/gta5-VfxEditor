@@ -8,7 +8,7 @@
 #include "memory/address.h"
 #include "memory/hook.h"
 
-#include "atl/atArray.h"
+#include "rage/atl/atArray.h"
 #include "crypto/joaat.h"
 #include "logger.h"
 #include "helpers/SimpleTimer.h"

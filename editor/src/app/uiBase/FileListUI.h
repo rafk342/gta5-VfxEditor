@@ -7,14 +7,14 @@
 #include "ImGui/imgui.h"
 #include "app/fileSystem/FileHandler.h"
 #include "app/helpers/helpers.h"
-
+#include "Preload/Preload.h"
 
 class FileListUI
 {
 private:
 
 	FileHandler						fhandler;
-	static char						pre_buff[255];
+	//static char						pre_buff[255];
 	char							buff[255];
 	std::filesystem::path			m_path;
 	bool							check_if_check_files_btn_was_pressed = false;
@@ -36,7 +36,4 @@ protected:
 	virtual void					SaveBtn() = 0;
 
 public:
-
-	static void						setPreBuff(const std::string& str);
-
 };

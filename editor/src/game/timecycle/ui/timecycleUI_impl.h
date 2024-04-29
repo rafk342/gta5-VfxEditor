@@ -20,7 +20,6 @@
 #include "helpers/helpers.h"
 #include "uiBase/ImguiHelpers.h"
 
-#include "app/Preload/Preload_Integration.h"
 #include "app/uiBase/uiBaseWindow.h"
 
 #include "Preload/Preload.h"
@@ -41,6 +40,7 @@ class TimecycleUI : public App
 	 bool		show_only_current_sample = false;
 	 u8			current_time_sample = 0;
 	 bool		Categories_usage = false;
+	 u8			pad[2]{};
 
 	 void GetCurrentTimeSample(int curr_hour);
 

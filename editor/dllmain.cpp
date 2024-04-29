@@ -27,18 +27,10 @@ AM_EXPORT void Init()
 {
 #if test_ver
 	Console();
-
 #else
 
 	Preload::Create();
 	Preload::Get()->preload();
-	INIReader* cfg = Preload::Get()->getConfigParser();
-
-	FileListUI::setPreBuff(cfg->GetString("Settings","Default_path","E:\\GTAV\\timecycles"));
-	mRender::SetOpenWindowBtn(cfg->GetInteger("Settings", "OpenClose_window_button", 0x2D));
-	mRender::SetCursorImguiUsage(cfg->GetBoolean("Settings", "CursorImgui_Impl", false));
-	mRender::SetFontSize(cfg->GetInteger("Settings", "Font_size", 15));
-
 	Hook::Init();
 	ScriptHook::Init();
 

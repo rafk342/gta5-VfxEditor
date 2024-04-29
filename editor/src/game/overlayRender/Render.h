@@ -21,6 +21,7 @@
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 
+#include "Preload/Preload.h";
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -54,11 +55,10 @@ class mRender
 	static void LoadFont();
 	static void mStyle();
 
+	static void loadConfigParams();
+
 public:
 
-	static void SetFontSize(float sz);
-	static void SetCursorImguiUsage(bool state);
-	static void SetOpenWindowBtn(int btn);
 	static void Init();
 	static void Shutdown();
 };

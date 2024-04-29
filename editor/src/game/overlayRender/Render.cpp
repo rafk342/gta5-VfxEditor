@@ -150,8 +150,11 @@ void mRender::PresentImage()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
 void mRender::Init()
 {
+	loadConfigParams();
 	WaitWhileGameIsStarting();
 
 	if (shutdown_request)
@@ -167,6 +170,17 @@ void mRender::Init()
 		Hook::Create(ClipCursor, mRender::n_ClipCursor, &g_ClipCursor, "ClipCursor");
 		Hook::Create(ShowCursor, mRender::n_ShowCursor, &g_ShowCursor, "ShowCursor");
 	}
+}
+
+void mRender::loadConfigParams()
+{
+	auto* cfg = Preload::Get()->getConfigParser();
+
+	font_scale_expected_to_be_changed = true;
+
+	font_size			= cfg->GetInteger("Settings", "Font_size", 15);
+	ImGuiCursorUsage	= cfg->GetBoolean("Settings", "CursorImgui_Impl", false);
+	open_window_btn		= cfg->GetInteger("Settings", "OpenClose_window_button", 0x2D);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -318,21 +332,6 @@ void mRender::mStyle()
 }
 
 
-void mRender::SetFontSize(float sz)
-{
-	font_scale_expected_to_be_changed = true;
-	font_size = sz;	
-}
-
-void mRender::SetCursorImguiUsage(bool state)
-{
-	ImGuiCursorUsage = state;
-}
-
-void mRender::SetOpenWindowBtn(int btn)
-{
-	open_window_btn = btn;
-}
 
 
 void WaitWhileGameIsStarting()

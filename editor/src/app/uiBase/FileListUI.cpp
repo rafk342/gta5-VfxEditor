@@ -5,19 +5,11 @@
 #include "FileListUI.h"
 #include "logger.h"
 
-char FileListUI::pre_buff[255];
-
-void FileListUI::setPreBuff(const std::string& str)
-{
-    std::memset(pre_buff, 0, 255);
-    strcat_s(pre_buff, str.c_str());
-}
-
 
 FileListUI::FileListUI()
 {
     std::memset(buff, 0, 255);
-    strcat_s(this->buff, FileListUI::pre_buff);
+    strcpy_s(buff, Preload::Get()->getConfigParser()->GetString("Settings","Default_path","E:\\GTAV\\timecycles").c_str());
 }
 
 

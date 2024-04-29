@@ -198,10 +198,10 @@
     <ClCompile Include="src\game\VisualSettings\ui\visualSettingsUi.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\app\atl\color32.h" />
-    <ClInclude Include="src\app\base\atRTTI.h" />
-    <ClInclude Include="src\app\base\tlsContext.h" />
-    <ClInclude Include="src\app\base\sysMemAllocator.h" />
+    <ClInclude Include="src\game\rage\atl\color32.h" />
+    <ClInclude Include="src\game\rage\base\atRTTI.h" />
+    <ClInclude Include="src\game\rage\base\tlsContext.h" />
+    <ClInclude Include="src\game\rage\base\sysMemAllocator.h" />
     <ClInclude Include="src\app\helpers\align.h" />
     <ClInclude Include="src\app\helpers\bits.h" />
     <ClInclude Include="src\game\scripthookTh.h" />
@@ -209,15 +209,15 @@
     <ClInclude Include="src\app\helpers\SimpleTimer.h" />
     <ClInclude Include="src\app\uiBase\ImguiHelpers.h" />
     <ClInclude Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.h" />
-    <ClInclude Include="src\app\atl\atBitSet.h" />
+    <ClInclude Include="src\game\rage\atl\atBitSet.h" />
     <ClInclude Include="src\game\CloudSettings\ui\CloudSettingsUI.h" />
     <ClInclude Include="resources\images_r.h" />
     <ClInclude Include="src\app\amString\char.h" />
     <ClInclude Include="src\app\amString\splitter.h" />
     <ClInclude Include="src\app\amString\string.h" />
     <ClInclude Include="src\app\amString\stringwrapper.h" />
-    <ClInclude Include="src\app\atl\atArray.h" />
-    <ClInclude Include="src\app\atl\atHashMap.h" />
+    <ClInclude Include="src\game\rage\atl\atArray.h" />
+    <ClInclude Include="src\game\rage\atl\atHashMap.h" />
     <ClInclude Include="src\app\common\types.h" />
     <ClInclude Include="src\app\compiler\compiler.h" />
     <ClInclude Include="src\app\crypto\float16.h" />

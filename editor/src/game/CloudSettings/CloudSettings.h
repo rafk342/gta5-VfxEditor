@@ -9,9 +9,9 @@
 #include "logger.h"
 #include "crypto/joaat.h"
 #include "compiler/compiler.h"
-#include "atl/atArray.h"
-#include "atl/atHashMap.h"
-#include "atl/atBitSet.h"
+#include "rage/atl/atArray.h"
+#include "rage/atl/atHashMap.h"
+#include "rage/atl/atBitSet.h"
 #include "helpers/helpers.h"
 
 
