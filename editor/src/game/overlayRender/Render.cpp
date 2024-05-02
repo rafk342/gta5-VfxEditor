@@ -187,7 +187,7 @@ void mRender::loadConfigParams()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 void mRender::InitBackend()
-{	
+{
 	ImGui::CreateContext();
 	ImPlot::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -213,14 +213,15 @@ void mRender::ImRenderFrame()
 
 	BaseUiWindow::GetInstance()->OnRender();
 
-	if (ImGui::Begin("tmp window"))
-	{
-		if (ImGui::DragFloat("font sz", &font_size, 0.1f, 1, 100))
-		{
-			font_scale_expected_to_be_changed = true;
-		}
-		ImGui::End();
-	}
+	//if (ImGui::Begin("tmp window"))
+	//{
+	//	if (ImGui::DragFloat("font sz", &font_size, 0.1f, 1, 100))
+	//	{
+	//		font_scale_expected_to_be_changed = true;
+	//	}
+	//	ImGui::End();
+	//}
+
 
 	ImGui::EndFrame();
 	ImGui::Render();
@@ -265,6 +266,9 @@ void mRender::Shutdown()
 	{
 		p_SwapChain->Release(); p_SwapChain = nullptr;
 	}
+	
+	Hook::Remove(g_PresentImageAddr);
+	Hook::Remove(g_WndProcAddr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

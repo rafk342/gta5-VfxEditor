@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\game\bloodfx\gBloodFxReloader.cpp" />
     <ClCompile Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.cpp" />
     <ClCompile Include="src\game\gameClock\Ui\ClockUi.cpp" />
     <ClCompile Include="src\app\uiBase\ImguiHelpers.cpp" />
@@ -198,6 +199,7 @@
     <ClCompile Include="src\game\VisualSettings\ui\visualSettingsUi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\game\bloodfx\gBloodFxReloader.h" />
     <ClInclude Include="src\game\rage\atl\color32.h" />
     <ClInclude Include="src\game\rage\base\atRTTI.h" />
     <ClInclude Include="src\game\rage\base\tlsContext.h" />

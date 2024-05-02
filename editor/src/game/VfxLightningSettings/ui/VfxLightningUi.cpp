@@ -131,52 +131,52 @@ void VfxLightningUi::DirectionalBurstSettingsWidgets()
 }
 
 
-void VfxLightningUi::CloudBurstCommonSettingsWidgets(CloudBurstCommonSettings& rCloudBurstCommonSettings, const char* treeLabel)
+void VfxLightningUi::CloudBurstCommonSettingsWidgets(CloudBurstCommonSettings& rCloudBurstCommonSettings, const char* treeName)
 {
 	static char buff[256];
 
-	if (ImGui::TreeNode(treeLabel))
+	if (ImGui::TreeNode(treeName))
 	{
-		FORMAT_TO_BUFF(buff, "Burst Duration Min ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Burst Duration Min ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.BurstDurationMin, 0.1f, 0.0f, 10.f);
 
-		FORMAT_TO_BUFF(buff, "Burst Duration Max ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Burst Duration Max ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.BurstDurationMax, 0.1f, 0.0f, 10.f);
 		
-		FORMAT_TO_BUFF(buff, "Burst Sequence Count ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Burst Sequence Count ## {}", treeName);
 		ImGui::DragInt(buff, &rCloudBurstCommonSettings.BurstSeqCount, 1, 1, 10);
 
-		FORMAT_TO_BUFF(buff, "Root Orbit X Variance ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Root Orbit X Variance ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.RootOrbitXVariance, 0.1f, 0.0f, 180.0f);
 
-		FORMAT_TO_BUFF(buff, "Root Orbit Y Min ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Root Orbit Y Min ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.RootOrbitYVarianceMin, 0.1f, 0.0f, 90.0f);
 
-		FORMAT_TO_BUFF(buff, "Root Orbit Y Max ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Root Orbit Y Max ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.RootOrbitYVarianceMax, 0.1f, 0.0f, 90.0f);
 
-		FORMAT_TO_BUFF(buff, "Local Orbit X Variance ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Local Orbit X Variance ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.LocalOrbitXVariance, 0.1f, -180.0f, 180.0f);
 
-		FORMAT_TO_BUFF(buff, "Local Orbit Y Variance ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Local Orbit Y Variance ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.LocalOrbitYVariance, 0.1f, -180.0f, 180.0f);
 
-		FORMAT_TO_BUFF(buff, "Sequence Orbit X Variance ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Sequence Orbit X Variance ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.BurstSeqOrbitXVariance, 0.1f, -180.0f, 180.0f);
 
-		FORMAT_TO_BUFF(buff, "Sequence Orbit Y Variance ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Sequence Orbit Y Variance ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.BurstSeqOrbitYVariance, 0.1f, -180.0f, 180.0f);
 
-		FORMAT_TO_BUFF(buff, "Delay Min ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Delay Min ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.DelayMin, 0.1f , 0.0f, 90.0f);
 
-		FORMAT_TO_BUFF(buff, "Delay Max ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Delay Max ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.DelayMax, 0.1f, 0.0f, 90.0f);
 
-		FORMAT_TO_BUFF(buff, "Size Min ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Size Min ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.SizeMin, 0.1f, 0.0f, 5000.0f);
 
-		FORMAT_TO_BUFF(buff, "Size Max ## {}", treeLabel);
+		FORMAT_TO_BUFF(buff, "Size Max ## {}", treeName);
 		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.SizeMax, 0.1f, 0.0f, 5000.0f);
 
 		ImGui::TreePop();
@@ -426,13 +426,12 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 }
 
 
-void keyframeTable(const char* label, ptxKeyframe& keyframe, u8 idx)
+void keyframeTable(const char* title, ptxKeyframe& keyframe, u8 idx)
 {
-	static char buff[64];
-
+	char buff[64];
 	auto& data = keyframe.data;
 
-	if (ImGui::BeginTable(label, 3, ImGuiTableFlags_Borders))
+	if (ImGui::BeginTable(title, 3, ImGuiTableFlags_Borders))
 	{
 		ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 45);
 		ImGui::TableSetupColumn("Min");
@@ -502,7 +501,7 @@ enum class scaleAx
 template<scaleAx T>
 double* draw_scale_lines(std::vector<double>& dots_min, std::vector<double>& dots_max);
 
-void VfxLightningUi::keyframePlot(ptxKeyframe& keyframe, const char* label)
+void VfxLightningUi::keyframePlot(ptxKeyframe& keyframe, const char* title)
 {
 	static float point_size = 4.5;
 

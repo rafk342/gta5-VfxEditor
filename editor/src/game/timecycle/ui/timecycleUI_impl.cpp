@@ -41,7 +41,7 @@ struct TcImguiFlags
 };
 
 
-TimecycleUI::TimecycleUI(const char* label) : App(label)
+TimecycleUI::TimecycleUI(const char* title) : App(title)
 {
 	currentCycle = m_tcHandler.GetCycle(0);
 	regions = { "Global", "Urban" };
@@ -176,7 +176,7 @@ void TimecycleUI::MainParamsWindow_without_Categories()
 		if (g_varInfos[i].varType == tcVarType_e::VARTYPE_NONE)
 			continue;
 
-		if (ImGui::TreeNode(g_varInfos[i].labelName))
+		if (ImGui::TreeNode(g_varInfos[i].menuName))
 		{
 			if (show_only_current_sample) {
 				makeJustSingleParamWidget(current_region, i);
@@ -192,14 +192,12 @@ void TimecycleUI::MainParamsWindow_without_Categories()
 
 void TimecycleUI::MainParamsWindow_with_Categories()
 {
-	static char buff[128];
-	//static auto& categoryNames = CategoriesIntegrated::getNamesVec();
-	//static auto& categoriesMap = CategoriesIntegrated::getCategoriesMap();
+	char buff[128];
 	
-	static auto& categoryNames = Preload::Get()->getTcCategoriesHandler()->getCategoriesOrder();
-	static auto& categoriesMap = Preload::Get()->getTcCategoriesHandler()->getCategoriesMap();
+	auto& categoryNames = Preload::Get()->getTcCategoriesHandler()->getCategoriesOrder();
+	auto& categoriesMap = Preload::Get()->getTcCategoriesHandler()->getCategoriesMap();
 
-//					category name -> vec ( pair (param_label , varId))
+//					category name -> vec ( pair (new param_name , varId))
 //std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> CategoriesMapIngr;
 
 	for (auto& category : categoryNames)
@@ -209,7 +207,7 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 		{
 			for (auto& [param_name, id] : categoriesMap.at(category))
 			{
-				if (ImGui::TreeNode(g_varInfos[id].labelName))
+				if (ImGui::TreeNode(g_varInfos[id].menuName))
 				{
 					if (show_only_current_sample)
 						makeJustSingleParamWidget(current_region, id);
@@ -227,13 +225,10 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 
 void TimecycleUI::makeTable(Regions region, int VarIndex)
 {
-	static float val;
-	static float color[4];
-	static ImVec2 tableSize;
-
-	static char buff[128];
-
-	tableSize = ImGui::GetContentRegionAvail();
+	char buff[128];
+	float val;
+	float color[4];
+	ImVec2 tableSize = ImGui::GetContentRegionAvail();
 
 	FORMAT_TO_BUFF(buff, "##{}_table_tc", VarIndex);
 	if (ImGui::BeginTable(buff, time_samples.size(), TcImguiFlags::table_flags))
@@ -309,11 +304,10 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 
 void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 {
-	static float color[4];
-	static size_t time;
-	static char buff[128];
+	float color[4];
+	char buff[128];
 	
-	time = current_time_sample;
+	size_t time = current_time_sample;
 
 	FORMAT_TO_BUFF(buff, "{} VarId : {}##_{}_var", time_samples[current_time_sample].second, VarIndex, static_cast<int>(time))
 

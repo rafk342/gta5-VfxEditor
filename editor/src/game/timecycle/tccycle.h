@@ -15,7 +15,7 @@ enum Regions
 	URBAN = 1,
 };
 
-struct __declspec(align(32)) tcKeyframe
+struct tcKeyframe
 {
 	u16 tc_vars[432];
 };

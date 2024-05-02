@@ -32,7 +32,7 @@ class CloudSettingsUI : public App
 	void CloudDataTreeNode(const char* label, int clIdx, atArray<ptxKeyframeEntry>& arr, std::function<void(atArray<ptxKeyframeEntry>&, int, const char*)> func);
 
 	void CloudSettingsColourTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
-	void CloudSettingsColourSimpleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
+	void CloudSettingsColourSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
 
 	void CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
 	void CloudSettingsVariablesSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);

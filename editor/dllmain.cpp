@@ -5,7 +5,6 @@
 #include <fstream>
 
 #include "Preload/Preload.h"
-//#include "app/Preload/Preload_Integration.h"
 #include "game/overlayRender/Render.h"
 #include "app/logger.h"
 #include "app/compiler/compiler.h"
@@ -14,6 +13,7 @@
 #include "helpers/SimpleTimer.h"
 
 
+#define with_console 0
 #define test_ver 0
 
 FILE* f;
@@ -23,11 +23,13 @@ void Console() {
 	freopen_s(&f, "CONOUT$", "w", stdout);
 }
 
+
 AM_EXPORT void Init()
 {
-#if test_ver
+#if with_console
 	Console();
-#else
+#endif
+#if !test_ver
 
 	Preload::Create();
 	Preload::Get()->preload();
@@ -36,16 +38,21 @@ AM_EXPORT void Init()
 
 	std::thread th(mRender::Init);
 	th.detach();
+
+#else
 	
+
 #endif
+
 }
 
 AM_EXPORT void Shutdown()
 {
-#if test_ver
+#if with_console
 	fclose(f);
 	FreeConsole();
-#else	
+#endif
+#if !test_ver
 	mRender::Shutdown();
 	Preload::Destroy();
 #if am_version
@@ -53,12 +60,14 @@ AM_EXPORT void Shutdown()
 #endif
 	Hook::Shutdown();
 	std::this_thread::sleep_for(std::chrono::milliseconds(300));
+#else
+
 
 #endif
 }
 
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
 
 #if !am_version

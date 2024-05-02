@@ -95,8 +95,8 @@ float* n_getColor(u64 arg, float* arg2, const char* name)
 VisualSettingsHandler::VisualSettingsHandler()
 {
     static auto addr = gmAddress::Scan("48 83 EC 28 48 8D 15 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 84 C0");
-    p_Vsettings         = addr.GetRef(14).To<gVisualSettings*>();
-    updateSettings = addr.ToFunc<bool()>();
+    p_Vsettings      = addr.GetRef(14).To<gVisualSettings*>();
+    updateSettings   = addr.ToFunc<bool()>();
    
     //p_toOrigPath        = addr.GetRef(7).To<char*>();
     //origPathLen         = strlen(p_toOrigPath) + 1;
@@ -306,8 +306,8 @@ void VisualSettingsParser::importData(const std::filesystem::path& path, VisualS
         auto v = split_string(line, "\t ", 2);
         if (v.size() < 2)
             continue;
-
-        inGameArray.push_back({ rage::joaat(v[0].c_str()), static_cast<float>(atof(v[1].c_str())) }, true);
+       
+        inGameArray.push_back({ rage::joaat(v[0].c_str()), static_cast<float>(atof(v[1].c_str())) });
     }
 
     std::sort(inGameArray.begin(), inGameArray.end(), [](const gSettingsItem& v1, const gSettingsItem& v2)

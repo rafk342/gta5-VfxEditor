@@ -13,8 +13,6 @@ void FileHandler::fill_files_vec(std::filesystem::path path)
         return;
     }
 
-    const stdfs::directory_iterator end{};
-
     for (const auto& entry : stdfs::directory_iterator{ path })
     {
         if (stdfs::is_regular_file(entry) && (entry.path().extension() == ".xml" || entry.path().extension() == ".dat"))

@@ -132,6 +132,9 @@
     <ClCompile Include="vendor\ImPlot\implot_items.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\game\bloodfx\gBloodFxReloader.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\amString\char.h">
@@ -651,6 +654,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\game\rage\base\tlsContext.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\bloodfx\gBloodFxReloader.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

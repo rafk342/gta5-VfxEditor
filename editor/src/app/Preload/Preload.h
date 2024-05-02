@@ -19,20 +19,18 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
 class TcNamesReplacemantHandler
 {
 	// param -> new_name
 	std::unordered_map<std::string, std::string> params_map;
+	bool loaded = false;
 
 	bool load_from_file(const char* filename);
 	void save_hardcoded_params_to_file(const char* filename);
 public:
-
-	void load_names_replacement(const char* filename);
-	//void print();
+	inline bool isLoaded();
+	bool load_names_replacement(const char* filename);
 };
-
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,25 +44,24 @@ class TcCategoriesHandler
 	std::vector<std::string> CategoriesOrder;
 	//category name -> param_names_vec //category name -> vec ( pair (param_label , varId))
 	std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> CategoriesMap;
+	bool loaded = false;
 
 	bool load_from_file(const char* filename);
 	void save_hardcoded_categories_to_file(const char* filename);
 
 public:
 
-	//void print();
-	void load_categories(const char* filename);
+	inline bool isLoaded();
+	bool load_categories(const char* filename);
 	std::vector<std::string>& getCategoriesOrder();
 	std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>& getCategoriesMap();
 };
-
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                           Config
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 class ConfigWrapper
@@ -79,13 +76,10 @@ public:
 };
 
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                           Preload
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 
 class Preload
@@ -101,7 +95,7 @@ class Preload
 		static constexpr const char* config_file = "__TcEditorConfig.ini";
 	};
 
-	TcNamesReplacemantHandler	TcNamesLoader;
+	TcNamesReplacemantHandler	TcNames;
 	TcCategoriesHandler			TcCategories;
 	ConfigWrapper				CfgWrapper;
 

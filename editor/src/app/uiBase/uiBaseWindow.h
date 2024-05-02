@@ -7,12 +7,12 @@ class BaseUiWindow;
 
 class App
 {
-    const char* label;
+    const char* title;
 public:
-    App(const char* label);
+    App(const char* title);
     virtual ~App() {};
 
-    const char* get_label();
+    const char* get_title();
    
     virtual void window() = 0;
     virtual void importData(std::filesystem::path path) = 0;
@@ -21,11 +21,9 @@ public:
 
 class BaseUiWindow : private FileListUI
 {
-    friend std::unique_ptr<BaseUiWindow> std::make_unique<BaseUiWindow>();
-    friend std::default_delete<BaseUiWindow>;
-    static std::unique_ptr<BaseUiWindow> selfInstance;
+    static BaseUiWindow* self;
 
-    const char* MainWindowLabel = "VisualEffects Editor";
+    const char* MainWindowTitle = "VisualEffects Editor";
    
     std::vector<std::unique_ptr<App>>   appsVec;
     App*                                activeApp = nullptr;

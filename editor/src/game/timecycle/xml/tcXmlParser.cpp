@@ -111,7 +111,7 @@ void tcXmlParser::export_tcData(const std::filesystem::path& path, const tcCycle
 	cycle_node.append_attribute("regions") = "2";
 
 
-	for (u8 region_idx = 0; region_idx < 2; region_idx++)
+	for (size_t region_idx = 0; region_idx < 2; region_idx++)
 	{
 		pugi::xml_node region_node = cycle_node.append_child("region");
 		
@@ -140,7 +140,7 @@ std::string& tcXmlParser::getTcParamsLine(const tcCycle* cycle, Regions region, 
 	static std::string params_line;
 	params_line = " ";
 
-	for (int time = 0; time < TC_TIME_SAMPLES; time++)
+	for (size_t time = 0; time < TC_TIME_SAMPLES; time++)
 	{
 		params_line += std::format("{:.4f} ", cycle->GetKeyframeValue(region, paramId, time));
 	}

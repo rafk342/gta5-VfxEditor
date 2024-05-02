@@ -12,12 +12,21 @@
 
 #define rage_array true
 
-template<class TValue>
+template<class TValue, bool reserve_with_directly_memcpy_for_this_type = false>
 class atArray
 {
 	TValue* m_offset = nullptr;
 	u16 m_size = 0;
 	u16 m_capacity = 0;
+
+	void manage_capacity(size_t sz)
+	{
+		if (m_capacity == 0)
+			reserve(16);
+
+		else if (sz >= m_capacity)
+			reserve(NEXT_POWER_OF_TWO_32(sz));
+	}
 
 public:
 
@@ -25,32 +34,32 @@ public:
 
 	atArray(u16 count, const TValue& v)
 	{
-		reserve(count);
-		for (size_t i = 0; i < count; i++){
+		manage_capacity(count);
+		for (size_t i = 0; i < count; i++) {
 			push_back(v);
 		}
 	}
 
 	atArray(u16 count)
 	{
-		reserve(count);
+		manage_capacity(count);
 	}
 
 	atArray(std::initializer_list<TValue> il)
 	{
-		reserve(il.size());
+		manage_capacity(il.size());
 		for (auto it = il.begin(); it != il.end(); ++it) {
 			push_back(*it);
 		}
 	}
-	
+
 	template<typename Iter>
 	atArray(Iter start, Iter end)
 	{
 		static_assert(std::is_same_v<typename std::iterator_traits<Iter>::value_type, TValue>, "wrong iterator type");
 
-		u16 size = std::distance(start, end);
-		reserve(size);
+		size_t sz = std::distance(start, end);
+		manage_capacity(sz);
 
 		while (start != end)
 		{
@@ -58,7 +67,7 @@ public:
 			start++;
 		}
 	}
-
+	
 	atArray(std::vector<TValue>& vec) : atArray(vec.begin(), vec.end()) {}
 	
 	TValue*         begin()                 { return m_offset; }
@@ -80,7 +89,7 @@ public:
 			return *this;
 
 		clear();
-		reserve(other.GetSize());
+		manage_capacity(other.GetSize());
 
 		for (size_t i = 0; i < other.GetSize(); ++i) {
 			push_back(other.m_offset[i]);
@@ -88,22 +97,83 @@ public:
 		return *this;
 	}
 
-// if we are sure that directly copying the objects memory in case of reallocation is completely safe - we can specify it.
-// we are not calling destructors and constructors in this case, so it should perform faster, I guess.
-	TValue& push_back(const TValue& value, bool reserve_with_directly_memcpy = false)
+	atArray& operator=(atArray&& other) noexcept 
 	{
-		if (m_capacity == 0)
-			reserve(16);
+		if (this == &other)
+			return *this;
 
-		else if (m_size >= m_capacity)
-			reserve(NEXT_POWER_OF_TWO_32(m_capacity), reserve_with_directly_memcpy);
+		if (m_offset)
+		{
+			clear();
+#if rage_array
+			rage::tlsContext::get()->m_allocator->Free(m_offset);
+#else
+			free(m_offset);
+#endif
+			m_offset = nullptr;
+		}
 		
+		m_size = 0;
+		m_capacity = 0;
+
+		std::swap(m_offset, other.m_offset);
+		std::swap(m_size, other.m_size);
+		std::swap(m_capacity, other.m_capacity);
+
+		return *this;
+	}
+
+	atArray(const atArray& other)
+	{
+		clear();
+		manage_capacity(other.m_capacity);
+
+		for (size_t i = 0; i < other.GetSize(); i++)
+		{
+			push_back(other.m_offset[i]);
+		}
+	}
+
+	atArray(atArray&& other) noexcept
+	{
+		if (m_offset)
+		{
+			clear();
+#if rage_array
+			rage::tlsContext::get()->m_allocator->Free(m_offset);
+#else
+			free(m_offset);
+#endif
+			m_offset = nullptr;
+		}
+		
+		m_size = 0;
+		m_capacity = 0;
+
+		std::swap(m_offset, other.m_offset);
+		std::swap(m_size, other.m_size);
+		std::swap(m_capacity, other.m_capacity);
+	}
+
+	TValue& push_back(const TValue& value)
+	{
+		manage_capacity(m_size);
+
 		new (&m_offset[m_size]) TValue(value);
 		m_size++;
 		return *back();
 	}
 
-	void reserve(u16 new_cap, bool directly_memcpy = false)
+	TValue& push_back(TValue&& value)
+	{
+		manage_capacity(m_size);
+
+		new (&m_offset[m_size]) TValue(std::move(value));
+		m_size++;
+		return *back();
+	}
+
+	void reserve(size_t new_cap)
 	{
 		if (new_cap <= m_capacity)
 			return;
@@ -123,8 +193,8 @@ public:
 			m_capacity = new_cap;
 			return;
 		}
-		
-		switch (directly_memcpy)
+
+		switch (reserve_with_directly_memcpy_for_this_type)
 		{
 		case true:
 
@@ -156,11 +226,11 @@ public:
 		m_offset = newOffset;
 		m_capacity = new_cap;
 	}
-	
+
 	// returns -1 if value was not found
-	size_t IndexOf(const TValue& v) const
+	s32 IndexOf(const TValue& v) const
 	{
-		for (size_t i = 0; i < m_size; i++) 
+		for (size_t i = 0; i < m_size; i++)
 		{
 			if (m_offset[i] == v)
 				return i;
@@ -186,11 +256,11 @@ public:
 		}
 		m_offset[idx].~TValue();
 		memset(&m_offset[idx], 0, sizeof(TValue));
-		
+
 		size_t move_size = (m_size - idx - 1) * sizeof(TValue);
-		memmove_s(&m_offset[idx],move_size, 
-				  &m_offset[idx + 1], move_size);
-		
+		memmove_s(&m_offset[idx], move_size,
+			&m_offset[idx + 1], move_size);
+
 		m_size -= 1;
 		memset(end(), 0, sizeof(TValue));
 	}
@@ -200,7 +270,7 @@ public:
 		if (empty())
 			return;
 
-		for (size_t i = m_size - 1; i >= 0; --i) 
+		for (size_t i = m_size - 1; i >= 0; --i)
 			if (v == m_offset[i])
 				RemoveAt(i);
 	}

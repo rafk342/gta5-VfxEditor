@@ -5,11 +5,11 @@
 #include "gameClock/Ui/ClockUi.h"
 #include "VfxLightningSettings/ui/VfxLightningUi.h"
 #include "VisualSettings/ui/visualSettingsUi.h"
+#include "bloodfx/gBloodFxReloader.h"
 
+BaseUiWindow* BaseUiWindow::self = nullptr;
 
-std::unique_ptr<BaseUiWindow> BaseUiWindow::selfInstance = nullptr;
-
-App::App(const char* label) : label(label) {}
+App::App(const char* title) : title(title) {}
 
 BaseUiWindow::BaseUiWindow()
 {
@@ -17,11 +17,12 @@ BaseUiWindow::BaseUiWindow()
     appsVec.push_back(std::make_unique<CloudSettingsUI>("Cloudkeyframes"));
     appsVec.push_back(std::make_unique<VisualSettingsUi>("VisualSettings"));
     appsVec.push_back(std::make_unique<VfxLightningUi>("Lightnings"));
+    appsVec.push_back(std::make_unique<gBloodfxUi>("Bloodfx"));
 }
-
-const char* App::get_label()
+    
+const char* App::get_title()
 {
-    return label;
+    return title;
 }
 
 void BaseUiWindow::setActiveApp(App* app)
@@ -37,7 +38,7 @@ App* BaseUiWindow::getActiveApp() const
 void BaseUiWindow::OnRender()
 {
     ImGui::SetNextWindowSize({ 712 ,885 }, ImGuiCond_FirstUseEver);
-    ImGui::Begin(MainWindowLabel);
+    ImGui::Begin(MainWindowTitle);
 
     file_section();
     ImGui::SameLine();
@@ -47,7 +48,7 @@ void BaseUiWindow::OnRender()
     {
         for (auto& app : appsVec)
         {
-            if (ImGui::BeginTabItem(app->get_label()))
+            if (ImGui::BeginTabItem(app->get_title()))
             {
                 if (ImGui::BeginChild("MainParamsWindow_Base", ImVec2(-FLT_MIN, -FLT_MIN), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar))
                 {
@@ -104,22 +105,21 @@ void BaseUiWindow::SaveBtn()
 
 void BaseUiWindow::Create()
 {
-    if (!selfInstance) {
-        selfInstance = std::make_unique<BaseUiWindow>();
+    if (!self) {
+        self = new BaseUiWindow();
     }
 }
 
 void BaseUiWindow::Destroy()
 {
-    if (selfInstance) 
-    {
-        selfInstance.reset();
+    if (self) {
+      delete self;
     }
 }
 
 BaseUiWindow* BaseUiWindow::GetInstance()
 {
-    return selfInstance.get();
+    return self;
 }
 
 BaseUiWindow::~BaseUiWindow() {}

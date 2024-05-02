@@ -99,6 +99,20 @@ public:
 
     // Return true if a value exists with the given section and field names.
     INI_API bool HasValue(const std::string& section, const std::string& name) const;
+    
+    template<typename T>
+    INI_API bool ChangeValueIfExists(const std::string& section, const std::string& name, const T& new_data)
+    {
+        std::string key = MakeKey(section, name);
+        auto it = _values.find(key);
+        if (it != _values.end())
+            it->second = std::to_string(new_data);
+        else
+            return false;
+
+        return true;
+    }
+
 
 private:
     int _error;

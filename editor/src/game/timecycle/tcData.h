@@ -548,9 +548,10 @@ struct tcVarInfo
 	int					varId;
 	const char*			name;
 	tcVarType_e			varType;
-	const char*			labelName;
+	const char*			menuName;
 	bool				InCategory = false;
 };
+
 
 inline tcVarInfo g_varInfos[] =
 {

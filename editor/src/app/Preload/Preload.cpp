@@ -8,16 +8,289 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-//void TcNamesReplacemantHandler::print()
-//{
-//    for (auto& var : g_varInfos)
-//    {
-//        if (var.varType == VARTYPE_NONE)
-//            continue;
-//
-//        std::println("{}", var.labelName);
-//    }
-//}
+inline bool TcNamesReplacemantHandler::isLoaded() { return loaded; }
+
+bool TcNamesReplacemantHandler::load_names_replacement(const char* filename)
+{
+    if (!load_from_file(filename))
+    {
+        save_hardcoded_params_to_file(filename);
+        load_from_file(filename);
+    }
+    return isLoaded();
+}
+
+
+bool TcNamesReplacemantHandler::load_from_file(const char* filename)
+{
+    params_map.clear();
+    std::ifstream file(filename);
+    std::string line;
+
+    if (!file.is_open())
+        return (loaded = false);
+
+    while (std::getline(file, line))
+    {
+        size_t colon_pos = line.find(':');
+
+        if (colon_pos != -1)
+            params_map.insert({ strip_str(line.substr(0, colon_pos)), strip_str(line.substr(colon_pos + 1, line.size() - colon_pos)) });
+    }
+
+    for (auto& [v1, v2] : params_map) {
+        size_t count = 0;
+        for (auto& [v11, v22] : params_map) {
+            if (v2 == v22) {
+                count += 1;
+                if (count > 1)
+                    v22 += ' ';
+            }
+        }
+    }
+
+    std::string var_name;
+    var_name.reserve(50);
+
+    for (auto& var : g_varInfos)
+    {
+        if (var.varType == VARTYPE_NONE)
+            continue;
+
+        var_name = var.name;
+
+        if (var_name.ends_with("_r"))
+            var_name.resize(var_name.size() - 2);
+
+        auto it = params_map.find(var_name);
+
+        if (it != params_map.end() && !it->second.empty())
+            var.menuName = it->second.c_str();
+    }
+
+    return (loaded = true);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                           TcCategories
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+std::vector<std::string>& TcCategoriesHandler::getCategoriesOrder() { return CategoriesOrder; }
+std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>& TcCategoriesHandler::getCategoriesMap() { return CategoriesMap; }
+inline bool TcCategoriesHandler::isLoaded() { return loaded; }
+
+bool TcCategoriesHandler::load_categories(const char* filename)
+{
+    if (!load_from_file(filename))
+    {
+        save_hardcoded_categories_to_file(filename);
+        load_from_file(filename);
+    }
+    return isLoaded();
+}
+
+
+bool TcCategoriesHandler::load_from_file(const char* filename)
+{
+    CategoriesOrder.clear();
+    CategoriesMap.clear();
+
+    std::ifstream input(filename);
+
+    if (!input.is_open())
+        return (loaded = false);
+
+    std::string line;
+    std::vector<std::string> raw_lines;
+    raw_lines.reserve(1000);
+    line.reserve(100);
+
+    while (std::getline(input, line))
+    {
+        line = strip_str(line);
+        if (line.empty())
+            continue;
+
+        raw_lines.push_back(line);
+    }
+    RemoveDuplicatesInVector(raw_lines);
+
+    std::string var_name;
+    size_t category_idx = -1;
+    size_t varId;
+    for (auto& line : raw_lines)
+    {
+        if (line[0] == '@')
+        {
+            CategoriesOrder.push_back(line.substr(1, line.size()));
+            category_idx++;
+            continue;
+        }
+
+        if (std::find_if(g_varInfos, g_varInfos + std::size(g_varInfos), [&](tcVarInfo& var) -> bool
+            {
+                var_name = var.name;
+
+                if (var_name.ends_with("_r"))
+                    var_name.resize(var_name.size() - 2);
+
+                if (var_name == line)
+                {
+                    varId = var.varId;
+                    var.InCategory = true;
+                    return true;
+                }
+                return false;
+            }) != g_varInfos + std::size(g_varInfos))
+        {
+            if (category_idx != -1)
+            {
+                CategoriesMap[CategoriesOrder[category_idx]].push_back({ line ,varId });
+            }
+            else
+            {
+                CategoriesMap["None"].push_back({ line , varId });
+            }
+        }
+    }
+
+    for (auto& var : g_varInfos)
+    {
+        if (var.varType == VARTYPE_NONE || var.InCategory)
+            continue;
+
+        varId = var.varId;
+        var_name = var.name;
+
+        if (var_name.ends_with("_r"))
+            var_name.resize(var_name.size() - 2);
+
+        CategoriesMap["None"].push_back({ var_name , varId });
+    }
+
+    if (CategoriesMap.contains("None"))
+        CategoriesOrder.push_back("None");
+
+    return (loaded = true);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                           Config
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+void ConfigWrapper::readCfg(const char* filename)
+{
+    reader.ParseFile(filename);
+
+    if (reader.ParseError() < 0)
+    {
+        writeCfg(filename);
+        reader.ParseFile(filename);
+    }
+}
+
+void ConfigWrapper::writeCfg(const char* filename)
+{
+    std::ofstream cfg(filename, std::ios::trunc);
+
+    if (!cfg.is_open())
+        return;
+
+    cfg << "// All key codes can be found here: https://msdn.microsoft.com/library/windows/desktop/dd375731.aspx\n\n";
+    cfg << "[Settings]" << "\n\n";
+
+    cfg << "Default_path             " << " = " << "E:\\GTAV\\timecycles"   << '\n';
+    cfg << "Categories               " << " = " << "1"                      << '\n';
+    cfg << "Names_replacement        " << " = " << "1"                      << '\n';
+    cfg << "OpenClose_window_button  " << " = " << "0x2D"                   << "\n";
+    cfg << "Font_size                " << " = " << "15"                     << '\n';
+
+    cfg << "\n// In case if there's something wrong with the system cursor - set this to 1 " << '\n';
+    cfg << "CursorImgui_Impl         " << " = " << "0"                      << '\n';
+
+    cfg.close();
+}
+
+INIReader* ConfigWrapper::getCfgReader()
+{
+    return &reader;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                           Preload
+// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+#if 1
+Preload* Preload::self = nullptr;
+
+void Preload::Create()
+{
+    if (!self)
+        self = new Preload();
+}
+
+void Preload::Destroy()
+{
+    if (self) {
+        delete self;
+        self = nullptr;
+    }
+}
+
+Preload* Preload::Get()
+{
+    return self;
+}
+#endif
+
+
+void Preload::preload()
+{
+    if (preload_done)
+        return;
+   
+    CfgWrapper.readCfg(fileNames::config_file);
+    auto* cfg = CfgWrapper.getCfgReader();
+
+    if (cfg->GetBoolean("Settings", "Names_replacement", true)) 
+        if (!(TcNames.load_names_replacement(fileNames::tcNames_repl_file)))
+            cfg->ChangeValueIfExists("Settings", "Names_replacement", false);
+
+    
+    if (cfg->GetBoolean("Settings", "Categories", true))
+        if (!(TcCategories.load_categories(fileNames::tcCategories_file))) 
+            cfg->ChangeValueIfExists("Settings", "Categories", false);
+
+
+    preload_done = true;
+}
+
+INIReader* Preload::getConfigParser() { return CfgWrapper.getCfgReader(); }
+TcCategoriesHandler* Preload::getTcCategoriesHandler() { return &TcCategories; }
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                           hardcoded data
+// 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 void TcNamesReplacemantHandler::save_hardcoded_params_to_file(const char* filename)
 {
@@ -406,183 +679,6 @@ void TcNamesReplacemantHandler::save_hardcoded_params_to_file(const char* filena
     output.close();
 }
 
-void TcNamesReplacemantHandler::load_names_replacement(const char* filename)
-{
-    if (!load_from_file(filename))
-    {
-        save_hardcoded_params_to_file(filename);
-        load_from_file(filename);
-    }
-}
-
-bool TcNamesReplacemantHandler::load_from_file(const char* filename)
-{
-    params_map.clear();
-    std::ifstream file(filename);
-    std::string line;
-
-    if (!file.is_open())
-        return false;
-
-    while (std::getline(file, line))
-    {
-        size_t colon_pos = line.find(':');
-
-        if (colon_pos != -1)
-            params_map.insert({ strip_str(line.substr(0, colon_pos)), strip_str(line.substr(colon_pos + 1, line.size() - colon_pos)) });
-    }
-
-    for (auto& [v1, v2] : params_map) {
-        size_t count = 0;
-        for (auto& [v11, v22] : params_map) {
-            if (v2 == v22) {
-                count += 1;
-                if (count > 1)
-                    v22 += ' ';
-            }
-        }
-    }
-
-    std::string var_name;
-    var_name.reserve(50);
-
-    for (auto& var : g_varInfos)
-    {
-        if (var.varType == VARTYPE_NONE)
-            continue;
-
-        var_name = var.name;
-
-        if (var_name.ends_with("_r"))
-            var_name.resize(var_name.size() - 2);
-
-        auto it = params_map.find(var_name);
-
-        if (it != params_map.end() && !it->second.empty())
-            var.labelName = it->second.c_str();
-    }
-
-    return true;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                           TcCategories
-// 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//
-//void TcCategoriesHandler::print()
-//{
-//    for (auto& category : CategoriesOrder)
-//    {
-//        std::println("\n\n{}\n\n\n", category);
-//
-//        for (auto& item : CategoriesMap.at(category))
-//        {
-//            std::println("{}\t {}", item.second, item.first);
-//        }
-//    }
-//}
-
-
-std::vector<std::string>& TcCategoriesHandler::getCategoriesOrder() { return CategoriesOrder; }
-std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>& TcCategoriesHandler::getCategoriesMap() { return CategoriesMap; }
-
-
-void TcCategoriesHandler::load_categories(const char* filename)
-{
-    if (!load_from_file(filename))
-    {
-        save_hardcoded_categories_to_file(filename);
-        load_from_file(filename);
-    }
-}
-
-
-bool TcCategoriesHandler::load_from_file(const char* filename)
-{
-    CategoriesOrder.clear();
-    CategoriesMap.clear();
-
-    std::ifstream input(filename);
-
-    if (!input.is_open())
-        return false;
-
-    std::string line;
-    std::vector<std::string> raw_lines;
-    raw_lines.reserve(1000);
-    line.reserve(100);
-
-    while (std::getline(input, line))
-    {
-        line = strip_str(line);
-        if (line.empty())
-            continue;
-
-        raw_lines.push_back(line);
-    }
-    RemoveDuplicatesInVector(raw_lines);
-
-    std::string var_name;
-    size_t category_idx = -1;
-    size_t varId;
-    for (auto& line : raw_lines)
-    {
-        if (line[0] == '@')
-        {
-            CategoriesOrder.push_back(line.substr(1, line.size()));
-            category_idx++;
-            continue;
-        }
-
-        if (std::find_if(g_varInfos, g_varInfos + std::size(g_varInfos), [&](tcVarInfo& var) -> bool
-            {
-                var_name = var.name;
-
-                if (var_name.ends_with("_r"))
-                    var_name.resize(var_name.size() - 2);
-
-                if (var_name == line)
-                {
-                    varId = var.varId;
-                    var.InCategory = true;
-                    return true;
-                }
-                return false;
-            }) != g_varInfos + std::size(g_varInfos))
-        {
-            if (category_idx != -1)
-            {
-                CategoriesMap[CategoriesOrder[category_idx]].push_back({ line ,varId });
-            }
-            else
-            {
-                CategoriesMap["None"].push_back({ line , varId });
-            }
-        }
-    }
-
-    for (auto& var : g_varInfos)
-    {
-        if (var.varType == VARTYPE_NONE || var.InCategory)
-            continue;
-        varId = var.varId;
-        var_name = var.name;
-        if (var_name.ends_with("_r"))
-            var_name.resize(var_name.size() - 2);
-
-        CategoriesMap["None"].push_back({ var_name , varId });
-    }
-
-    if (CategoriesMap.contains("None"))
-        CategoriesOrder.push_back("None");
-
-    return true;
-}
 
 
 void TcCategoriesHandler::save_hardcoded_categories_to_file(const char* filename)
@@ -1133,7 +1229,7 @@ void TcCategoriesHandler::save_hardcoded_categories_to_file(const char* filename
         return;
 
     std::string text;
-    text.reserve(20000); // should be enough to avoid realloc
+    text.reserve(20000);
 
     for (auto& category : CategoriesOrder)
     {
@@ -1148,104 +1244,3 @@ void TcCategoriesHandler::save_hardcoded_categories_to_file(const char* filename
     output.write(text.c_str(), text.size());
     output.close();
 }
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                           Config
-// 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-void ConfigWrapper::readCfg(const char* filename)
-{
-    reader.ParseFile(filename);
-
-    if (reader.ParseError() < 0)
-    {
-        writeCfg(filename);
-        reader.ParseFile(filename);
-    }
-}
-
-void ConfigWrapper::writeCfg(const char* filename)
-{
-    std::ofstream cfg(filename, std::ios::trunc);
-
-    if (!cfg.is_open())
-        return;
-
-    cfg << "// All key codes can be found here: https://msdn.microsoft.com/library/windows/desktop/dd375731.aspx\n\n";
-    cfg << "[Settings]" << "\n\n";
-
-    cfg << "Default_path             " << " = " << "E:\\GTAV\\timecycles"   << '\n';
-    cfg << "Categories               " << " = " << "1"                      << '\n';
-    cfg << "Names_replacement        " << " = " << "1"                      << '\n';
-    cfg << "OpenClose_window_button  " << " = " << "0x2D"                   << "\n";
-    cfg << "Font_size                " << " = " << "15"                     << '\n';
-
-    cfg << "\n// In case if there's something wrong with the system cursor - set this to 1 " << '\n';
-    cfg << "CursorImgui_Impl         " << " = " << "0"                      << '\n';
-
-    cfg.close();
-}
-
-INIReader* ConfigWrapper::getCfgReader()
-{
-    return &reader;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                           Preload
-// 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#if 1
-Preload* Preload::self = nullptr;
-
-void Preload::Create()
-{
-    if (!self)
-        self = new Preload();
-}
-
-void Preload::Destroy()
-{
-    if (self) {
-        delete self;
-        self = nullptr;
-    }
-}
-
-Preload* Preload::Get()
-{
-    return self;
-}
-#endif
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-void Preload::preload()
-{
-    if (preload_done)
-        return;
-   
-    CfgWrapper.readCfg(fileNames::config_file);
-    auto* cfg = CfgWrapper.getCfgReader();
-
-    if (cfg->GetBoolean("Settings", "Names_replacement", true))
-        TcNamesLoader.load_names_replacement(fileNames::tcNames_repl_file);
-
-    if (cfg->GetBoolean("Settings", "Categories", true))
-        TcCategories.load_categories(fileNames::tcCategories_file);
-
-    preload_done = true;
-}
-
-INIReader* Preload::getConfigParser() { return CfgWrapper.getCfgReader(); }
-TcCategoriesHandler* Preload::getTcCategoriesHandler() { return &TcCategories; }
-

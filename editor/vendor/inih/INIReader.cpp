@@ -151,3 +151,4 @@ int INIReader::ValueHandler(void* user, const char* section, const char* name,
     reader->_values[key] += value ? value : "";
     return 1;
 }
+

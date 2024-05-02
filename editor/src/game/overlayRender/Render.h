@@ -48,7 +48,7 @@ class mRender
 	static void ImRenderFrame();
 	
 	static void n_ClipCursor(LPRECT rect);
-	static int	n_ShowCursor(bool visible);
+	static int  n_ShowCursor(bool visible);
 	static void SetMouseVisible(bool visible);
 
 	static void ChangeFontSize();
