@@ -18,14 +18,14 @@ template<> inline u32 atMapHashFn<s64>::operator()(const s64& value) { return st
 template<> inline u32 atMapHashFn<const char*>::operator()(const ConstString& str) { return rage::joaat(str); }
 template<> inline u32 atMapHashFn<std::string>::operator()(const std::string& str) { return rage::joaat(str.c_str()); }
 
-template<typename TKey, typename TEntry, typename THashFn = atMapHashFn<TKey>>
+template<typename TKey, typename TData, typename THashFn = atMapHashFn<TKey>>
 class atMap
 {
 private:
 	struct Entry
 	{
 		u32 hash;
-		TEntry data;
+		TData data;
 		Entry* next = nullptr;
 	};
 
@@ -40,7 +40,7 @@ public:
 	u16 getSize() { return m_size; }
 	u16 getCapacity() { return m_capacity; }
 
-	inline TEntry* find(const u32& idx)
+	inline TData* find(const u32& idx)
 	{
 		for (Entry* i = *(m_Buckets + (idx % m_capacity)); i; i = i->next) {
 			if (i->hash == idx) {
@@ -56,10 +56,23 @@ public:
 		return fn(value);
 	}
 
-	inline TEntry* at(const TKey& v)
+	inline TData* at(const TKey& v)
 	{
 		return find(GetHash(v));
 	}
 
+	// pair ( hash, data ptr )
+	std::vector<std::pair<u32, TData*>> toVec()
+	{
+		std::vector<std::pair<u32, TData*>> vec;
+		std::for_each(m_Buckets, m_Buckets + m_capacity, [&vec](Entry* bucket) 
+			{
+				for (Entry* e = bucket; e; e = e->next) 
+				{
+					vec.push_back({ e->hash, &e->data });
+				}
+			});
+		return vec;
+	}
 };
 

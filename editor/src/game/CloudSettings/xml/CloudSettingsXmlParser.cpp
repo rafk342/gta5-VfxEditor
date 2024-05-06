@@ -201,7 +201,7 @@ void CloudSettingsXmlParser::ExportCloudKfData(const std::filesystem::path& path
 		pugi::xml_node Item = SettingsMap.append_child("Item");
 		
 		pugi::xml_node Name = Item.append_child("Name");
-		Name.text() = clouds.str_name;
+		Name.text() = clouds.str_name.c_str();
 
 		pugi::xml_node Settings_node = Item.append_child("Settings");
 		pugi::xml_node CloudList = Settings_node.append_child("CloudList");

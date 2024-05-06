@@ -75,15 +75,15 @@ private:
 struct CloudSettingsNamed
 {
 	u32					hash_name = 0;
-	const char*			str_name = nullptr;
+	std::string			str_name;
 	CloudHatSettings*	CloudSettings = nullptr;
 	std::bitset<21>		bits;
 
-	CloudSettingsNamed(u32 hash, const char* name, CloudHatSettings* settings, u32 bits) :
+	CloudSettingsNamed(u32 hash, std::string name, CloudHatSettings* settings) :
 		hash_name(hash),
-		str_name(name),
+		str_name(std::move(name)),
 		CloudSettings(settings),
-		bits(bits)
+		bits(*(settings->bits.getRawPtr()))
 	{
 	}
 
@@ -106,16 +106,15 @@ class CloudsHandler
 	gCloudSettingsMap*				gCloudsMap = nullptr;
 	u8*								gCloudsMngr; // ----- might be useful to keep it here
 	// for our usage
-	std::vector<CloudSettingsNamed>	CloudsSettingsVec;
-	std::array<const char*, 8>		CloudNames;
+	std::vector<CloudSettingsNamed>	NamedCloudsSettingsVec;
 		
-public:
+public: 
 
 	CloudsHandler();
 
 	CloudSettingsNamed*					FindCloudSettings(u32 hash);
 	CloudSettingsNamed*					FindCloudSettings(const char* name);
-	std::vector<CloudSettingsNamed>&	GetCloudSettingsVec() { return this->CloudsSettingsVec; }
+	std::vector<CloudSettingsNamed>&	GetCloudSettingsVec() { return this->NamedCloudsSettingsVec; }
 	atArray<CloudHatFragContainer>&		GetCloudHatNamesArray() { return *(this->gCloudHatNames); }
 	u8*									Get_raw_gCloudsMngrPtr() { return this->gCloudsMngr; }
 	u16									GetNewRandomCloudhatIndex();

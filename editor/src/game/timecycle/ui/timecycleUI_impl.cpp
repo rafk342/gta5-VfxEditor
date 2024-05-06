@@ -192,10 +192,9 @@ void TimecycleUI::MainParamsWindow_without_Categories()
 
 void TimecycleUI::MainParamsWindow_with_Categories()
 {
-	char buff[128];
-	
-	auto& categoryNames = Preload::Get()->getTcCategoriesHandler()->getCategoriesOrder();
-	auto& categoriesMap = Preload::Get()->getTcCategoriesHandler()->getCategoriesMap();
+	static char buff[128];
+	static auto& categoryNames = Preload::Get()->getTcCategoriesHandler()->getCategoriesOrder();
+	static auto& categoriesMap = Preload::Get()->getTcCategoriesHandler()->getCategoriesMap();
 
 //					category name -> vec ( pair (new param_name , varId))
 //std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> CategoriesMapIngr;
@@ -225,7 +224,7 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 
 void TimecycleUI::makeTable(Regions region, int VarIndex)
 {
-	char buff[128];
+	static char buff[128];
 	float val;
 	float color[4];
 	ImVec2 tableSize = ImGui::GetContentRegionAvail();
@@ -304,8 +303,8 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 
 void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 {
+	static char buff[128];
 	float color[4];
-	char buff[128];
 	
 	size_t time = current_time_sample;
 

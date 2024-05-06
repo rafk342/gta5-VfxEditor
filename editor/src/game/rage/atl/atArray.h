@@ -10,7 +10,15 @@
 #include "logger.h"
 #include "helpers/align.h"
 
-#define rage_array true
+#define rage_alloc true
+
+#if rage_alloc
+#define alloc_fn(sz) 	rage::tlsContext::get()->m_allocator->Allocate(sz, 16, 0)
+#define dealloc_fn(ptr) rage::tlsContext::get()->m_allocator->Free(ptr);
+#else
+#define alloc_fn(sz) malloc(sz)
+#define dealloc_fn(ptr) free(ptr)
+#endif
 
 template<class TValue, bool reserve_with_directly_memcpy_for_this_type = false>
 class atArray
@@ -56,7 +64,7 @@ public:
 	template<typename Iter>
 	atArray(Iter start, Iter end)
 	{
-		static_assert(std::is_same_v<typename std::iterator_traits<Iter>::value_type, TValue>, "wrong iterator type");
+		static_assert(std::is_same_v<typename std::iterator_traits<Iter>::value_type, TValue>, "Invalid iterator type");
 
 		size_t sz = std::distance(start, end);
 		manage_capacity(sz);
@@ -105,11 +113,7 @@ public:
 		if (m_offset)
 		{
 			clear();
-#if rage_array
-			rage::tlsContext::get()->m_allocator->Free(m_offset);
-#else
-			free(m_offset);
-#endif
+			dealloc_fn(m_offset);
 			m_offset = nullptr;
 		}
 		
@@ -139,11 +143,7 @@ public:
 		if (m_offset)
 		{
 			clear();
-#if rage_array
-			rage::tlsContext::get()->m_allocator->Free(m_offset);
-#else
-			free(m_offset);
-#endif
+			dealloc_fn(m_offset);
 			m_offset = nullptr;
 		}
 		
@@ -155,24 +155,6 @@ public:
 		std::swap(m_capacity, other.m_capacity);
 	}
 
-	TValue& push_back(const TValue& value)
-	{
-		manage_capacity(m_size);
-
-		new (&m_offset[m_size]) TValue(value);
-		m_size++;
-		return *back();
-	}
-
-	TValue& push_back(TValue&& value)
-	{
-		manage_capacity(m_size);
-
-		new (&m_offset[m_size]) TValue(std::move(value));
-		m_size++;
-		return *back();
-	}
-
 	void reserve(size_t new_cap)
 	{
 		if (new_cap <= m_capacity)
@@ -180,11 +162,8 @@ public:
 
 		size_t cpySz = 0;
 		size_t alloc_sz = new_cap * sizeof(TValue);
-#if rage_array 
-		TValue* newOffset = reinterpret_cast<TValue*>(rage::tlsContext::get()->m_allocator->Allocate(alloc_sz, 16, 0));
-#else
-		TValue* newOffset = reinterpret_cast<TValue*>(malloc(alloc_sz));
-#endif
+		TValue* newOffset = reinterpret_cast<TValue*>(alloc_fn(alloc_sz));
+
 		memset(newOffset, 0, alloc_sz);
 
 		if (!m_offset)
@@ -194,37 +173,43 @@ public:
 			return;
 		}
 
-		switch (reserve_with_directly_memcpy_for_this_type)
+		if constexpr (reserve_with_directly_memcpy_for_this_type)
 		{
-		case true:
-
 			cpySz = m_size * sizeof(TValue);
 			memcpy_s(newOffset, alloc_sz, m_offset, cpySz);
 			memset(m_offset, 0, cpySz);
-#if rage_array
-			rage::tlsContext::get()->m_allocator->Free(m_offset);
-#else
-			free(m_offset);
-#endif
-			break;
+			dealloc_fn(m_offset);
 
-		case false:
+		} else {
 
 			for (size_t i = 0; i < m_size; ++i) {
 				new (&newOffset[i]) TValue(std::move(m_offset[i]));
 			}
 			std::destroy(begin(), end());
 			memset(m_offset, 0, m_capacity * sizeof(TValue));
-#if rage_array
-			rage::tlsContext::get()->m_allocator->Free(m_offset);
-#else
-			free(m_offset);
-#endif
-			break;
-
+			dealloc_fn(m_offset);
 		}
+
 		m_offset = newOffset;
 		m_capacity = new_cap;
+	}
+
+	TValue& push_back(const TValue& value)
+	{
+		manage_capacity(m_size);
+	
+		new (&m_offset[m_size]) TValue(value);
+		m_size++;
+		return *back();
+	}
+	
+	TValue& push_back(TValue&& value)
+	{
+		manage_capacity(m_size);
+	
+		new (&m_offset[m_size]) TValue(std::move(value));
+		m_size++;
+		return *back();
 	}
 
 	// returns -1 if value was not found
@@ -238,7 +223,7 @@ public:
 		return -1;
 	}
 
-	bool Contains(const TValue& v) { return (IndexOf(v) != -1); }
+	bool Contains(const TValue& v) const { return (IndexOf(v) != -1); }
 
 	void pop_back()
 	{
@@ -291,11 +276,7 @@ public:
 		if (m_offset)
 		{
 			std::memset(m_offset, 0, m_capacity * sizeof(TValue));
-#if rage_array
-			rage::tlsContext::get()->m_allocator->Free(m_offset);
-#else
-			free(m_offset);
-#endif
+			dealloc_fn(m_offset);
 			m_offset = nullptr;
 			m_capacity = 0;
 		}

@@ -167,7 +167,7 @@ void CloudSettingsUI::ParamsWindow()
 
 	for (int i = 0; i < CloudsVec.size(); i++)
 	{
-		if (ImGui::CollapsingHeader(CloudsVec[i].str_name, ImGuiTreeNodeFlags_None))
+		if (ImGui::CollapsingHeader(CloudsVec[i].str_name.c_str(), ImGuiTreeNodeFlags_None))
 		{
 			ImGui::SeparatorText("CloudList");
 			ProbabilityWidgets(i);

@@ -11,7 +11,7 @@ namespace
 
 CloudsHandler::CloudsHandler()
 {
-	CloudNames = {
+	std::array<const char*, 8> CloudNames = {
 		"HEAVYclouds",
 		"STORMclouds",
 		"default",
@@ -26,17 +26,17 @@ CloudsHandler::CloudsHandler()
 		.GetRef(14)
 		.To<gCloudSettingsMap*>();
 
-	CloudsSettingsVec.reserve(gCloudsMap->CloudSettings.getSize());
+	auto vec = gCloudsMap->CloudSettings.toVec();
+	NamedCloudsSettingsVec.reserve(vec.size());
 
-	for (auto& name : CloudNames)
+	for (auto [hash, settings_ptr] : vec)
 	{
-		auto* settings = gCloudsMap->CloudSettings.at(name);
+		auto it = std::find_if(CloudNames.begin(), CloudNames.end(), [hash](const char* name) { return rage::joaat(name) == hash; });
 		
-		if (settings) {
-			CloudsSettingsVec.push_back(CloudSettingsNamed(rage::joaat(name), name, settings, *(settings->bits.getRawPtr())));
-		} else {
-			mlogger("CloudsHandler::CloudsHandler() could not find {}", name);
-		} 
+		if (it != CloudNames.end())
+			NamedCloudsSettingsVec.push_back({ hash,*it,settings_ptr });
+		else
+			NamedCloudsSettingsVec.push_back({ hash,std::format("Unknown /hash : 0x{:08X}",hash),settings_ptr});
 	}
 
 	gCloudsMngr = *gmAddress::Scan("44 8A 49 ?? 48 8B 0D").GetRef(7).To<u8**>();
@@ -52,12 +52,10 @@ CloudsHandler::CloudsHandler()
 
 CloudSettingsNamed* CloudsHandler::FindCloudSettings(u32 hash)
 {
-	for (size_t i = 0; i < CloudsSettingsVec.size(); i++) {
-		if (CloudsSettingsVec[i].hash_name == hash) {
-			return (CloudSettingsNamed*)&CloudsSettingsVec[i];
-		}
-	}
-	return nullptr;
+	auto it = std::find_if(NamedCloudsSettingsVec.begin(), NamedCloudsSettingsVec.end(), [hash](CloudSettingsNamed& item)
+		{ return item.hash_name == hash; });
+
+	return it == NamedCloudsSettingsVec.end() ? nullptr : &(*it);
 }
 
 

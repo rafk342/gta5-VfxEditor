@@ -23,6 +23,8 @@ void Console() {
 	freopen_s(&f, "CONOUT$", "w", stdout);
 }
 
+//48 8B 0D ?? ?? ?? ?? 8B D3 E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 8B D6
+// ptxMngr -> ref(3) 7FF71C5DC800
 
 AM_EXPORT void Init()
 {
@@ -41,7 +43,6 @@ AM_EXPORT void Init()
 
 #else
 	
-
 #endif
 
 }

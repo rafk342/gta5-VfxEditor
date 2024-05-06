@@ -28,24 +28,19 @@ timeñycleHandler::timeñycleHandler()
 void timeñycleHandler::InitCyclesArr()
 {
 	weather_names.reserve(15);
-	for (size_t i = 0; i < WEATHER_TC_FILES_COUNT; i++)
-	{
-		cyclesArray[i] = LoadCycle(i);
-		weather_names.push_back(GetCycleName(i));
-	}
-}
 
-//It's easier to get cycles from here
-tcCycle* timeñycleHandler::LoadCycle(u32 cycleIndex)
-{
-	static u64* tcMngr = gmAddress::Scan("48 C1 E0 03 41 80 E1 01 C6 44 24 20 00")
+	static void* tcMngr = gmAddress::Scan("48 C1 E0 03 41 80 E1 01 C6 44 24 20 00")
 		.GetRef(22)
-		.To<u64*>();
+		.To<void*>();
 
 	static auto fn = gmAddress::Scan("83 FA 10 73 ?? 8B C2 48 69 C0 E0 57 00 00")
-		.ToFunc<tcCycle* (u64*, u32)>();
-	
-	return fn(tcMngr, cycleIndex);
+		.ToFunc<tcCycle*(void*,u32)>();
+
+	for (size_t i = 0; i < WEATHER_TC_FILES_COUNT; i++)
+	{
+		cyclesArray[i] = fn(tcMngr, i);
+		weather_names.push_back(GetCycleName(i));
+	}
 }
 
 const std::string timeñycleHandler::GetCycleName(int index)

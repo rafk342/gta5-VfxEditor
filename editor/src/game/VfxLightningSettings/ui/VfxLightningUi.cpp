@@ -428,7 +428,7 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 
 void keyframeTable(const char* title, ptxKeyframe& keyframe, u8 idx)
 {
-	char buff[64];
+	static char buff[64];
 	auto& data = keyframe.data;
 
 	if (ImGui::BeginTable(title, 3, ImGuiTableFlags_Borders))

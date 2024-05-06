@@ -18,7 +18,6 @@ class timeñycleHandler
 	std::vector<std::string>			weather_names;
 	std::map<u32, std::string>			NamesMap;
 
-	tcCycle*							LoadCycle(u32 cycleIndex);
 	void								InitCyclesArr();
 
 public:

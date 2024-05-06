@@ -41,10 +41,10 @@ public:
 	inline float getBluef() { return static_cast<float>(getBlue()) / 255.0f; }
 	inline float getAlphaf(){ return static_cast<float>(getAlpha()) / 255.0f; }
 
-	inline void setRedf		(float v) { color = (color & ~(0xff << r_shift) | (static_cast<u8>(v * 255.0f) << r_shift)); }
-	inline void setBluef	(float v) { color = (color & ~(0xff << b_shift) | (static_cast<u8>(v * 255.0f) << b_shift)); }
-	inline void setGreenf	(float v) { color = (color & ~(0xff << g_shift) | (static_cast<u8>(v * 255.0f) << g_shift)); }
-	inline void setAlphaf	(float v) { color = (color & ~(0xff << a_shift) | (static_cast<u8>(v * 255.0f) << a_shift)); }
+	inline void setRedf		(float v) { color = (color & ~(0xffu << r_shift) | (static_cast<u8>(v * 255.0f) << r_shift)); }
+	inline void setBluef	(float v) { color = (color & ~(0xffu << b_shift) | (static_cast<u8>(v * 255.0f) << b_shift)); }
+	inline void setGreenf	(float v) { color = (color & ~(0xffu << g_shift) | (static_cast<u8>(v * 255.0f) << g_shift)); }
+	inline void setAlphaf	(float v) { color = (color & ~(0xffu << a_shift) | (static_cast<u8>(v * 255.0f) << a_shift)); }
 
 	inline float* Getf_col4() 
 	{

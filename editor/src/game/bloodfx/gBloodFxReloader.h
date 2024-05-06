@@ -6,7 +6,7 @@
 #include "memory/hook.h"
 #include "logger.h"
 #include "imgui.h"
-
+#include "Preload/Preload.h"
 
 class gBloodfxReloader 
 {
@@ -21,7 +21,8 @@ public:
 class gBloodfxUi : public App, private gBloodfxReloader
 {
 public:
-	using App::App;
+
+	gBloodfxUi(const char* title);
 
 	virtual void window() override;
 	virtual void importData(std::filesystem::path path) override;
