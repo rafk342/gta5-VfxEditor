@@ -5,7 +5,23 @@
 
 timeñycleHandler::timeñycleHandler()
 {
-	NamesMap = {
+	weather_names.reserve(15);
+
+	static void* tcMngr = gmAddress::Scan("48 C1 E0 03 41 80 E1 01 C6 44 24 20 00")
+		.GetRef(22)
+		.To<void*>();
+
+	for (size_t i = 0; i < WEATHER_TC_FILES_COUNT; i++)
+	{
+		cyclesArray[i] = (tcCycle*) ((*(u8**)((u8*)(tcMngr) + 0x68)) + (i * 0x57e0));
+		weather_names.push_back(GetCycleName(i));
+	}
+}
+
+const std::string timeñycleHandler::GetCycleName(int index)
+{	
+	static std::map<u32, std::string> NamesMap =
+	{
 		{rage::joaat("EXTRASUNNY")	, "EXTRASUNNY"	},
 		{rage::joaat("CLEAR")		, "CLEAR"		},
 		{rage::joaat("CLOUDS")		, "CLOUDS"		},
@@ -22,29 +38,6 @@ timeñycleHandler::timeñycleHandler()
 		{rage::joaat("SNOWLIGHT")	, "SNOWLIGHT"	},
 		{rage::joaat("XMAS")		, "XMAS"		},
 	};
-	InitCyclesArr();
-}
-
-void timeñycleHandler::InitCyclesArr()
-{
-	weather_names.reserve(15);
-
-	static void* tcMngr = gmAddress::Scan("48 C1 E0 03 41 80 E1 01 C6 44 24 20 00")
-		.GetRef(22)
-		.To<void*>();
-
-	static auto fn = gmAddress::Scan("83 FA 10 73 ?? 8B C2 48 69 C0 E0 57 00 00")
-		.ToFunc<tcCycle*(void*,u32)>();
-
-	for (size_t i = 0; i < WEATHER_TC_FILES_COUNT; i++)
-	{
-		cyclesArray[i] = fn(tcMngr, i);
-		weather_names.push_back(GetCycleName(i));
-	}
-}
-
-const std::string timeñycleHandler::GetCycleName(int index)
-{
 	u32 n_hash = cyclesArray[index]->GetCycleNameHash();
 	
 	if (NamesMap.contains(n_hash)) {
@@ -54,10 +47,3 @@ const std::string timeñycleHandler::GetCycleName(int index)
 	}
 }
 
-timeñycleHandler::~timeñycleHandler()
-{
-	for (size_t i = 0; i < cyclesArray.size(); i++)
-	{
-		cyclesArray[i] = nullptr;
-	}
-}

@@ -206,6 +206,9 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 		{
 			for (auto& [param_name, id] : categoriesMap.at(category))
 			{
+				if (g_varInfos[id].varType == tcVarType_e::VARTYPE_NONE)
+					continue;
+
 				if (ImGui::TreeNode(g_varInfos[id].menuName))
 				{
 					if (show_only_current_sample)
@@ -225,7 +228,6 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 void TimecycleUI::makeTable(Regions region, int VarIndex)
 {
 	static char buff[128];
-	float val;
 	float color[4];
 	ImVec2 tableSize = ImGui::GetContentRegionAvail();
 

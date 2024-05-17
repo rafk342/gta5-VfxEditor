@@ -13,9 +13,6 @@
 #include "helpers/SimpleTimer.h"
 
 
-#define with_console 0
-#define test_ver 0
-
 FILE* f;
 
 void Console() {

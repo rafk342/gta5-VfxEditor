@@ -42,7 +42,7 @@ public:
 class TcCategoriesHandler
 {
 	std::vector<std::string> CategoriesOrder;
-	//category name -> param_names_vec //category name -> vec ( pair (param_label , varId))
+    //                  category name -> vec ( pair (param_label , varId))
 	std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> CategoriesMap;
 	bool loaded = false;
 
@@ -53,8 +53,9 @@ public:
 
 	inline bool isLoaded();
 	bool load_categories(const char* filename);
-	std::vector<std::string>& getCategoriesOrder();
-	std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>& getCategoriesMap();
+	
+	auto& getCategoriesOrder()	{ return CategoriesOrder; }
+	auto& getCategoriesMap()	{ return CategoriesMap; }
 };
 
 

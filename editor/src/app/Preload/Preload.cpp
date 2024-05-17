@@ -78,10 +78,6 @@ bool TcNamesReplacemantHandler::load_from_file(const char* filename)
 // 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-std::vector<std::string>& TcCategoriesHandler::getCategoriesOrder() { return CategoriesOrder; }
-std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>& TcCategoriesHandler::getCategoriesMap() { return CategoriesMap; }
 inline bool TcCategoriesHandler::isLoaded() { return loaded; }
 
 bool TcCategoriesHandler::load_categories(const char* filename)
@@ -209,14 +205,15 @@ void ConfigWrapper::writeCfg(const char* filename)
     cfg << "// All key codes can be found here: https://msdn.microsoft.com/library/windows/desktop/dd375731.aspx\n\n";
     cfg << "[Settings]" << "\n\n";
 
-    cfg << "Default_path             " << " = " << "E:\\GTAV\\timecycles"   << '\n';
-    cfg << "Categories               " << " = " << "1"                      << '\n';
-    cfg << "Names_replacement        " << " = " << "1"                      << '\n';
-    cfg << "OpenClose_window_button  " << " = " << "0x2D"                   << "\n";
-    cfg << "Font_size                " << " = " << "15"                     << '\n';
+    cfg << "Default_path             " << " = " << "E:\\GTAV\\timecycles"                       << '\n';
+    cfg << "Categories               " << " = " << "1"                                          << '\n';
+    cfg << "Names_replacement        " << " = " << "1"                                          << '\n';
+    cfg << "OpenClose_window_button  " << " = " << "0x2D"                                       << "\n";
+    cfg << "Font_size                " << " = " << "15"                                         << '\n';
+    cfg << "Bloodfx_reload_path      " << " = " << "E:\\bloodfx.dat"                            << '\n';
 
-    cfg << "\n// In case if there's something wrong with the system cursor - set this to 1 " << '\n';
-    cfg << "CursorImgui_Impl         " << " = " << "0"                      << '\n';
+    cfg << "\n// In case if there's something wrong with the system cursor - set this to 1 "    << '\n';
+    cfg << "CursorImgui_Impl         " << " = " << "0"                                          << '\n';
 
     cfg.close();
 }
@@ -280,8 +277,8 @@ void Preload::preload()
     preload_done = true;
 }
 
-INIReader* Preload::getConfigParser() { return CfgWrapper.getCfgReader(); }
-TcCategoriesHandler* Preload::getTcCategoriesHandler() { return &TcCategories; }
+INIReader*              Preload::getConfigParser()          { return CfgWrapper.getCfgReader(); }
+TcCategoriesHandler*    Preload::getTcCategoriesHandler()   { return &TcCategories; }
 
 
 

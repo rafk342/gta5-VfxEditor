@@ -110,7 +110,7 @@ void CloudSettingsUI::GetCurrentTimeSample(int current_hour)
 
 void CloudSettingsUI::ParamsWindow()
 {
-	char buff[64];
+	static char buff[64];
 	auto& arr = mCloudsHandler.GetCloudHatNamesArray();
 	int CloudsComboIndex;
 	
@@ -185,7 +185,7 @@ void CloudSettingsUI::ParamsWindow()
 void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 {
 	bool bitFlag;
-	char buf[128];
+	static char buf[128];
 	u32 CurrentBits;
 	const int cols_count = 3;
 	float width_arr[cols_count] = { 128.5, 150, 0 };
@@ -358,7 +358,7 @@ void CloudSettingsUI::CloudsDataWidgets(int clIdx)
 
 void CloudSettingsUI::CloudSettingsColourTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	char buff[128];
+	static char buff[128];
 
 	FORMAT_TO_BUFF(buff, "##table_{}_{}", table_id, param_name);
 	
@@ -408,7 +408,7 @@ void CloudSettingsUI::CloudSettingsColourSingleParam(atArray<ptxKeyframeEntry>& 
 
 void CloudSettingsUI::CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	char buff[128];
+	static char buff[128];
 	float time_data_width = 55;
 
 	FORMAT_TO_BUFF(buff, "##table_{}_{}", table_id, param_name);
@@ -454,7 +454,7 @@ void CloudSettingsUI::CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr
 
 void CloudSettingsUI::CloudSettingsVariablesSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	char buff[128];
+	static char buff[128];
 	u8 time = current_time_sample_idx;
 
 	FORMAT_TO_BUFF(buff, "{}##_{}_{}_var_", time_samples[time].second, table_id, param_name);

@@ -15,19 +15,15 @@
 class timeñycleHandler
 {
 	std::array<tcCycle*, WEATHER_TC_FILES_COUNT> cyclesArray = {{nullptr}};
-	std::vector<std::string>			weather_names;
-	std::map<u32, std::string>			NamesMap;
-
-	void								InitCyclesArr();
+	std::vector<std::string> weather_names;
 
 public:
-										timeñycleHandler();
-										~timeñycleHandler();
-	const std::string					GetCycleName(int index);
-	const std::vector<std::string>&		GetWeatherNamesVec() { return this->weather_names; }
-	tcCycle*							GetCycle(int index) { return cyclesArray[index]; }
+	tcXmlParser			xmlParser;
 
-	tcXmlParser							xmlParser;
+						timeñycleHandler();
+	const std::string	GetCycleName(int index);
+	const auto&			GetWeatherNamesVec()	{ return this->weather_names; }
+	tcCycle*			GetCycle(int index)		{ return cyclesArray[index]; }
 };
 
 

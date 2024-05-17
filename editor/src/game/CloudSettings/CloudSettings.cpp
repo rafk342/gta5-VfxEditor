@@ -11,7 +11,7 @@ namespace
 
 CloudsHandler::CloudsHandler()
 {
-	std::array<const char*, 8> CloudNames = {
+	std::array CloudNames = {
 		"HEAVYclouds",
 		"STORMclouds",
 		"default",
@@ -33,9 +33,9 @@ CloudsHandler::CloudsHandler()
 	{
 		auto it = std::find_if(CloudNames.begin(), CloudNames.end(), [hash](const char* name) { return rage::joaat(name) == hash; });
 		
-		if (it != CloudNames.end())
+		if (it != CloudNames.end()) 
 			NamedCloudsSettingsVec.push_back({ hash,*it,settings_ptr });
-		else
+		else 
 			NamedCloudsSettingsVec.push_back({ hash,std::format("Unknown /hash : 0x{:08X}",hash),settings_ptr});
 	}
 
@@ -53,7 +53,9 @@ CloudsHandler::CloudsHandler()
 CloudSettingsNamed* CloudsHandler::FindCloudSettings(u32 hash)
 {
 	auto it = std::find_if(NamedCloudsSettingsVec.begin(), NamedCloudsSettingsVec.end(), [hash](CloudSettingsNamed& item)
-		{ return item.hash_name == hash; });
+		{ 
+			return item.hash_name == hash; 
+		});
 
 	return it == NamedCloudsSettingsVec.end() ? nullptr : &(*it);
 }

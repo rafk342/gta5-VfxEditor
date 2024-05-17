@@ -11,10 +11,13 @@
 #define AM_NOINLINE		__declspec(noinline)
 #define AM_FORCEINLINE	__forceinline
 
-#define am_version true
+#define am_version		1
+#define with_console	0
+#define test_ver		0
 
-#define gameVer3095 1
-#define gameVer2060 2
+
+#define gameVer3095	1
+#define gameVer2060	2
 
 #define game_version gameVer3095
 
@@ -23,3 +26,4 @@
 #else
 #define AM_EXPORT
 #endif
+

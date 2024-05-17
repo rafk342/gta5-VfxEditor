@@ -25,7 +25,6 @@ void* gBloodfxReloader::n_asset_open_f(u64 arg1, char* fname, char* ext, bool ar
 	return result;
 }
 
-
 void gBloodfxReloader::reload_bloodfx(char* path)
 {
 	new_path = path;
