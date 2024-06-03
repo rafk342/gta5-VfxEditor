@@ -117,6 +117,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,6 +158,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\game\CLensFlare\UI\LensFlareUi.cpp" />
+    <ClCompile Include="src\game\CLensFlare\CLensFlare.cpp" />
     <ClCompile Include="src\game\bloodfx\gBloodFxReloader.cpp" />
     <ClCompile Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.cpp" />
     <ClCompile Include="src\game\gameClock\Ui\ClockUi.cpp" />
@@ -199,6 +202,8 @@
     <ClCompile Include="src\game\VisualSettings\ui\visualSettingsUi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\game\CLensFlare\UI\LensFlareUi.h" />
+    <ClInclude Include="src\game\CLensFlare\CLensFlare.h" />
     <ClInclude Include="src\game\bloodfx\gBloodFxReloader.h" />
     <ClInclude Include="src\game\rage\atl\color32.h" />
     <ClInclude Include="src\game\rage\base\atRTTI.h" />

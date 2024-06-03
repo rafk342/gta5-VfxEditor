@@ -15,11 +15,13 @@ class gBloodfxReloader
 public:
 	static bool invalid_path;
 	static bool bloodfx_loaded;
+	bool IsLoaded();
 	void reload_bloodfx(char* path);
 };
 
 class gBloodfxUi : public App, private gBloodfxReloader
 {
+	char buff[256];
 public:
 
 	gBloodfxUi(const char* title);

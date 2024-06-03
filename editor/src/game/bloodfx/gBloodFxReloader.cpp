@@ -5,10 +5,7 @@ bool gBloodfxReloader::invalid_path = false;
 bool gBloodfxReloader::bloodfx_loaded = true;
 std::filesystem::path gBloodfxReloader::new_path;
 
-namespace
-{
-	char buff[255];
-}
+bool gBloodfxReloader::IsLoaded() { return (!invalid_path && bloodfx_loaded); }
 
 
 void* (*g_asset_open_f)(u64, char*, char*, bool, bool);
@@ -24,6 +21,7 @@ void* gBloodfxReloader::n_asset_open_f(u64 arg1, char* fname, char* ext, bool ar
 	}
 	return result;
 }
+
 
 void gBloodfxReloader::reload_bloodfx(char* path)
 {
@@ -48,11 +46,13 @@ void gBloodfxReloader::reload_bloodfx(char* path)
 	Hook::Remove(asset_open_addr);
 }
 
+
 gBloodfxUi::gBloodfxUi(const char* title) : App(title)
 {
 	memset(buff, 0, std::size(buff));
 	strcpy_s(buff, Preload::Get()->getConfigParser()->GetString("Settings", "Bloodfx_reload_path", "E:\\bloodfx.dat").c_str());
 }
+
 
 void gBloodfxUi::window()
 {
@@ -63,16 +63,15 @@ void gBloodfxUi::window()
 	if (ImGui::Button("Reload"))
 		reload_bloodfx(buff);
 
-	if (!bloodfx_loaded || invalid_path)
+	if (!IsLoaded())
 		ImGui::Text("Failed to load bloodfx from the given path");
 }
 
-void gBloodfxUi::importData(std::filesystem::path path)
-{
 
-}
+void gBloodfxUi::importData(std::filesystem::path path)
+{ }
 
 void gBloodfxUi::exportData(std::filesystem::path path)
-{
+{ }
 
-}
+

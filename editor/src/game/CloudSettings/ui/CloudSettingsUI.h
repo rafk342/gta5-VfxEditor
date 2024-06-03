@@ -44,7 +44,7 @@ class CloudSettingsUI : public App
 public:
 	CloudSettingsXmlParser	mXmlParser;
 	
-	CloudSettingsUI(const char* label);
+	CloudSettingsUI(const char* title);
 	void ParamsWindow();
 };
 

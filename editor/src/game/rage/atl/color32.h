@@ -5,7 +5,7 @@
 
 class Color32
 {
-	u32 color;
+	u32 color = 0;
 	const static u8 r_shift = 16;
 	const static u8 g_shift = 8;
 	const static u8 b_shift = 0;
@@ -16,6 +16,9 @@ public:
 	Color32(u32 v) : color(v) {}
 	Color32(float _r, float _g, float _b, float _a = 1) { Setf(_r,_g,_b,_a);}
 	Color32(float* p) { Setf_col4(p); }
+
+	Color32(const Color32& other) : color(other.color)
+	{ }
 
 	Color32& operator= (Color32& other)
 	{

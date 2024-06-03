@@ -266,11 +266,11 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
 
 namespace 
 {
-    void find_and_erase_till_the_end(std::string& str, char symb)
+    void find_and_erase_till_the_end(std::string& str, const char* v)
     {
-        size_t symb_pos = str.find(symb);
-        if (symb_pos != -1)
-            str.erase(str.begin() + symb_pos, str.end());
+        size_t pos = str.find(v);
+        if (pos != -1)
+            str.erase(str.begin() + pos, str.end());
     };
 }
 
@@ -293,8 +293,8 @@ void VisualSettingsParser::importData(const std::filesystem::path& path, VisualS
         if (line.empty())
             continue;
 
-        find_and_erase_till_the_end(line, '#');
-        find_and_erase_till_the_end(line, '//');
+        find_and_erase_till_the_end(line, "#");
+        find_and_erase_till_the_end(line, "//");
 
         if (line.empty())
             continue;

@@ -6,6 +6,8 @@
 #include "VfxLightningSettings/ui/VfxLightningUi.h"
 #include "VisualSettings/ui/visualSettingsUi.h"
 #include "bloodfx/gBloodFxReloader.h"
+#include "CLensFlare/UI/LensFlareUi.h"
+
 
 BaseUiWindow* BaseUiWindow::self = nullptr;
 
@@ -13,13 +15,14 @@ App::App(const char* title) : title(title) {}
 
 BaseUiWindow::BaseUiWindow()
 {
-    appsVec.push_back(std::make_unique<TimecycleUI>("Timecycles"));
-    appsVec.push_back(std::make_unique<CloudSettingsUI>("Cloudkeyframes"));
-    appsVec.push_back(std::make_unique<VisualSettingsUi>("VisualSettings"));
-    appsVec.push_back(std::make_unique<VfxLightningUi>("Lightnings"));
-    appsVec.push_back(std::make_unique<gBloodfxUi>("Bloodfx"));
+    appsVec.emplace_back(new TimecycleUI("Timecycles"));
+    appsVec.emplace_back(new CloudSettingsUI("Cloudkeyframes"));
+    appsVec.emplace_back(new VisualSettingsUi("VisualSettings"));
+    appsVec.emplace_back(new VfxLightningUi("Lightnings"));
+    appsVec.emplace_back(new gBloodfxUi("Bloodfx"));
+    appsVec.emplace_back(new LensFlareUi("LensFlare"));
 }
-    
+
 const char* App::get_title()
 {
     return title;

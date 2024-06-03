@@ -88,6 +88,7 @@ void TimecycleUI::WeatherAndRegions()
 
 	if (!init)
 	{
+		GAMEPLAY::_GET_CURRENT_WEATHER_TYPE();
 		GAMEPLAY::SET_OVERRIDE_WEATHER((char*)m_tcHandler.GetCycleName(current_weather_index).c_str());
 		for (size_t i = 0; i < m_tcHandler.GetWeatherNamesVec().size(); i++) {
 			weather_names.push_back(m_tcHandler.GetWeatherNamesVec()[i].c_str());

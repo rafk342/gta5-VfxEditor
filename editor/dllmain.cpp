@@ -12,6 +12,8 @@
 #include "scripthookTh.h"
 #include "helpers/SimpleTimer.h"
 
+#include "CLensFlare/CLensFlare.h"
+
 
 FILE* f;
 
@@ -40,6 +42,10 @@ AM_EXPORT void Init()
 
 #else
 	
+	CLensFlareHandler m_handler;
+
+
+
 #endif
 
 }

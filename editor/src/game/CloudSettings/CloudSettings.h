@@ -84,8 +84,7 @@ struct CloudSettingsNamed
 		str_name(std::move(name)),
 		CloudSettings(settings),
 		bits(*(settings->bits.getRawPtr()))
-	{
-	}
+	{ }
 
 };
 

@@ -65,7 +65,7 @@ class TimecycleUI : public App
 
 public:
 	
-	TimecycleUI(const char* label);
+	TimecycleUI(const char* title);
 	void MainParamsWindow();
 
 };

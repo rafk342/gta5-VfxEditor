@@ -47,7 +47,7 @@ namespace
 }
 
 
-CloudSettingsUI::CloudSettingsUI(const char* label) : App(label), CloudsVec(mCloudsHandler.GetCloudSettingsVec())
+CloudSettingsUI::CloudSettingsUI(const char* title) : App(title), CloudsVec(mCloudsHandler.GetCloudSettingsVec())
 {
 	auto& gHatsNames = mCloudsHandler.GetCloudHatNamesArray();
 	CloudHatNames.reserve(gHatsNames.GetSize() + 1);	

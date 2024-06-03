@@ -212,18 +212,17 @@ public:
 		return *back();
 	}
 
-	// returns -1 if value was not found
-	s32 IndexOf(const TValue& v) const
+	std::optional<s32> IndexOf(const TValue& v) const
 	{
 		for (size_t i = 0; i < m_size; i++)
 		{
 			if (m_offset[i] == v)
 				return i;
 		}
-		return -1;
+		return std::nullopt;
 	}
 
-	bool Contains(const TValue& v) const { return (IndexOf(v) != -1); }
+	bool Contains(const TValue& v) const { return IndexOf(v).has_value(); }
 
 	void pop_back()
 	{

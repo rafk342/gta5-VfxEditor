@@ -5,7 +5,7 @@
 namespace
 {
 	u16(*_GetNewRandomCloudhatIndex)();
-	int(*_getActiveCloudhatIdx)(u64*);
+	int(*_getActiveCloudhatIdx)(void*);
 }
 
 
@@ -26,17 +26,15 @@ CloudsHandler::CloudsHandler()
 		.GetRef(14)
 		.To<gCloudSettingsMap*>();
 
-	auto vec = gCloudsMap->CloudSettings.toVec();
-	NamedCloudsSettingsVec.reserve(vec.size());
 
-	for (auto [hash, settings_ptr] : vec)
+	for (auto [hash, settings_ptr] : gCloudsMap->CloudSettings.toVec())
 	{
 		auto it = std::find_if(CloudNames.begin(), CloudNames.end(), [hash](const char* name) { return rage::joaat(name) == hash; });
-		
+
 		if (it != CloudNames.end()) 
 			NamedCloudsSettingsVec.push_back({ hash,*it,settings_ptr });
 		else 
-			NamedCloudsSettingsVec.push_back({ hash,std::format("Unknown /hash : 0x{:08X}",hash),settings_ptr});
+			NamedCloudsSettingsVec.push_back({ hash,std::format("Unknown /hash : 0x{:08X}",hash),settings_ptr });
 	}
 
 	gCloudsMngr = *gmAddress::Scan("44 8A 49 ?? 48 8B 0D").GetRef(7).To<u8**>();
@@ -46,7 +44,7 @@ CloudsHandler::CloudsHandler()
 		.ToFunc<u16()>();
 	
 	_getActiveCloudhatIdx = gmAddress::Scan("0F B7 41 ?? 33 D2 45 33 C0 44 8B C8 85 C0 7E ?? 48 8B 41")
-		.ToFunc<int(u64*)>();
+		.ToFunc<int(void*)>();
 }
 
 
@@ -97,5 +95,5 @@ u16 CloudsHandler::GetNewRandomCloudhatIndex()
 
 int CloudsHandler::GetActiveCloudhatIndex()
 {
-	return _getActiveCloudhatIdx((u64*)(gCloudsMngr));
+	return _getActiveCloudhatIdx((void*)(gCloudsMngr));
 }
