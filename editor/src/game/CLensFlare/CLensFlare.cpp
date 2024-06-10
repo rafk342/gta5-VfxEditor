@@ -131,7 +131,6 @@ void LensFlareHandler::n_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, f
 
 	ScalarV fDistToEdge = LengthVec2(vDist);
 
-	// flare direction and resulting position
 	Vec3V vFlareDir = vFlareDirNorm * fDistToEdge;
 	sm_result = sm_SunScreenPos + vFlareDir;
 
