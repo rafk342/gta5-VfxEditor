@@ -9,6 +9,7 @@
 #include "pugixml/pugixml.hpp"
 #include "helpers/helpers.h"
 #include "VfxLightningSettings/VfxLightningSettings.h"
+#include "rage/atl/color32.h"
 
 class VfxLightningsXmlParser
 {

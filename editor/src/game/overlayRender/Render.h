@@ -3,6 +3,8 @@
 
 #include <windows.h>
 #include <mutex>
+#include <wrl.h>
+
 
 #include "app/memory/hook.h"
 
@@ -17,15 +19,26 @@
 #include "uiBase/uiBaseWindow.h"
 #include "gameClock/CClock.h"
 #include "scripthookTh.h"
+#include "Preload/Preload.h";
 
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 
-#include "Preload/Preload.h";
 
+
+enum MSAAModeEnum
+{
+	MSAA_None = 0,
+	MSAA_NonMaskAble = 1,
+	MSAA_2 = 2,
+	MSAA_4 = 4,
+	MSAA_8 = 8,
+};
+
+using Microsoft::WRL::ComPtr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-class mRender
+class Renderer
 {
 	static int  open_window_btn;
 	static bool isWindowVisible;
@@ -37,14 +50,14 @@ class mRender
 	static bool font_scale_expected_to_be_changed;
 
 	static HWND	window;
-	static ID3D11Device* p_device;
-	static ID3D11DeviceContext* p_context;
-	static IDXGISwapChain* p_SwapChain;
+	static ComPtr<ID3D11Device> p_device;
+	static ComPtr<ID3D11DeviceContext> p_context;
+	static ComPtr<IDXGISwapChain> p_SwapChain;
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void Search_for_gDevice();
+	static void n_EndFrame();
 	static void InitBackend();
-	static void PresentImage();
 	static void ImRenderFrame();
 	
 	static void n_ClipCursor(LPRECT rect);
@@ -58,6 +71,10 @@ class mRender
 	static void loadConfigParams();
 
 public:
+
+	static ID3D11Device*			GetDevice();
+	static ID3D11DeviceContext*		GetContext();
+	static HWND						GetHandle();
 
 	static void Init();
 	static void Shutdown();

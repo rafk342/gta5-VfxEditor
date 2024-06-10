@@ -1,0 +1,6 @@
+#include "CLensFlareXmlParser.h"
+
+
+
+
+

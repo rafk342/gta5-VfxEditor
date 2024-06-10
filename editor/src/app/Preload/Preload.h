@@ -104,11 +104,11 @@ class Preload
 
 public:
 
-	static void Create();
-	static void Destroy();
-	static Preload* Get();
+	static Preload& Create();
+	static Preload*	Get();
+	static void		Destroy();
 
-	void preload();
+	void Init();
 
 	TcCategoriesHandler* getTcCategoriesHandler();
 	INIReader* getConfigParser();

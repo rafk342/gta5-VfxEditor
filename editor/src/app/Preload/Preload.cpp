@@ -231,14 +231,14 @@ INIReader* ConfigWrapper::getCfgReader()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-#if 1
 Preload* Preload::self = nullptr;
 
-void Preload::Create()
+Preload& Preload::Create()
 {
     if (!self)
         self = new Preload();
+    
+    return *self;
 }
 
 void Preload::Destroy()
@@ -253,10 +253,9 @@ Preload* Preload::Get()
 {
     return self;
 }
-#endif
 
 
-void Preload::preload()
+void Preload::Init()
 {
     if (preload_done)
         return;

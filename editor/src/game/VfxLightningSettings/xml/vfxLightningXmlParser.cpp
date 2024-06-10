@@ -5,7 +5,6 @@
 ///                                         Import
 
 
-//No, I wasn't doing everything here manually
 void VfxLightningsXmlParser::mImportLightningData(const std::filesystem::path& path, gVfxLightningSettings* settings)
 {
     if (!settings)

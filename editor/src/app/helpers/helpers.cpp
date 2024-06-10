@@ -2,43 +2,6 @@
 
 
 
-bool check_str_ending(const std::string& fullstr, const std::string& ending)
-{
-    if (fullstr.length() >= ending.length()) {
-        return (fullstr.compare(fullstr.length() - ending.length(), ending.length(), ending) == 0);
-    } else {
-        return false;
-    }
-}
-
-
-bool check_str_ending(const char* fullstr, const char* ending)
-{
-    int fullstr_len = strlen(fullstr);
-    int ending_len = strlen(ending);
-
-    if (fullstr_len >= ending_len) {
-        return (strcmp(fullstr + fullstr_len - ending_len, ending) == 0);
-    } else {
-        return false;
-    }
-}
-
-
-std::string convert_float_arr_to_str(std::vector<float>& arr)
-{
-    std::string temp_str;
-    temp_str.reserve(200);
-    temp_str += " ";
-
-    for (auto& num : arr) 
-        temp_str += std::format("{:.4f} ", num);
-
-    replace_symb(temp_str, ',' , '.');
-    return temp_str;
-}
-
-
 std::vector<float> convert_str_to_float_arr(const std::string& str , int size)
 {
     std::vector<float> arr;
@@ -63,17 +26,6 @@ std::vector<float> convert_str_to_float_arr(const std::string& str , int size)
     return arr;
 }
 
-
-void replace_symb(std::string& str, char symb1 , char symb2) 
-{
-    for (char& c : str) 
-    {
-        if (c == symb1)
-        {
-            c = symb2;
-        }
-    }
-}
 
 std::string strip_str(const std::string& str)
 {

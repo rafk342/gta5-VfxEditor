@@ -188,7 +188,7 @@ void VfxLightningUi::CloudBurstSettingsWidgets()
 {
 	static auto& rCloudBurstSettings = mVfxLightingHandler.mVfxLightningSettings->m_CloudBurstSettings;
 	static auto& rCloudBurstCommonSettings = mVfxLightingHandler.mVfxLightningSettings->m_CloudBurstSettings.m_CloudBurstCommonSettings;
-	float* col;
+	float col[4];
 
 	if (ImGui::CollapsingHeader("Cloud Burst Settings"))
 	{
@@ -202,7 +202,8 @@ void VfxLightningUi::CloudBurstSettingsWidgets()
 			ImGui::DragFloat("Light Source Delta Position ##__CLBurstSettings", &rCloudBurstSettings.LightDeltaPos, 0.1f, -5000.f, 5000.f);
 			ImGui::DragFloat("Light Source Distance ##__CLBurstSettings", &rCloudBurstSettings.LightDistance, 0.1f, 0.f, 5000.f);
 
-			col = rCloudBurstSettings.LightColor.Getf_col4();
+			rCloudBurstSettings.LightColor.Getf_col4().ToArray(col);
+
 			if (ImGui::ColorEdit4("Light Color", col)) {
 				rCloudBurstSettings.LightColor.Setf_col4(col);
 			}
@@ -218,7 +219,7 @@ void VfxLightningUi::CloudBurstSettingsWidgets()
 void VfxLightningUi::StrikeSettingsWidgets()
 {
 	static auto& rStrikeSettings = mVfxLightingHandler.mVfxLightningSettings->m_StrikeSettings;
-	static float* col;
+	float col[4];
 
 	if (ImGui::CollapsingHeader("Strike Settings"))
 	{
@@ -264,12 +265,12 @@ void VfxLightningUi::StrikeSettingsWidgets()
 			ImGui::DragFloat("Corona Intensity Multiplier  ##__CLStrikeSettings", &rStrikeSettings.CoronaIntensityMult, 0.1f, 0.0f, 10.0f);
 			ImGui::DragFloat("Corona Size Factor  ##__CLStrikeSettings", &rStrikeSettings.BaseCoronaSize, 0.1f, 0.0, 100.0);
 
-			col = rStrikeSettings.BaseColor.Getf_col4();
+			rStrikeSettings.BaseColor.Getf_col4().ToArray(col);
 			if (ImGui::ColorEdit4("Base Color  ##__CLStrikeSettings", col)) {
 				rStrikeSettings.BaseColor.Setf_col4(col);
 			}
 
-			col = rStrikeSettings.FogColor.Getf_col4();
+			rStrikeSettings.FogColor.Getf_col4().ToArray(col);
 			if (ImGui::ColorEdit4("Fog Color  ##__CLStrikeSettings", col)) {
 				rStrikeSettings.FogColor.Setf_col4(col);
 			}
@@ -455,12 +456,12 @@ void keyframeTable(const char* title, ptxKeyframe& keyframe, u8 idx)
 				case 1:
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Min", i, idx, j);
-					ImGui::DragFloat(buff, &data[i].vValue[0], 0.015, 0.0f, 1.0f);
+					ImGui::DragFloat(buff, &data[i].vValue[0], 0.015f, 0.0f, 1.0f);
 					break;
 				case 2:
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Max", i, idx, j);
-					ImGui::DragFloat(buff, &data[i].vValue[1], 0.015, 0.0f, 1.0f);
+					ImGui::DragFloat(buff, &data[i].vValue[1], 0.015f, 0.0f, 1.0f);
 					break;
 				default:
 					break;

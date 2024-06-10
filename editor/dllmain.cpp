@@ -32,22 +32,16 @@ AM_EXPORT void Init()
 #endif
 #if !test_ver
 
-	Preload::Create();
-	Preload::Get()->preload();
+	Preload::Create().Init();
 	Hook::Init();
 	ScriptHook::Init();
 
-	std::thread th(mRender::Init);
+	std::thread th(Renderer::Init);
 	th.detach();
 
 #else
-	
-	CLensFlareHandler m_handler;
-
-
 
 #endif
-
 }
 
 AM_EXPORT void Shutdown()
@@ -57,13 +51,15 @@ AM_EXPORT void Shutdown()
 	FreeConsole();
 #endif
 #if !test_ver
-	mRender::Shutdown();
+
+	Renderer::Shutdown();
 	Preload::Destroy();
 #if am_version
 	ScriptHook::Shutdown();
 #endif
 	Hook::Shutdown();
 	std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
 #else
 
 

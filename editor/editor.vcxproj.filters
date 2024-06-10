@@ -141,6 +141,15 @@
     <ClCompile Include="src\game\CLensFlare\UI\LensFlareUi.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\game\CLensFlare\XmlParser\CLensFlareXmlParser.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\rage\math\vec.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\rage\math\vecv.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\amString\char.h">
@@ -671,9 +680,45 @@
     <ClInclude Include="src\game\CLensFlare\UI\LensFlareUi.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\game\CLensFlare\XmlParser\CLensFlareXmlParser.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\helpers\ranges.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\math\constants.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\math\math.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\math\mathv.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\math\mtxv.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\math\quatv.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\math\vec.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\math\vecv.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Cougar\AlignedAllocator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Cougar\FixedSizeAllocator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\MinHook\libMinHook.x64.lib" />
     <Library Include="vendor\scripthook\lib\ScriptHookV.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="src\game\rage\math\vmath.natvis" />
   </ItemGroup>
 </Project>

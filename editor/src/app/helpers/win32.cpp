@@ -35,7 +35,7 @@ void GetModuleNameFromAddress(u64 address, char* buffer, u32 bufferSize)
 	HMODULE hModule;
 	GetModuleHandleEx(
 		GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-		(LPCSTR)address,
+		(LPCWSTR)address,
 		&hModule);
 
 	GetModuleFileNameA(hModule, buffer, MAX_PATH);

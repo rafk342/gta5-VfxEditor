@@ -1,51 +1,67 @@
 #pragma once
 
 #include <iostream>
+#include <map>
+#include <directxmath.h>
+#include <d3dcompiler.h>
+#pragma comment(lib, "d3dcompiler.lib")
+
 
 #include "memory/address.h"
+#include "memory/hook.h"
 #include "rage/atl/atArray.h"
 #include "rage/atl/color32.h"
 
+#include "rage/math/vec.h"
+#include "rage/math/vecv.h"
+
+#include "overlayRender/Render.h"
+
+
+using namespace DirectX;
+
+
+
+
+enum FlareFxTextureType_e : u8
+{						 // SubGroups :
+	AnimorphicType	= 0, // 0
+	ArtefactType	= 1, // 1-8 here
+	ChromaticType	= 2, // 0
+	CoronaType		= 3, //	0
+};
+
+enum LensFlareFile_e
+{
+	lensflare_m = 0,
+	lensflare_f = 1,
+	lensflare_t = 2,
+};
+
+
 struct CFlareFX
 {
-	float	m_fDistFromLight;
-	float	m_fSize;
-	float	m_fWidthRotate;
-	float	m_fScrollSpeed;
-	float	m_fCurrentScroll;
-	float	m_fDistanceInnerOffset;
-	float	m_fIntensityScale;
-	float	m_fIntensityFade;
-	float	m_fAnimorphicScaleFactorU;
-	float	m_fAnimorphicScaleFactorV;
-	Color32 m_color;
-	float	m_fTextureColorDesaturate;
-	float	m_fGradientMultiplier;
-	u8		m_nTexture;
-	u8		m_nSubGroup;
-	bool	m_bAnimorphicBehavesLikeArtefact;
-	bool	m_bAlignRotationToSun;
-	float	m_fPositionOffsetU;
+	float	m_fDistFromLight = 0.2f;
+	float	m_fSize = 0.2f;
+	float	m_fWidthRotate = 0.0f;
+	float	m_fScrollSpeed = 0.0f;
+	float	m_fCurrentScroll = 0.0f;
+	float	m_fDistanceInnerOffset = 0.0f;
+	float	m_fIntensityScale = 100.f;
+	float	m_fIntensityFade = 0.0f;
+	float	m_fAnimorphicScaleFactorU = 0.0f;
+	float	m_fAnimorphicScaleFactorV = 0.0f;
+	Color32 m_color = { 1.0f,1.0f,1.0f };
+	float	m_fTextureColorDesaturate = 0.0f;
+	float	m_fGradientMultiplier = 0.0f;
+	u8		m_nTexture = 0;
+	u8		m_nSubGroup = 0;
+	bool	m_bAnimorphicBehavesLikeArtefact = false;
+	bool	m_bAlignRotationToSun = false;
+	float	m_fPositionOffsetU = 0.0f;
 
-	CFlareFX()
-		: m_fDistFromLight(0.0f)
-		, m_fSize(0.1f)
-		, m_fWidthRotate(0.01f)
-		, m_fScrollSpeed(0.15f)
-		, m_fCurrentScroll(0.0f)
-		, m_fDistanceInnerOffset(0.01f)
-		, m_fIntensityScale(100.f)
-		, m_fIntensityFade(1.0f)
-		, m_fAnimorphicScaleFactorU(0.0f)
-		, m_fAnimorphicScaleFactorV(0.0f)
-		, m_color(Color32(1.0f,1.0f,1.0f))
-		, m_fTextureColorDesaturate(0.0f)
-		, m_fGradientMultiplier(1.0f)
-		, m_nTexture(0)
-		, m_nSubGroup(1)
-		, m_bAnimorphicBehavesLikeArtefact(false)
-		, m_fPositionOffsetU(0.0f)
-	{ }
+	CFlareFX() = default;
+	CFlareFX(FlareFxTextureType_e type);
 };
 
 
@@ -74,25 +90,63 @@ struct CLensFlareSettings
 	atArray<CFlareFX> m_arrFlareFX;
 };
 
-
+struct Vertex
+{
+	XMFLOAT3 position;
+};
 
 class LensFlareHandler
 {
+
 	class gCLensFlare
 	{
 		u8 pad01[0x78];
 	public:
 		CLensFlareSettings m_Settings[3];
-		u8 m_index;
+		u8 m_ActiveIndex;
 	private:
 		u8 pad02[7];
 	};
 
+	static void n_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, float* vPos);
+	
+	static LensFlareHandler* self;
+
+	static bool  sm_IsFlareFxRenderedOnThisFrame;
+	static bool	 sm_DrawingFlares;
+	static rage::Vec3V sm_SunScreenPos;
+	static rage::Vec3V sm_result;
+
 public:
 
+	float VertexData[12] =
+	{
+		// x, y,		r, g, b, a
+		0.0f,  0.5f,	0.f, 1.f, 0.f, 1.0f,
+		0.5f, -0.5f,	1.f, 0.f, 0.f, 1.0f,
+	};
+
+	ComPtr<ID3D11Buffer> m_VertexBuffer;
+	ComPtr<ID3D11InputLayout> m_InputLayout;
+
+	ComPtr<ID3D11VertexShader> m_vertexShader;
+	ComPtr<ID3D11PixelShader> m_pixelShader;
+	
+	UINT stride;
+	UINT offset;
+
 	gCLensFlare* m_CLensFlare = nullptr;
+	
 
 	LensFlareHandler();
+	~LensFlareHandler();
 
+	static void EndFrame();
+
+	const char* GetFileNameAtIndex(size_t idx);
+	const char* GetTextureTypeName(u8 NumTexture);
+
+	void Update();
+	void PrepareForTheNextFrame();
 };
 

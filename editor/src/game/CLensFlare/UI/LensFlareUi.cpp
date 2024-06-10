@@ -1,5 +1,8 @@
 #include "LensFlareUi.h"
 
+#include <map>
+
+
 
 LensFlareUi::LensFlareUi(const char* title) : App(title)
 { }
@@ -7,18 +10,16 @@ LensFlareUi::LensFlareUi(const char* title) : App(title)
 void LensFlareUi::window()
 {
 	static char buff[128];
+	float v_speed = 0.01f;
+	float col[4];
 
 	CLensFlareSettings* settings = &m_Handler.m_CLensFlare->m_Settings[0];
 
-	ImGui::Text("Current Index : %i", m_Handler.m_CLensFlare->m_ActiveIndex);
-
-	float v_speed = 0.01f;
-
-
+	ImGui::Text("Active Lensflare : %s", m_Handler.GetFileNameAtIndex(static_cast<size_t>(m_Handler.m_CLensFlare->m_ActiveIndex)));
 
 	for (size_t i = 0; i < 3; i++)
 	{
-		FORMAT_TO_BUFF(buff, "FileIndex : {}##TreeNode", i);
+		FORMAT_TO_BUFF(buff, "File : {}##TreeNode", m_Handler.GetFileNameAtIndex(i));
 
 		if (ImGui::TreeNode(buff))
 		{
@@ -82,9 +83,39 @@ void LensFlareUi::window()
 				{
 					CFlareFX& CurrFlareFx = arr[j];
 
-					FORMAT_TO_BUFF(buff, "index : {}##_{}", j,i);
+					FORMAT_TO_BUFF(buff, "index : {}##_{}", j, i);
 					if (ImGui::TreeNode(buff))
 					{
+						//switch (static_cast<FlareFxTextureType_e>(CurrFlareFx.m_nTexture))
+						//{
+						//case AnimorphicType:
+
+						//	TreeNodeForAnimorphicType();
+						//	break;
+
+						//case ArtefactType:
+
+						//	TreeNodeForArtefactType();
+						//	break;
+
+						//case ChromaticType:
+
+						//	TreeNodeForChromaticType();
+						//	break;
+
+						//case CoronaType:
+
+						//	TreeNodeForCoronaType();
+						//	break;
+
+						//default:
+						//	break;
+						//}
+
+
+						FORMAT_TO_BUFF(buff, "{}## {} {}", m_Handler.GetTextureTypeName(CurrFlareFx.m_nTexture), i, j);
+						ImGui::Text(buff);
+
 						FORMAT_TO_BUFF(buff, "Dist From Light ##{} {}", i,j);
 						ImGui::DragFloat(buff, &CurrFlareFx.m_fDistFromLight, v_speed);
 						
@@ -93,6 +124,9 @@ void LensFlareUi::window()
 
 						FORMAT_TO_BUFF(buff, "Width Rotate ##{} {}", i, j);
 						ImGui::DragFloat(buff, &CurrFlareFx.m_fWidthRotate, v_speed);
+						
+						FORMAT_TO_BUFF(buff, "Scroll Speed ##{} {}", i, j);
+						ImGui::DragFloat(buff, &CurrFlareFx.m_fScrollSpeed, v_speed);
 						
 						FORMAT_TO_BUFF(buff, "Distance Inner Offset ##{} {}", i, j);
 						ImGui::DragFloat(buff, &CurrFlareFx.m_fDistanceInnerOffset, v_speed);
@@ -118,39 +152,42 @@ void LensFlareUi::window()
 						
 						FORMAT_TO_BUFF(buff, "Color ##{} {}", i, j);
 						
-						static float* col = CurrFlareFx.m_color.Getf_col4();
+						CurrFlareFx.m_color.Getf_col4().ToArray(col);
 						if (ImGui::ColorEdit4(buff, col))
 							CurrFlareFx.m_color.Setf_col4(col);
 						
 
 						FORMAT_TO_BUFF(buff, "Gradient Multiplier ##{} {}", i, j);
 						ImGui::DragFloat(buff, &CurrFlareFx.m_fGradientMultiplier, v_speed);
-			
+
 						FORMAT_TO_BUFF(buff, "Texture Num##{} {}", i, j);
 						
-						static int v1 = CurrFlareFx.m_nTexture;
+						int v1 = CurrFlareFx.m_nTexture;
 						if (ImGui::InputInt(buff, &v1))
 						{
-							if (v1 > 3)
-								v1 = 3;
-							if (v1 < 0)
-								v1 = 0;
+							if (v1 > 3) v1 = 3; 
+							if (v1 < 0) v1 = 0;
 
 							CurrFlareFx.m_nTexture = v1;
 						}
 												
 						FORMAT_TO_BUFF(buff, "SubGroup Num ##{} {}", i, j);
 						
-						static int v2 = CurrFlareFx.m_nSubGroup;
+						int v2 = CurrFlareFx.m_nSubGroup;
 						if (ImGui::InputInt(buff, &v2))
 						{
-							if (v2 > 4)
-								v2 = 4;
-							if (v2 < 0)
-								v2 = 0;
+							if (v2 > 8) v2 = 8;
+							if (v2 < 0) v2 = 0;
 
 							CurrFlareFx.m_nSubGroup = v2;
 						}
+
+						FORMAT_TO_BUFF(buff, "Position OffsetU ##{} {}", i, j);
+						ImGui::DragFloat(buff, &CurrFlareFx.m_fPositionOffsetU, v_speed);
+						
+						FORMAT_TO_BUFF(buff, "Texture Color Desaturate ##{} {}", i, j);
+						ImGui::DragFloat(buff, &CurrFlareFx.m_fTextureColorDesaturate, v_speed);
+
 
 						if (ImGui::Button("Remove"))
 						{
@@ -173,14 +210,9 @@ void LensFlareUi::window()
 				ImGui::TreePop();
 			}
 
-
-
 			ImGui::TreePop();
 		}
 	}
-
-
-
 
 }
 
@@ -191,6 +223,28 @@ void LensFlareUi::importData(std::filesystem::path path)
 }
 
 void LensFlareUi::exportData(std::filesystem::path path)
+{
+
+}
+
+
+
+void LensFlareUi::TreeNodeForAnimorphicType()
+{
+
+}
+
+void LensFlareUi::TreeNodeForArtefactType()
+{
+
+}
+
+void LensFlareUi::TreeNodeForChromaticType()
+{
+
+}
+
+void LensFlareUi::TreeNodeForCoronaType()
 {
 
 }

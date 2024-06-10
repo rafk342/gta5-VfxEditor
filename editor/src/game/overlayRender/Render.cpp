@@ -5,71 +5,88 @@
 #include "app/logger.h"
 #include "app/compiler/compiler.h"
 
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
+#include <Windows.h>
 
+#include "CLensFlare/CLensFlare.h"
+
+#pragma comment(lib, "D3DCompiler.lib")
+using namespace DirectX;
+
+
+
+#define SAFE_RELEASE(p) if (p) { p->Release(); p = nullptr; }
+
+void GetScreenSize(u32& width, u32& height);
+MSAAModeEnum GetMSAA();
 void WaitWhileGameIsStarting();
 
-namespace 
+namespace
 {
 	gmAddress	g_ResizeBuffersAddr;
-	gmAddress	g_PresentImageAddr;
+	gmAddress	g_EndFrameAddr;
 	gmAddress	g_WndProcAddr;
 
 	bool shutdown_request = false;
 }
 
-HWND					mRender::window = nullptr;
-ID3D11Device*			mRender::p_device = nullptr;
-ID3D11DeviceContext*	mRender::p_context = nullptr;
-IDXGISwapChain*			mRender::p_SwapChain = nullptr;
+HWND							Renderer::window = nullptr;
+ComPtr<ID3D11Device>			Renderer::p_device = nullptr;
+ComPtr<ID3D11DeviceContext>		Renderer::p_context = nullptr;
+ComPtr<IDXGISwapChain>			Renderer::p_SwapChain = nullptr;
 
-int		mRender::open_window_btn = 0;
-bool	mRender::isWindowVisible = false;
-bool	mRender::mInitialized = false;
-bool    mRender::ImGuiCursorUsage = false;
-bool	mRender::mRenderState = false;
-float	mRender::font_size = 15.0f;
-bool	mRender::font_scale_expected_to_be_changed = false;
+int		Renderer::open_window_btn = 0;
+bool	Renderer::isWindowVisible = false;
+bool	Renderer::mInitialized = false;
+bool    Renderer::ImGuiCursorUsage = false;
+bool	Renderer::mRenderState = false;
+float	Renderer::font_size = 15.0f;
+bool	Renderer::font_scale_expected_to_be_changed = false;
 
-void mRender::Search_for_gDevice()
+
+
+ID3D11Device*			Renderer::GetDevice()	{ return p_device.Get(); }
+ID3D11DeviceContext*	Renderer::GetContext()	{ return p_context.Get(); }
+HWND					Renderer::GetHandle()	{ return window; }
+
+
+void Renderer::Search_for_gDevice()
 {
 	g_ResizeBuffersAddr = gmAddress::Scan("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 81 EC 90 00 00 00 48 8B F1 48 8D 0D");
-	g_PresentImageAddr = gmAddress::Scan("40 55 53 56 57 41 54 41 56 41 57 48 8B EC 48 83 EC 40 48 8B 0D");
+	g_EndFrameAddr = gmAddress::Scan("40 55 53 56 57 41 54 41 56 41 57 48 8B EC 48 83 EC 40 48 8B 0D");
 	window = FindWindowW(L"grcWindow", NULL);
 	SetWindowTextW(window, L"Hello World");
-
-#if game_version == gameVer3095
-
-	g_WndProcAddr = gmAddress::Scan("48 8D 05 ?? ?? ?? ?? 33 C9 89 75 20").GetRef(3);
-
-#elif game_version == gameVer2060
 	
-	game_WndProcAddr = gmAddress::Scan("85 C0 BF 00 00 CA 00").GetAt(80).GetAt(3).GetRef();
-
+	
+	g_WndProcAddr = gmAddress::Scan(
+#if game_version == gameVer3095
+		"48 8D 05 ?? ?? ?? ?? 33 C9 89 75 20"
+#elif game_version == gameVer2060
+		"85 C0 BF 00 00 CA 00").GetAt(80)
 #endif 
+	).GetRef(3);
 
-	p_SwapChain = *g_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>();
 
-	if (SUCCEEDED(p_SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void**>(&p_device)))) {
-		p_device->GetImmediateContext(&p_context);
+	p_SwapChain = ComPtr<IDXGISwapChain>(*g_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>());
+
+	if (SUCCEEDED(p_SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void**>(p_device.GetAddressOf())))) {
+		p_device->GetImmediateContext(p_context.GetAddressOf());
 	}
-
-	p_context->AddRef();
-	p_device->AddRef();
-	p_SwapChain->AddRef();
 }
 
 
 
-
 void (*g_ClipCursor)(LPRECT);
-void mRender::n_ClipCursor(LPRECT rect) 
+void Renderer::n_ClipCursor(LPRECT rect) 
 {
 	if (!isWindowVisible)
 		g_ClipCursor(rect);
 }
 
 int (*g_ShowCursor)(bool);
-int mRender::n_ShowCursor(bool visible) 
+int Renderer::n_ShowCursor(bool visible) 
 {
 	if (!isWindowVisible)
 		g_ShowCursor(visible);
@@ -77,7 +94,7 @@ int mRender::n_ShowCursor(bool visible)
 	return visible ? 0 : -1; 
 }
 
-void mRender::SetMouseVisible(bool visible)
+void Renderer::SetMouseVisible(bool visible)
 {
 	if (visible)
 		while (g_ShowCursor(true) < 0);
@@ -96,8 +113,23 @@ void ClipCursorToWindowRect(HWND handle, bool clip)
 
 
 LRESULT(*g_WndProc)(HWND, UINT, WPARAM, LPARAM);
-LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT Renderer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	switch (uMsg)
+	{
+	case WM_SYSCOMMAND:
+		if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+			return 0;
+		break;
+
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	}
+
+	if (GetAsyncKeyState(VK_HOME) && isWindowVisible)
+		return 0;
+
 	if (GetAsyncKeyState(open_window_btn) & 1) 
 	{
 		isWindowVisible = !isWindowVisible;
@@ -105,9 +137,6 @@ LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (!ImGuiCursorUsage) 
 			ClipCursorToWindowRect(window, !isWindowVisible);
 	}
-	
-	if (GetAsyncKeyState(VK_HOME) && isWindowVisible)
-		return true;
 	
 	if (!ImGuiCursorUsage) 
 		SetMouseVisible(isWindowVisible); 
@@ -119,13 +148,32 @@ LRESULT mRender::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return true;
 	}
 	
-	g_WndProc(hWnd, uMsg, wParam, lParam);
-	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+	return g_WndProc(hWnd, uMsg, wParam, lParam);
 }
 
 
-void(*g_PresentImage)();
-void mRender::PresentImage()
+bool test_flag = false;
+//Vector3 pos1{};
+//Vector3 pos2{};
+//float col[4]{};
+
+
+
+ComPtr<ID3D11InputLayout>		inputLayout;
+ComPtr<ID3D11Buffer>			vertexBuffer;
+
+ComPtr<ID3D11VertexShader>		vertexShader;
+ComPtr<ID3D11PixelShader>		pixelShader;
+
+
+UINT numVerts;
+UINT stride;
+UINT offset;
+
+
+
+void(*g_EndFrame)();
+void Renderer::n_EndFrame()
 {
 	mRenderState = true;
 
@@ -135,6 +183,8 @@ void mRender::PresentImage()
 		BaseUiWindow::Create();
 		ScriptHook::Start();
 		CClock::Init();
+		
+		mlogger(" mInitialized");
 
 		mInitialized = true;
 	}
@@ -142,7 +192,27 @@ void mRender::PresentImage()
 	{
 		ImRenderFrame();
 	}
-	g_PresentImage();
+
+	if (mInitialized)
+	{
+		LensFlareHandler::EndFrame();
+	}
+
+
+	//if (test_flag && mInitialized)
+	//{
+	//	scrInvoke([]
+	//		{
+	//			GRAPHICS::DRAW_LINE(
+	//				pos1.x, pos1.y, pos1.z,
+	//				pos2.x, pos2.y, pos2.z,
+	//				(col[0] * 255), (col[1] * 255), (col[2] * 255), (col[3] * 255)); 
+	//		});
+	//}
+
+
+
+	g_EndFrame();
 	
 	mRenderState = false;
 }
@@ -152,7 +222,7 @@ void mRender::PresentImage()
 
 
 
-void mRender::Init()
+void Renderer::Init()
 {
 	loadConfigParams();
 	WaitWhileGameIsStarting();
@@ -162,17 +232,17 @@ void mRender::Init()
 
 	Search_for_gDevice();
 
-	Hook::Create(g_PresentImageAddr,	mRender::PresentImage,	&g_PresentImage,	"swapChainPresent");
-	Hook::Create(g_WndProcAddr,			mRender::WndProc,		&g_WndProc,			"WndProc");
+	Hook::Create(g_EndFrameAddr,	Renderer::n_EndFrame,	&g_EndFrame,	"EndFrame");
+	Hook::Create(g_WndProcAddr,		Renderer::WndProc,		&g_WndProc,		"WndProc");
 
 	if (!ImGuiCursorUsage)
 	{
-		Hook::Create(ClipCursor, mRender::n_ClipCursor, &g_ClipCursor, "ClipCursor");
-		Hook::Create(ShowCursor, mRender::n_ShowCursor, &g_ShowCursor, "ShowCursor");
+		Hook::Create(ClipCursor, Renderer::n_ClipCursor, &g_ClipCursor, "ClipCursor");
+		Hook::Create(ShowCursor, Renderer::n_ShowCursor, &g_ShowCursor, "ShowCursor");
 	}
 }
 
-void mRender::loadConfigParams()
+void Renderer::loadConfigParams()
 {
 	auto* cfg = Preload::Get()->getConfigParser();
 
@@ -183,10 +253,11 @@ void mRender::loadConfigParams()
 	open_window_btn		= cfg->GetInteger("Settings", "OpenClose_window_button", 0x2D);
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void mRender::InitBackend()
+void Renderer::InitBackend()
 {
 	ImGui::CreateContext();
 	ImPlot::CreateContext();
@@ -199,12 +270,13 @@ void mRender::InitBackend()
 		io.MouseDrawCursor = true;
 
 	ImGui_ImplWin32_Init(window);
-	ImGui_ImplDX11_Init(p_device, p_context);
+	ImGui_ImplDX11_Init(p_device.Get(), p_context.Get());
 }
 
 
-void mRender::ImRenderFrame()
+void Renderer::ImRenderFrame()
 {
+	
 	GameInput::DisableAllControlsThisFrame();
 
 	ImGui_ImplDX11_NewFrame();
@@ -223,6 +295,27 @@ void mRender::ImRenderFrame()
 	//}
 
 
+	//if (ImGui::Begin("tmp window1"))
+	//{
+	//	if (ImGui::Button("GetFirstPos"))
+	//	{
+	//		scrInvoke([] { pos1 = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), false); });
+	//	}
+
+	//	if (ImGui::Button("GetSecondPos"))
+	//	{
+	//		scrInvoke([] {pos2 = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), false); });
+	//	}
+
+	//	if (ImGui::Checkbox("Draw", &test_flag));
+
+	//	ImGui::ColorEdit4("m_color_edit", col, 0 | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar);
+
+	//	ImGui::End();
+	//}
+	
+
+
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -236,8 +329,9 @@ void mRender::ImRenderFrame()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void mRender::Shutdown()
+void Renderer::Shutdown()
 {
+	mlogger("shutdown call");
 	shutdown_request = true;
 
 	if (!mInitialized) 
@@ -254,20 +348,7 @@ void mRender::Shutdown()
 	ImPlot::DestroyContext();
 	ImGui::DestroyContext();
 
-	if (p_context)
-	{
-		p_context->Release(); p_context = nullptr;
-	}
-	if (p_device)
-	{
-		p_device->Release(); p_device = nullptr;
-	}
-	if (p_SwapChain)
-	{
-		p_SwapChain->Release(); p_SwapChain = nullptr;
-	}
-	
-	Hook::Remove(g_PresentImageAddr);
+	Hook::Remove(g_EndFrameAddr);
 	Hook::Remove(g_WndProcAddr);
 }
 
@@ -298,7 +379,7 @@ namespace
 	};
 }
 
-void mRender::ChangeFontSize()
+void Renderer::ChangeFontSize()
 {
 	auto& io = ImGui::GetIO();
 
@@ -312,7 +393,7 @@ void mRender::ChangeFontSize()
 	ImGui_ImplDX11_CreateDeviceObjects();
 }
 
-void mRender::LoadFont()
+void Renderer::LoadFont()
 {
 	ImGuiIO& io = ImGui::GetIO();
 
@@ -324,7 +405,7 @@ void mRender::LoadFont()
 	io.Fonts->AddFontFromFileTTF(font_path, font_size, &fontConfig, fontRange);
 }
 
-void mRender::mStyle()
+void Renderer::mStyle()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
 	
@@ -334,7 +415,6 @@ void mRender::mStyle()
 
 	style->Colors[ImGuiCol_PopupBg] = { 45.0f/255.0f, 45.0f/255.0f, 45.0f/255.0f, 1.0f };
 }
-
 
 
 
@@ -357,6 +437,24 @@ void WaitWhileGameIsStarting()
 
 
 
+
+void GetScreenSize(u32& width, u32& height)
+{
+	static gmAddress addr = gmAddress::Scan("44 8B 1D ?? ?? ?? ?? 48 8B 3C D0");
+	height = *addr.GetRef(3).To<u32*>();
+	width = *addr.GetRef(0xB + 2).To<u32*>();
+}
+
+
+MSAAModeEnum GetMSAA()
+{
+	static u32* pMode = gmAddress::Scan("E8 ?? ?? ?? ?? 8B 47 4C 89 05", "rage::grcDevice::SetSamplesAndFragments")
+		.GetRef(1)
+		.GetRef(0x2)
+		.To<u32*>();
+
+	return static_cast<MSAAModeEnum>(*pMode);
+}
 
 
 ////#if game_version == gameVer3095

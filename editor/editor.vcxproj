@@ -51,7 +51,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -144,8 +144,9 @@
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -158,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\game\CLensFlare\XmlParser\CLensFlareXmlParser.cpp" />
     <ClCompile Include="src\game\CLensFlare\UI\LensFlareUi.cpp" />
     <ClCompile Include="src\game\CLensFlare\CLensFlare.cpp" />
     <ClCompile Include="src\game\bloodfx\gBloodFxReloader.cpp" />
@@ -176,6 +178,8 @@
     <ClCompile Include="src\game\CloudSettings\CloudSettings.cpp" />
     <ClCompile Include="src\game\gameClock\CClock.cpp" />
     <ClCompile Include="src\game\overlayRender\Render.cpp" />
+    <ClCompile Include="src\game\rage\math\vec.cpp" />
+    <ClCompile Include="src\game\rage\math\vecv.cpp" />
     <ClCompile Include="src\game\timecycle\tccycle.cpp" />
     <ClCompile Include="src\game\timecycle\tсHandler.cpp" />
     <ClCompile Include="src\game\timecycle\ui\timecycleUI_impl.cpp" />
@@ -202,6 +206,8 @@
     <ClCompile Include="src\game\VisualSettings\ui\visualSettingsUi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\app\helpers\ranges.h" />
+    <ClInclude Include="src\game\CLensFlare\XmlParser\CLensFlareXmlParser.h" />
     <ClInclude Include="src\game\CLensFlare\UI\LensFlareUi.h" />
     <ClInclude Include="src\game\CLensFlare\CLensFlare.h" />
     <ClInclude Include="src\game\bloodfx\gBloodFxReloader.h" />
@@ -211,6 +217,13 @@
     <ClInclude Include="src\game\rage\base\sysMemAllocator.h" />
     <ClInclude Include="src\app\helpers\align.h" />
     <ClInclude Include="src\app\helpers\bits.h" />
+    <ClInclude Include="src\game\rage\math\constants.h" />
+    <ClInclude Include="src\game\rage\math\math.h" />
+    <ClInclude Include="src\game\rage\math\mathv.h" />
+    <ClInclude Include="src\game\rage\math\mtxv.h" />
+    <ClInclude Include="src\game\rage\math\quatv.h" />
+    <ClInclude Include="src\game\rage\math\vec.h" />
+    <ClInclude Include="src\game\rage\math\vecv.h" />
     <ClInclude Include="src\game\scripthookTh.h" />
     <ClInclude Include="src\game\gameClock\Ui\ClockUi.h" />
     <ClInclude Include="src\app\helpers\SimpleTimer.h" />
@@ -250,6 +263,8 @@
     <ClInclude Include="src\app\uiBase\FileListUI.h" />
     <ClInclude Include="src\game\timecycle\xml\tcXmlParser.h" />
     <ClInclude Include="src\app\uiBase\uiBaseWindow.h" />
+    <ClInclude Include="vendor\Cougar\AlignedAllocator.h" />
+    <ClInclude Include="vendor\Cougar\FixedSizeAllocator.h" />
     <ClInclude Include="vendor\ImGui\imconfig.h" />
     <ClInclude Include="vendor\ImGui\imgui.h" />
     <ClInclude Include="vendor\ImGui\imgui_impl_dx11.h" />
@@ -382,6 +397,9 @@
   <ItemGroup>
     <Library Include="vendor\MinHook\libMinHook.x64.lib" />
     <Library Include="vendor\scripthook\lib\ScriptHookV.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="src\game\rage\math\vmath.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
