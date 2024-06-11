@@ -1,32 +1,32 @@
 #include "CLensFlare.h"
 
-void UpdateVertexBuffer(ID3D11DeviceContext* context, ID3D11Buffer* vertexBuffer, const XMFLOAT3& start, const XMFLOAT3& end)
+void UpdateVertexBuffer(ID3D11DeviceContext* context, ID3D11Buffer* vertexBuffer, const rage::Vec3V& start, const rage::Vec3V& end)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	HRESULT hr = context->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
-	if (SUCCEEDED(hr)) 
-	{
-		float* vertices = reinterpret_cast<float*>(mappedResource.pData);
+	if (FAILED(context->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
+		return;
 
-		vertices[0] = start.x;
-		vertices[1] = start.y;
+	float* data = reinterpret_cast<float*>(mappedResource.pData);
+
+	data[0] = start.X();
+	data[1] = start.Y();
 		
-		vertices[2] = 0.01f;// 0.f, 1.f, 0.f, 1.0f,
-		vertices[3] = 0.0f;
-		vertices[4] = 1.0f;
-		vertices[5] = 1.0f;
+	data[2] = 0.01f;
+	data[3] = 0.0f;
+	data[4] = 1.0f;
+	data[5] = 1.0f;
 		
-		vertices[6] = end.x;
-		vertices[7] = end.y;
+	data[6] = end.X();
+	data[7] = end.Y();
 
-		vertices[8] = 1.0f;		//1.f, 0.f, 0.f, 1.0f
-		vertices[9] = 0.0f;
-		vertices[10] = 0.0f;
-		vertices[11] = 1.0f;
+	data[8] = 1.0f;
+	data[9] = 0.0f;
+	data[10] = 0.0f;
+	data[11] = 1.0f;
 
-		context->Unmap(vertexBuffer, 0);
-	}
+	context->Unmap(vertexBuffer, 0);
+
 }
 
 
@@ -46,30 +46,29 @@ const char* GetShaderCompileErrorString(HRESULT hr, ID3DBlob* shaderCompileError
 
 void LensFlareHandler::EndFrame()
 {
+	if (!(self && sm_IsFlareFxRenderedOnThisFrame))
+		return;
 
-	if (self && sm_IsFlareFxRenderedOnThisFrame)
-	{
-		auto* p_DeviceContext = Renderer::GetContext();
+	auto* p_DeviceContext = Renderer::GetContext();
 
-		UpdateVertexBuffer(	p_DeviceContext,
-							self->m_VertexBuffer.Get(),
-							{ (sm_SunScreenPos.X() * 2.0f - 1.0f ), -(sm_SunScreenPos.Y() * 2.0f - 1.0f), 0.0f },
-							{ (sm_result.X() * 2.0f - 1.0f), -(sm_result.Y() * 2.0f - 1.0f), 0.0f });
+	UpdateVertexBuffer(	p_DeviceContext,
+						self->m_VertexBuffer.Get(),
+						{ (sm_StartPoint.X() * 2.0f - 1.0f ), -(sm_StartPoint.Y() * 2.0f - 1.0f) },
+						{ (sm_EndPoint.X() * 2.0f - 1.0f), -(sm_EndPoint.Y() * 2.0f - 1.0f) });
+	
+	UINT stride = 6 * sizeof(float);
+	UINT offset = 0;
 
+	p_DeviceContext->IASetVertexBuffers(0, 1, self->m_VertexBuffer.GetAddressOf(), &stride, &offset);
+	p_DeviceContext->IASetInputLayout(self->m_InputLayout.Get());
+	p_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
-		p_DeviceContext->IASetVertexBuffers(0, 1, self->m_VertexBuffer.GetAddressOf(), &self->stride, &self->offset);
-		p_DeviceContext->IASetInputLayout(self->m_InputLayout.Get());
-		p_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	p_DeviceContext->VSSetShader(self->m_vertexShader.Get(), nullptr, 0);
+	p_DeviceContext->PSSetShader(self->m_pixelShader.Get(), nullptr, 0);
 
-
-		p_DeviceContext->VSSetShader(self->m_vertexShader.Get(), nullptr, 0);
-		p_DeviceContext->PSSetShader(self->m_pixelShader.Get(), nullptr, 0);
-
-		p_DeviceContext->Draw(2, 0);
+	p_DeviceContext->Draw(2, 0);
 		
-		self->PrepareForTheNextFrame();
-	}
-
+	self->PrepareForTheNextFrame();
 
 }
 
@@ -92,18 +91,12 @@ rage::ScalarV LengthVec3(rage::Vec3V V)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
 LensFlareHandler* LensFlareHandler::self = nullptr;
-
-namespace
-{
-	gmAddress gRenderFlareFxAddr;
-}
 
 bool LensFlareHandler::sm_IsFlareFxRenderedOnThisFrame = false;
 bool LensFlareHandler::sm_DrawingFlares = false;
-rage::Vec3V LensFlareHandler::sm_SunScreenPos = { 0.0f, 0.0f, 0.0f };
-rage::Vec3V LensFlareHandler::sm_result = { 0.0f, 0.0f, 0.0f };
+rage::Vec3V	LensFlareHandler::sm_StartPoint = { 0.0f, 0.0f, 0.0f };
+rage::Vec3V	LensFlareHandler::sm_EndPoint = { 0.0f, 0.0f, 0.0f };
 
 
 
@@ -118,12 +111,10 @@ void LensFlareHandler::n_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, f
 	sm_IsFlareFxRenderedOnThisFrame = true;
 	sm_DrawingFlares = true;
 
-	sm_SunScreenPos = { SunPos[0], SunPos[1] };
+	sm_StartPoint = { SunPos[0], SunPos[1] };
 
 
-	ScalarV fDistScale{};
-
-	Vec3V vFlareDirNorm = Vec3V(0.5f, 0.5f) - sm_SunScreenPos;
+	Vec3V vFlareDirNorm = Vec3V(0.5f, 0.5f) - sm_StartPoint;
 	ScalarV fLen = LengthVec2(vFlareDirNorm);
 
 	Vec3V vDist = vFlareDirNorm.Abs() + Vec3V(0.5f, 0.5f);
@@ -132,8 +123,7 @@ void LensFlareHandler::n_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, f
 	ScalarV fDistToEdge = LengthVec2(vDist);
 
 	Vec3V vFlareDir = vFlareDirNorm * fDistToEdge;
-	sm_result = sm_SunScreenPos + vFlareDir;
-
+	sm_EndPoint = sm_StartPoint + vFlareDir;
 
 
 	sm_DrawingFlares = false;
@@ -145,16 +135,15 @@ LensFlareHandler::LensFlareHandler()
 	self = this;
 
 	m_CLensFlare = gmAddress::Scan("48 8D 0D ?? ?? ?? ?? 75 ?? 33 D2").GetRef(3).To<gCLensFlare*>();
-	gRenderFlareFxAddr = gmAddress::Scan("48 8B C4 F3 0F 11 58 ?? 4C 89 40 ?? 55");
 	
+	gmAddress gRenderFlareFxAddr = gmAddress::Scan("48 8B C4 F3 0F 11 58 ?? 4C 89 40 ?? 55");
 	Hook::Create(gRenderFlareFxAddr, n_RenderFlareFx, &RenderFlareFxfn, "RenderFlareFx");
 	
-	
+
 	auto* p_Device = Renderer::GetDevice();
 	
 	ComPtr<ID3DBlob> vsBlob;
 	ComPtr<ID3DBlob> psBlob;
-
 	{
 		ComPtr<ID3DBlob> shaderCompileErrorsBlob;
 		auto hResult = D3DCompileFromFile(L"shaders1.hlsl", nullptr, nullptr, "vs_main", "vs_5_0", 0, 0, vsBlob.GetAddressOf(), shaderCompileErrorsBlob.GetAddressOf());
@@ -165,6 +154,7 @@ LensFlareHandler::LensFlareHandler()
 		if (FAILED(p_Device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, m_vertexShader.GetAddressOf())))
 			mlogger("CreateVertexShader err");
 	}
+
 
 	{
 		ComPtr<ID3DBlob> shaderCompileErrorsBlob;
@@ -189,12 +179,14 @@ LensFlareHandler::LensFlareHandler()
 			mlogger("CreateInputLayout err");	
 	}
 
-
-	stride = 6 * sizeof(float);
-	offset = 0;
+	float VertexData[] =
+	{
+		// x,   y,		r,   g,   b,   a
+		0.0f,  0.5f,	0.f, 1.f, 0.f, 1.0f,
+		0.5f, -0.5f,	1.f, 0.f, 0.f, 1.0f,
+	};
 
 	D3D11_BUFFER_DESC vBufferDesc{};
-
 
 	vBufferDesc.ByteWidth = sizeof(VertexData);
 	vBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -202,9 +194,7 @@ LensFlareHandler::LensFlareHandler()
 	vBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 
-	D3D11_SUBRESOURCE_DATA initData{};
-	initData.pSysMem = VertexData;
-
+	D3D11_SUBRESOURCE_DATA initData { VertexData };
 
 	if (FAILED(p_Device->CreateBuffer(&vBufferDesc, &initData, m_VertexBuffer.GetAddressOf())))
 		mlogger("CreateBuffer err");
@@ -214,18 +204,7 @@ LensFlareHandler::LensFlareHandler()
 
 LensFlareHandler::~LensFlareHandler()
 {
-	Hook::Remove(gRenderFlareFxAddr, "RenderFlareFx");
 	self = nullptr;
-}
-
-
-
-void LensFlareHandler::Update()
-{
-	if (!sm_IsFlareFxRenderedOnThisFrame)
-		return;
-
-
 }
 
 

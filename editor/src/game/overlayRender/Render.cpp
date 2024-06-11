@@ -37,11 +37,11 @@ ComPtr<ID3D11Device>			Renderer::p_device = nullptr;
 ComPtr<ID3D11DeviceContext>		Renderer::p_context = nullptr;
 ComPtr<IDXGISwapChain>			Renderer::p_SwapChain = nullptr;
 
-int		Renderer::open_window_btn = 0;
-bool	Renderer::isWindowVisible = false;
-bool	Renderer::mInitialized = false;
-bool    Renderer::ImGuiCursorUsage = false;
-bool	Renderer::mRenderState = false;
+int		Renderer::sm_OpenWindowButton = 0;
+bool	Renderer::sm_IsWindowVisible = false;
+bool	Renderer::sm_Initialized = false;
+bool    Renderer::sm_ImGuiCursorUsage = false;
+bool	Renderer::sm_RenderState = false;
 float	Renderer::font_size = 15.0f;
 bool	Renderer::font_scale_expected_to_be_changed = false;
 
@@ -71,7 +71,8 @@ void Renderer::Search_for_gDevice()
 
 	p_SwapChain = ComPtr<IDXGISwapChain>(*g_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>());
 
-	if (SUCCEEDED(p_SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void**>(p_device.GetAddressOf())))) {
+	if (SUCCEEDED(p_SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void**>(p_device.GetAddressOf()))))
+	{
 		p_device->GetImmediateContext(p_context.GetAddressOf());
 	}
 }
@@ -81,14 +82,14 @@ void Renderer::Search_for_gDevice()
 void (*g_ClipCursor)(LPRECT);
 void Renderer::n_ClipCursor(LPRECT rect) 
 {
-	if (!isWindowVisible)
+	if (!sm_IsWindowVisible)
 		g_ClipCursor(rect);
 }
 
 int (*g_ShowCursor)(bool);
 int Renderer::n_ShowCursor(bool visible) 
 {
-	if (!isWindowVisible)
+	if (!sm_IsWindowVisible)
 		g_ShowCursor(visible);
 	
 	return visible ? 0 : -1; 
@@ -127,23 +128,22 @@ LRESULT Renderer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	if (GetAsyncKeyState(VK_HOME) && isWindowVisible)
+	if (GetAsyncKeyState(VK_HOME) && sm_IsWindowVisible)
 		return 0;
 
-	if (GetAsyncKeyState(open_window_btn) & 1) 
+	if (GetAsyncKeyState(sm_OpenWindowButton) & 1) 
 	{
-		isWindowVisible = !isWindowVisible;
+		sm_IsWindowVisible = !sm_IsWindowVisible;
 		
-		if (!ImGuiCursorUsage) 
-			ClipCursorToWindowRect(window, !isWindowVisible);
+		if (!sm_ImGuiCursorUsage) 
+			ClipCursorToWindowRect(window, !sm_IsWindowVisible);
 	}
 	
-	if (!ImGuiCursorUsage) 
-		SetMouseVisible(isWindowVisible); 
+	if (!sm_ImGuiCursorUsage) 
+		SetMouseVisible(sm_IsWindowVisible); 
 
-	if (isWindowVisible)
+	if (sm_IsWindowVisible)
 	{
-		//it handles mouse input even when ui isn't displayed, so i placed it under "isVisible" flag
 		if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) 
 			return true;
 	}
@@ -158,48 +158,34 @@ bool test_flag = false;
 //float col[4]{};
 
 
-
-ComPtr<ID3D11InputLayout>		inputLayout;
-ComPtr<ID3D11Buffer>			vertexBuffer;
-
-ComPtr<ID3D11VertexShader>		vertexShader;
-ComPtr<ID3D11PixelShader>		pixelShader;
-
-
-UINT numVerts;
-UINT stride;
-UINT offset;
-
-
-
 void(*g_EndFrame)();
 void Renderer::n_EndFrame()
 {
-	mRenderState = true;
+	sm_RenderState = true;
 
-	if (!mInitialized)
+	if (!sm_Initialized)
 	{
 		InitBackend();
 		BaseUiWindow::Create();
 		ScriptHook::Start();
 		CClock::Init();
 		
-		mlogger(" mInitialized");
+		mlogger("Initialized");
 
-		mInitialized = true;
+		sm_Initialized = true;
 	}
-	if (mInitialized && isWindowVisible)
+	if (sm_Initialized && sm_IsWindowVisible)
 	{
 		ImRenderFrame();
 	}
 
-	if (mInitialized)
+	if (sm_Initialized)
 	{
 		LensFlareHandler::EndFrame();
 	}
 
 
-	//if (test_flag && mInitialized)
+	//if (test_flag && sm_Initialized)
 	//{
 	//	scrInvoke([]
 	//		{
@@ -214,7 +200,7 @@ void Renderer::n_EndFrame()
 
 	g_EndFrame();
 	
-	mRenderState = false;
+	sm_RenderState = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -235,7 +221,7 @@ void Renderer::Init()
 	Hook::Create(g_EndFrameAddr,	Renderer::n_EndFrame,	&g_EndFrame,	"EndFrame");
 	Hook::Create(g_WndProcAddr,		Renderer::WndProc,		&g_WndProc,		"WndProc");
 
-	if (!ImGuiCursorUsage)
+	if (!sm_ImGuiCursorUsage)
 	{
 		Hook::Create(ClipCursor, Renderer::n_ClipCursor, &g_ClipCursor, "ClipCursor");
 		Hook::Create(ShowCursor, Renderer::n_ShowCursor, &g_ShowCursor, "ShowCursor");
@@ -249,8 +235,8 @@ void Renderer::loadConfigParams()
 	font_scale_expected_to_be_changed = true;
 
 	font_size			= cfg->GetInteger("Settings", "Font_size", 15);
-	ImGuiCursorUsage	= cfg->GetBoolean("Settings", "CursorImgui_Impl", false);
-	open_window_btn		= cfg->GetInteger("Settings", "OpenClose_window_button", 0x2D);
+	sm_ImGuiCursorUsage	= cfg->GetBoolean("Settings", "CursorImgui_Impl", false);
+	sm_OpenWindowButton		= cfg->GetInteger("Settings", "OpenClose_window_button", 0x2D);
 }
 
 
@@ -266,7 +252,7 @@ void Renderer::InitBackend()
 	mStyle();
 	LoadFont();
 
-	if (ImGuiCursorUsage)
+	if (sm_ImGuiCursorUsage)
 		io.MouseDrawCursor = true;
 
 	ImGui_ImplWin32_Init(window);
@@ -334,11 +320,11 @@ void Renderer::Shutdown()
 	mlogger("shutdown call");
 	shutdown_request = true;
 
-	if (!mInitialized) 
+	if (!sm_Initialized) 
 		return;	
 
-	isWindowVisible = false;
-	while (mRenderState) {};
+	sm_IsWindowVisible = false;
+	while (sm_RenderState) {};
 
 	BaseUiWindow::Destroy();
 

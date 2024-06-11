@@ -20,9 +20,6 @@
 
 using namespace DirectX;
 
-
-
-
 enum FlareFxTextureType_e : u8
 {						 // SubGroups :
 	AnimorphicType	= 0, // 0
@@ -90,14 +87,10 @@ struct CLensFlareSettings
 	atArray<CFlareFX> m_arrFlareFX;
 };
 
-struct Vertex
-{
-	XMFLOAT3 position;
-};
+
 
 class LensFlareHandler
 {
-
 	class gCLensFlare
 	{
 		u8 pad01[0x78];
@@ -112,31 +105,25 @@ class LensFlareHandler
 	
 	static LensFlareHandler* self;
 
-	static bool  sm_IsFlareFxRenderedOnThisFrame;
-	static bool	 sm_DrawingFlares;
-	static rage::Vec3V sm_SunScreenPos;
-	static rage::Vec3V sm_result;
+	static bool				sm_IsFlareFxRenderedOnThisFrame;
+	static bool				sm_DrawingFlares;
+	static rage::Vec3V		sm_StartPoint;
+	static rage::Vec3V		sm_EndPoint;
+
+
 
 public:
 
-	float VertexData[12] =
-	{
-		// x, y,		r, g, b, a
-		0.0f,  0.5f,	0.f, 1.f, 0.f, 1.0f,
-		0.5f, -0.5f,	1.f, 0.f, 0.f, 1.0f,
-	};
 
-	ComPtr<ID3D11Buffer> m_VertexBuffer;
-	ComPtr<ID3D11InputLayout> m_InputLayout;
 
-	ComPtr<ID3D11VertexShader> m_vertexShader;
-	ComPtr<ID3D11PixelShader> m_pixelShader;
+	ComPtr<ID3D11Buffer>		m_VertexBuffer;
+	ComPtr<ID3D11InputLayout>	m_InputLayout;
+
+	ComPtr<ID3D11VertexShader>	m_vertexShader;
+	ComPtr<ID3D11PixelShader>	m_pixelShader;
 	
-	UINT stride;
-	UINT offset;
+	gCLensFlare*				m_CLensFlare = nullptr;
 
-	gCLensFlare* m_CLensFlare = nullptr;
-	
 
 	LensFlareHandler();
 	~LensFlareHandler();
@@ -146,7 +133,6 @@ public:
 	const char* GetFileNameAtIndex(size_t idx);
 	const char* GetTextureTypeName(u8 NumTexture);
 
-	void Update();
 	void PrepareForTheNextFrame();
 };
 
