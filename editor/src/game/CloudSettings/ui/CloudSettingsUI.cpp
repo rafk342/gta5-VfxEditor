@@ -50,9 +50,9 @@ namespace
 CloudSettingsUI::CloudSettingsUI(const char* title) : App(title), CloudsVec(mCloudsHandler.GetCloudSettingsVec())
 {
 	auto& gHatsNames = mCloudsHandler.GetCloudHatNamesArray();
-	CloudHatNames.reserve(gHatsNames.GetSize() + 1);	
+	CloudHatNames.reserve(gHatsNames.size() + 1);	
 
-	for (size_t i = 0; i < gHatsNames.GetSize(); i++)
+	for (size_t i = 0; i < gHatsNames.size(); i++)
 	{
 		CloudHatNames.push_back(gHatsNames[i].Name);
 	}
@@ -110,7 +110,6 @@ void CloudSettingsUI::GetCurrentTimeSample(int current_hour)
 
 void CloudSettingsUI::ParamsWindow()
 {
-	static char buff[64];
 	auto& arr = mCloudsHandler.GetCloudHatNamesArray();
 	int CloudsComboIndex;
 	
@@ -185,34 +184,28 @@ void CloudSettingsUI::ParamsWindow()
 void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 {
 	bool bitFlag;
-	static char buf[128];
 	u32 CurrentBits;
 	const int cols_count = 3;
 	float width_arr[cols_count] = { 128.5, 150, 0 };
 
 
-	FORMAT_TO_BUFF(buf, "Probabilities ##TrPr{}", clIdx);
-	if (ImGui::TreeNode(buf))
+	if (ImGui::TreeNode(vfmt("Probabilities ##TrPr{}", clIdx)))
 	{
 		CurrentBits = CloudsVec[clIdx].bits.to_ulong();
 
-		FORMAT_TO_BUFF(buf, "Binary bitset : {:021b}", CurrentBits);
-		ImGui::Text(buf);
-
-		FORMAT_TO_BUFF(buf, "Hex bitset : 0x{:08X}", CurrentBits);
-		ImGui::Text(buf);
+		ImGui::Text(vfmt("Binary bitset : {:021b}", CurrentBits));
+		ImGui::Text(vfmt("Hex bitset : 0x{:08X}", CurrentBits));
 
 		PushStyleCompact(0.7);
 
-		FORMAT_TO_BUFF(buf, "##prob_t_{}", clIdx);
-		if (ImGui::BeginTable(buf, cols_count, CloudsImguiFlags::table_flags2 | ImGuiTableFlags_NoHostExtendX))
+		if (ImGui::BeginTable(vfmt("##prob_t_{}", clIdx), cols_count, CloudsImguiFlags::table_flags2 | ImGuiTableFlags_NoHostExtendX))
 		{
 			ImGui::TableSetupColumn(" Name", ImGuiTableColumnFlags_WidthFixed, width_arr[0]);
 			ImGui::TableSetupColumn(" Probability ", ImGuiTableColumnFlags_WidthFixed, width_arr[1]);
 			ImGui::TableSetupColumn("Enabled ", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableHeadersRow();
 
-			for ( size_t row = 0; row < CloudsVec[clIdx].CloudSettings->probability_array.GetSize(); row++)
+			for ( size_t row = 0; row < CloudsVec[clIdx].CloudSettings->probability_array.size(); row++)
 			{
 				ImGui::TableNextRow();
 
@@ -234,30 +227,23 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 						break;
 					case (1):
 
-						FORMAT_TO_BUFF(buf, "##_{}_{}_CloudHat_index", row, clIdx);
-
 						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-						
-						if (ImGui::InputInt(buf, &CloudsVec[clIdx].CloudSettings->probability_array[row], 1, 5))
+						if (ImGui::InputInt(vfmt("##_{}_{}_CloudHat_index", row, clIdx), &CloudsVec[clIdx].CloudSettings->probability_array[row], 1, 5))
 						{
 							int& var = CloudsVec[clIdx].CloudSettings->probability_array[row];
-							if (var < 0) 
-								var = 0;
-							if (var > 500) 
-								var = 500;
+							if (var < 0) var = 0;
+							if (var > 500) var = 500;
 						}
 						
 						break;
 					case (2):
-
-						FORMAT_TO_BUFF(buf, "##{}_{}_bitset_flag", row, clIdx);
 
 						bitFlag = CloudsVec[clIdx].bits.test(row);
 
 						ImGui::SameLine();
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5);
 
-						if (ImGui::Checkbox(buf, &bitFlag))
+						if (ImGui::Checkbox(vfmt("##{}_{}_bitset_flag", row, clIdx), &bitFlag))
 						{
 							CloudsVec[clIdx].bits.set(row, bitFlag);
 							CloudsVec[clIdx].CloudSettings->bits.setRawPtrData(CloudsVec[clIdx].bits.to_ulong());
@@ -292,10 +278,7 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 
 void CloudSettingsUI::CloudDataTreeNode(const char* label, int clIdx,atArray<ptxKeyframeEntry>& arr, std::function<void(atArray<ptxKeyframeEntry>&, int, const char*)> func)
 {
-	static char buf[128];
-
-	FORMAT_TO_BUFF(buf, "{}##{}_treeNode", label, clIdx);
-	if (ImGui::TreeNode(buf))
+	if (ImGui::TreeNode(vfmt("{}##{}_treeNode", label, clIdx)))
 	{
 		func(arr, clIdx, label);
 		ImGui::TreePop();
@@ -358,11 +341,7 @@ void CloudSettingsUI::CloudsDataWidgets(int clIdx)
 
 void CloudSettingsUI::CloudSettingsColourTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	static char buff[128];
-
-	FORMAT_TO_BUFF(buff, "##table_{}_{}", table_id, param_name);
-	
-	if (ImGui::BeginTable(buff, time_array.size() - 1, CloudsImguiFlags::table_flags))
+	if (ImGui::BeginTable(vfmt("##table_{}_{}", table_id, param_name), time_array.size() - 1, CloudsImguiFlags::table_flags))
 	{
 		for (size_t i = 0; i < 2; i++)
 		{
@@ -377,10 +356,8 @@ void CloudSettingsUI::CloudSettingsColourTable(atArray<ptxKeyframeEntry>& arr, i
 					ImGui::Text(time_array[time]);
 				}
 				if (i == 1)
-				{
-					FORMAT_TO_BUFF(buff, "##_{}_{}_{}_col", arr[time].vTime[0],table_id ,param_name);
-					
-					if (ImGui::ColorEdit4(buff, arr[time].vValue, CloudsImguiFlags::color_vec4_flags))
+				{	
+					if (ImGui::ColorEdit4(vfmt("##_{}_{}_{}_col", arr[time].vTime[0], table_id, param_name), arr[time].vValue, CloudsImguiFlags::color_vec4_flags))
 					{
 						if (time == 0) { std::copy(arr[time].vValue, arr[time].vValue + 4, arr[14].vValue); }
 					}
@@ -394,12 +371,9 @@ void CloudSettingsUI::CloudSettingsColourTable(atArray<ptxKeyframeEntry>& arr, i
 
 void CloudSettingsUI::CloudSettingsColourSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	static char buff[128];
 	u8 time = current_time_sample_idx;
 
-	FORMAT_TO_BUFF(buff, "{}##_{}_{}_col", time_samples[time].second, table_id, param_name);
-
-	if (ImGui::ColorEdit4(buff, arr[time].vValue, CloudsImguiFlags::color_vec4_flags_single))
+	if (ImGui::ColorEdit4(vfmt("{}##_{}_{}_col", time_samples[time].second, table_id, param_name), arr[time].vValue, CloudsImguiFlags::color_vec4_flags_single))
 	{
 		if (time == 0) { std::copy(arr[time].vValue, arr[time].vValue + 4, arr[14].vValue); }
 	}
@@ -408,14 +382,10 @@ void CloudSettingsUI::CloudSettingsColourSingleParam(atArray<ptxKeyframeEntry>& 
 
 void CloudSettingsUI::CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	static char buff[128];
 	float time_data_width = 55;
-
-	FORMAT_TO_BUFF(buff, "##table_{}_{}", table_id, param_name);
-
 	float table_width = ImGui::GetContentRegionAvail().x;
 
-	if (ImGui::BeginTable(buff, 2, CloudsImguiFlags::table_flags2))
+	if (ImGui::BeginTable(vfmt("##table_{}_{}", table_id, param_name), 2, CloudsImguiFlags::table_flags2))
 	{
 		ImGui::TableSetupColumn("One", ImGuiTableColumnFlags_WidthFixed, 55);
 
@@ -434,12 +404,9 @@ void CloudSettingsUI::CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr
 				if (i == 1)
 				{
 					PushStyleCompact(0.7);
-
-					FORMAT_TO_BUFF(buff, "##{}_{}_{}_var", arr[time].vTime[0], table_id ,param_name);
-				
 					ImGui::SetNextItemWidth(table_width - time_data_width);
-		
-					if (ImGui::DragFloat4(buff, arr[time].vValue, 0.015))
+
+					if (ImGui::DragFloat4(vfmt("##{}_{}_{}_var", arr[time].vTime[0], table_id, param_name), arr[time].vValue, 0.015))
 					{
 						if (time == 0) { std::copy(arr[time].vValue, arr[time].vValue + 4, arr[14].vValue); }
 					}
@@ -454,12 +421,9 @@ void CloudSettingsUI::CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr
 
 void CloudSettingsUI::CloudSettingsVariablesSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	static char buff[128];
 	u8 time = current_time_sample_idx;
 
-	FORMAT_TO_BUFF(buff, "{}##_{}_{}_var_", time_samples[time].second, table_id, param_name);
-
-	if (ImGui::DragFloat4(buff, arr[time].vValue, 0.015))
+	if (ImGui::DragFloat4(vfmt("{}##_{}_{}_var_", time_samples[time].second, table_id, param_name), arr[time].vValue, 0.015))
 	{
 		if (time == 0) { std::copy(arr[time].vValue, arr[time].vValue + 4, arr[14].vValue); }
 	}

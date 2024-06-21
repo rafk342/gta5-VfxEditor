@@ -66,9 +66,9 @@ gmAddress gmAddress::Scan(const char* patternStr, const char* debugName)
 	miss:;
 	}
 	if (debugName)
-		mlogger("gmAddress::Scan({}) -> Failed to find pattern for {}", patternStr, debugName);
+		LogInfo("gmAddress::Scan({}) -> Failed to find pattern for {}", patternStr, debugName);
 	else
-		mlogger("gmAddress::Scan() -> Failed to find pattern {}", patternStr);
+		LogInfo("gmAddress::Scan() -> Failed to find pattern {}", patternStr);
 
 	return -1;
 }

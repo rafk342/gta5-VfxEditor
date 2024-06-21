@@ -79,7 +79,8 @@ void VfxLightningUi::window()
 	
 	PushStyleCompact();
 	
-	if (!mOverride_state) {
+	if (!mOverride_state) 
+	{
 		ImGui::DragInt("Lightning Occurrance Chance", &mVfxLightingHandler.mVfxLightningSettings->lightningOccurranceChance, 1, 0, 200);
 	}
 	ImGui::DragFloat("Lightning Shake Intensity", &mVfxLightingHandler.mVfxLightningSettings->lightningShakeIntensity, 0.0025, 0.0f, 1.0f);
@@ -133,51 +134,22 @@ void VfxLightningUi::DirectionalBurstSettingsWidgets()
 
 void VfxLightningUi::CloudBurstCommonSettingsWidgets(CloudBurstCommonSettings& rCloudBurstCommonSettings, const char* treeName)
 {
-	static char buff[256];
-
 	if (ImGui::TreeNode(treeName))
 	{
-		FORMAT_TO_BUFF(buff, "Burst Duration Min ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.BurstDurationMin, 0.1f, 0.0f, 10.f);
-
-		FORMAT_TO_BUFF(buff, "Burst Duration Max ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.BurstDurationMax, 0.1f, 0.0f, 10.f);
-		
-		FORMAT_TO_BUFF(buff, "Burst Sequence Count ## {}", treeName);
-		ImGui::DragInt(buff, &rCloudBurstCommonSettings.BurstSeqCount, 1, 1, 10);
-
-		FORMAT_TO_BUFF(buff, "Root Orbit X Variance ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.RootOrbitXVariance, 0.1f, 0.0f, 180.0f);
-
-		FORMAT_TO_BUFF(buff, "Root Orbit Y Min ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.RootOrbitYVarianceMin, 0.1f, 0.0f, 90.0f);
-
-		FORMAT_TO_BUFF(buff, "Root Orbit Y Max ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.RootOrbitYVarianceMax, 0.1f, 0.0f, 90.0f);
-
-		FORMAT_TO_BUFF(buff, "Local Orbit X Variance ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.LocalOrbitXVariance, 0.1f, -180.0f, 180.0f);
-
-		FORMAT_TO_BUFF(buff, "Local Orbit Y Variance ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.LocalOrbitYVariance, 0.1f, -180.0f, 180.0f);
-
-		FORMAT_TO_BUFF(buff, "Sequence Orbit X Variance ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.BurstSeqOrbitXVariance, 0.1f, -180.0f, 180.0f);
-
-		FORMAT_TO_BUFF(buff, "Sequence Orbit Y Variance ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.BurstSeqOrbitYVariance, 0.1f, -180.0f, 180.0f);
-
-		FORMAT_TO_BUFF(buff, "Delay Min ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.DelayMin, 0.1f , 0.0f, 90.0f);
-
-		FORMAT_TO_BUFF(buff, "Delay Max ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.DelayMax, 0.1f, 0.0f, 90.0f);
-
-		FORMAT_TO_BUFF(buff, "Size Min ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.SizeMin, 0.1f, 0.0f, 5000.0f);
-
-		FORMAT_TO_BUFF(buff, "Size Max ## {}", treeName);
-		ImGui::DragFloat(buff, &rCloudBurstCommonSettings.SizeMax, 0.1f, 0.0f, 5000.0f);
+		ImGui::DragFloat(vfmt("Burst Duration Min ## {}", treeName), &rCloudBurstCommonSettings.BurstDurationMin, 0.1f, 0.0f, 10.f);
+		ImGui::DragFloat(vfmt("Burst Duration Max ## {}", treeName), &rCloudBurstCommonSettings.BurstDurationMax, 0.1f, 0.0f, 10.f);
+		ImGui::DragInt(vfmt("Burst Sequence Count ## {}", treeName), &rCloudBurstCommonSettings.BurstSeqCount, 1, 1, 10);
+		ImGui::DragFloat(vfmt("Root Orbit X Variance ## {}", treeName), &rCloudBurstCommonSettings.RootOrbitXVariance, 0.1f, 0.0f, 180.0f);
+		ImGui::DragFloat(vfmt("Root Orbit Y Min ## {}", treeName), &rCloudBurstCommonSettings.RootOrbitYVarianceMin, 0.1f, 0.0f, 90.0f);
+		ImGui::DragFloat(vfmt("Root Orbit Y Max ## {}", treeName), &rCloudBurstCommonSettings.RootOrbitYVarianceMax, 0.1f, 0.0f, 90.0f);
+		ImGui::DragFloat(vfmt("Local Orbit X Variance ## {}", treeName), &rCloudBurstCommonSettings.LocalOrbitXVariance, 0.1f, -180.0f, 180.0f);
+		ImGui::DragFloat(vfmt("Local Orbit Y Variance ## {}", treeName), &rCloudBurstCommonSettings.LocalOrbitYVariance, 0.1f, -180.0f, 180.0f);
+		ImGui::DragFloat(vfmt("Sequence Orbit X Variance ## {}", treeName), &rCloudBurstCommonSettings.BurstSeqOrbitXVariance, 0.1f, -180.0f, 180.0f);
+		ImGui::DragFloat(vfmt("Sequence Orbit Y Variance ## {}", treeName), &rCloudBurstCommonSettings.BurstSeqOrbitYVariance, 0.1f, -180.0f, 180.0f);
+		ImGui::DragFloat(vfmt("Delay Min ## {}", treeName), &rCloudBurstCommonSettings.DelayMin, 0.1f, 0.0f, 90.0f);
+		ImGui::DragFloat(vfmt("Delay Max ## {}", treeName), &rCloudBurstCommonSettings.DelayMax, 0.1f, 0.0f, 90.0f);
+		ImGui::DragFloat(vfmt("Size Min ## {}", treeName), &rCloudBurstCommonSettings.SizeMin, 0.1f, 0.0f, 5000.0f);
+		ImGui::DragFloat(vfmt("Size Max ## {}", treeName), &rCloudBurstCommonSettings.SizeMax, 0.1f, 0.0f, 5000.0f);
 
 		ImGui::TreePop();
 	}
@@ -278,10 +250,8 @@ void VfxLightningUi::StrikeSettingsWidgets()
 			ImGui::DragFloat("Cloud Light Delta Position  ##__CLStrikeSettings", &rStrikeSettings.CloudLightDeltaPos, 0.1f, -5000.0f, 5000.0f);
 			ImGui::DragFloat("Cloud Light Intensity Multiplier  ##__CLStrikeSettings", &rStrikeSettings.CloudLightIntensityMult, 0.1f, 0.0f, 2000.0f);
 			ImGui::DragFloat("Cloud Light Exponent Fall Off  ##__CLStrikeSettings", &rStrikeSettings.CloudLightFallOffExponent, 0.1f, 0.0f, 128.0f);
-			
 			ImGui::DragFloat("Max Distance for Burst  ##__CLStrikeSettings", &rStrikeSettings.MaxDistanceForBurst, 0.1f, 0.0f, 10000.0f);
 			ImGui::DragFloat("Burst Threshold Intensity  ##__CLStrikeSettings", &rStrikeSettings.BurstThresholdIntensity, 0.1f, 0.0f, 1.0f);
-			
 			ImGui::DragFloat("Lightning Fade Width  ##__CLStrikeSettings", &rStrikeSettings.LightningFadeWidth, 0.1f, 1.0f, 100.0f);
 			ImGui::DragFloat("Lightning Fade Width Falloff Exponent  ##__CLStrikeSettings", &rStrikeSettings.LightningFadeWidthFalloffExp, 0.1f, 0.0f, 128.0f);
 		
@@ -306,116 +276,73 @@ void VfxLightningUi::StrikeSettingsWidgets()
 
 void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 {
-	static char buff[128];
 	auto& var = mVfxLightingHandler.mVfxLightningSettings->m_StrikeSettings.m_Variations[idx];
 	
-	FORMAT_TO_BUFF(buff, "Variation : {} ##__CLStrikeSettings", idx);
-	if (ImGui::TreeNode(buff))
+	if (ImGui::TreeNode(vfmt("Variation : {} ##__CLStrikeSettings", idx)))
 	{
-		FORMAT_TO_BUFF(buff, "Duration Min ##__CLStrikeSettings {}", idx);
-		ImGui::DragFloat(buff, &var.DurationMin, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat(vfmt("Duration Min ##__CLStrikeSettings {}", idx), &var.DurationMin, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat(vfmt("Duration Max ##__CLStrikeSettings {}", idx), &var.DurationMax, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat(vfmt("Animation Time Min ##__CLStrikeSettings {}", idx), &var.AnimationTimeMin, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat(vfmt("Animation Time Max ##__CLStrikeSettings {}", idx), &var.AnimationTimeMax, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat(vfmt("End Point Offset X Variance ##__CLStrikeSettings {}", idx), &var.EndPointOffsetXVariance, 0.01f, -1.0f, 1.0f);
 
-		FORMAT_TO_BUFF(buff, "Duration Max ##__CLStrikeSettings {}", idx);
-		ImGui::DragFloat(buff, &var.DurationMax, 0.1f, 0.0f, 10.0f);
-
-		FORMAT_TO_BUFF(buff, "Animation Time Min ##__CLStrikeSettings {}", idx);
-		ImGui::DragFloat(buff, &var.AnimationTimeMin, 0.01f, 0.0f, 1.0f);
-
-		FORMAT_TO_BUFF(buff, "Animation Time Max ##__CLStrikeSettings {}", idx);
-		ImGui::DragFloat(buff, &var.AnimationTimeMax, 0.01f, 0.0f, 1.0f);
-
-		FORMAT_TO_BUFF(buff, "End Point Offset X Variance ##__CLStrikeSettings {}", idx);
-		ImGui::DragFloat(buff, &var.EndPointOffsetXVariance, 0.01f, -1.0f, 1.0f);
-
-		FORMAT_TO_BUFF(buff, "Subdivision Pattern Mask ##__CLStrikeSettings {}", idx);
 		int v = static_cast<int>(var.SubdivisionPatternMask);
-		if (ImGui::DragInt(buff, &v, 0.5f, 0, 255)) {
+		
+		if (ImGui::DragInt(vfmt("Subdivision Pattern Mask ##__CLStrikeSettings {}", idx), &v, 0.5f, 0, 255)) {
 			if (v > 255) v = 255;
 			if (v < 0) v = 0;
 			var.SubdivisionPatternMask = static_cast<u8>(v);
 		}
 
-		FORMAT_TO_BUFF(buff, "Zig Zag Split Point ##__CLStrikeSettings {}", idx);
-		if (ImGui::TreeNode(buff))
+		if (ImGui::TreeNode(vfmt("Zig Zag Split Point ##__CLStrikeSettings {}", idx)))
 		{
-			FORMAT_TO_BUFF(buff, "Fraction Min ##__CLStrikeSettings {}", idx)
-				ImGui::DragFloat(buff, &var.mZigZagSplitPoint.FractionMin, 0.01f, 0.0f, 1.0f);
-
-			FORMAT_TO_BUFF(buff, "Fraction Max ##__CLStrikeSettings {}", idx);
-			ImGui::DragFloat(buff, &var.mZigZagSplitPoint.FractionMax, 0.01f, 0.0f, 1.0f);
-
-			FORMAT_TO_BUFF(buff, "Deviation Decay ##__CLStrikeSettings {}", idx);
-			ImGui::DragFloat(buff, &var.mZigZagSplitPoint.DeviationDecay, 0.1f, 0.0f, 32.0f);
-
-			FORMAT_TO_BUFF(buff, "Deviation Right Variance ##__CLStrikeSettings {}", idx);
-			ImGui::DragFloat(buff, &var.mZigZagSplitPoint.DeviationRightVariance, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Fraction Min ##__CLStrikeSettings {}", idx), &var.mZigZagSplitPoint.FractionMin, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Fraction Max ##__CLStrikeSettings {}", idx), &var.mZigZagSplitPoint.FractionMax, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Deviation Decay ##__CLStrikeSettings {}", idx), &var.mZigZagSplitPoint.DeviationDecay, 0.1f, 0.0f, 32.0f);
+			ImGui::DragFloat(vfmt("Deviation Right Variance ##__CLStrikeSettings {}", idx), &var.mZigZagSplitPoint.DeviationRightVariance, 0.01f, 0.0f, 1.0f);
 
 			ImGui::TreePop();
 		}
 
-		FORMAT_TO_BUFF(buff, "Fork Zig Zag Split Point ##__CLStrikeSettingsFork {}", idx);
-		if (ImGui::TreeNode(buff))
+		if (ImGui::TreeNode(vfmt("Fork Zig Zag Split Point ##__CLStrikeSettingsFork {}", idx)))
 		{
-			FORMAT_TO_BUFF(buff, "Fraction Min ##__CLStrikeSettingsFork {}", idx);
-			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.FractionMin, 0.01f, 0.0f, 1.0f);
-
-			FORMAT_TO_BUFF(buff, "Fraction Max ##__CLStrikeSettingsFork {}", idx);
-			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.FractionMax, 0.01f, 0.0f, 1.0f);
-
-			FORMAT_TO_BUFF(buff, "Deviation Decay ##__CLStrikeSettingsFork {}", idx);
-			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.DeviationDecay, 0.1f, 0.0f, 32.0f);
-
-			FORMAT_TO_BUFF(buff, "Deviation Right Variance ##__CLStrikeSettingsFork {}", idx);
-			ImGui::DragFloat(buff, &var.mForkZigZagSplitPoint.DeviationRightVariance, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Fraction Min ##__CLStrikeSettingsFork {}", idx), &var.mForkZigZagSplitPoint.FractionMin, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Fraction Max ##__CLStrikeSettingsFork {}", idx), &var.mForkZigZagSplitPoint.FractionMax, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Deviation Decay ##__CLStrikeSettingsFork {}", idx), &var.mForkZigZagSplitPoint.DeviationDecay, 0.1f, 0.0f, 32.0f);
+			ImGui::DragFloat(vfmt("Deviation Right Variance ##__CLStrikeSettingsFork {}", idx), &var.mForkZigZagSplitPoint.DeviationRightVariance, 0.01f, 0.0f, 1.0f);
 
 			ImGui::TreePop();
 		}
 
-		FORMAT_TO_BUFF(buff, "Fork Point ##__CLStrikeSettings ForkP {}", idx);
-		if (ImGui::TreeNode(buff))
+		if (ImGui::TreeNode(vfmt("Fork Point ##__CLStrikeSettings ForkP {}", idx)))
 		{
-			FORMAT_TO_BUFF(buff, "Deviation Right Variance ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.DeviationRightVariance, 0.01f, 0.0f, 1.0f);
-
-			FORMAT_TO_BUFF(buff, "Deviation Forward Min ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.DeviationForwardMin, 0.01f, 0.0f, 1.0f);
-
-			FORMAT_TO_BUFF(buff, "Deviation Forward Max ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.DeviationForwardMax, 0.01f, 0.0f, 1.0f);
-
-			FORMAT_TO_BUFF(buff, "Length Min ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.LengthMin, 0.01f, 0.0f, 1.0f);
-
-			FORMAT_TO_BUFF(buff, "Length Max ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.LengthMax, 0.01f, 0.0f, 1.0f);
-
-			FORMAT_TO_BUFF(buff, "Length Decay ##__CLStrikeSettings ForkP {}", idx);
-			ImGui::DragFloat(buff, &var.mForkPoint.LengthDecay, 0.01f, 0.0f, 32.0f);
+			ImGui::DragFloat(vfmt("Deviation Right Variance ##__CLStrikeSettings ForkP {}", idx), &var.mForkPoint.DeviationRightVariance, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Deviation Forward Min ##__CLStrikeSettings ForkP {}", idx), &var.mForkPoint.DeviationForwardMin, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Deviation Forward Max ##__CLStrikeSettings ForkP {}", idx), &var.mForkPoint.DeviationForwardMax, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Length Min ##__CLStrikeSettings ForkP {}", idx), &var.mForkPoint.LengthMin, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Length Max ##__CLStrikeSettings ForkP {}", idx), &var.mForkPoint.LengthMax, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(vfmt("Length Decay ##__CLStrikeSettings ForkP {}", idx), &var.mForkPoint.LengthDecay, 0.01f, 0.0f, 32.0f);
 
 			ImGui::TreePop();
 		}
 
-		FORMAT_TO_BUFF(buff, "Lightning Key Frames ##__CLStrikeSettings {}", idx);
-		if (ImGui::TreeNode(buff))
+		if (ImGui::TreeNode(vfmt("Lightning Key Frames ##__CLStrikeSettings {}", idx)))
 		{
-			FORMAT_TO_BUFF(buff, "Lightning Main Intensity ##__CLStrikeSettings {}", idx);
-			if (ImGui::TreeNode(buff))
+			if (ImGui::TreeNode(vfmt("Lightning Main Intensity ##__CLStrikeSettings {}", idx)))
 			{
-				auto& m_keyframe = var.mKeyFrameData.LightningMainIntensity;
+				auto& keyframe = var.mKeyFrameData.LightningMainIntensity;
 				//keyframePlot(data, buff);
-				keyframeTable(buff, m_keyframe, idx);
+				keyframeTable(vfmt("Lightning Main Intensity ##__CLStrikeSettings table {}", idx), keyframe, idx);
 
 				ImGui::TreePop();
 			}
 
-			FORMAT_TO_BUFF(buff, "Lightning Branch Intensity ##__CLStrikeSettings {}", idx);
-			if (ImGui::TreeNode(buff))
+			if (ImGui::TreeNode(vfmt("Lightning Branch Intensity ##__CLStrikeSettings {}", idx)))
 			{
-				auto& m_keyframe = var.mKeyFrameData.LightningBranchIntensity;
+				auto& keyframe = var.mKeyFrameData.LightningBranchIntensity;
 
-				FORMAT_TO_BUFF(buff, "## Lightning Branch__CLStrikeSettings table {}", idx);
 				//keyframePlot(data, buff);
-				keyframeTable(buff, m_keyframe, idx);
+				keyframeTable(vfmt("## Lightning Branch__CLStrikeSettings table {}", idx), keyframe, idx);
 
 				ImGui::TreePop();
 			}
@@ -429,7 +356,6 @@ void VfxLightningUi::StrikeVariationsWidgets(u8 idx)
 
 void keyframeTable(const char* title, ptxKeyframe& keyframe, u8 idx)
 {
-	static char buff[64];
 	auto& data = keyframe.data;
 
 	if (ImGui::BeginTable(title, 3, ImGuiTableFlags_Borders))
@@ -439,7 +365,7 @@ void keyframeTable(const char* title, ptxKeyframe& keyframe, u8 idx)
 		ImGui::TableSetupColumn("Max");
 		ImGui::TableHeadersRow();
 
-		for (u16 i = 0; i < data.GetSize(); i++)
+		for (u16 i = 0; i < data.size(); i++)
 		{
 			ImGui::TableNextRow();
 
@@ -450,18 +376,15 @@ void keyframeTable(const char* title, ptxKeyframe& keyframe, u8 idx)
 				switch (j)
 				{
 				case 0:
-					FORMAT_TO_BUFF(buff, " {:.3f} ", data[i].vTime[0], idx);
-					ImGui::Text(buff);
+					ImGui::Text(vfmt(" {:.3f} ", data[i].vTime[0], idx));
 					break;
 				case 1:
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-					FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Min", i, idx, j);
-					ImGui::DragFloat(buff, &data[i].vValue[0], 0.015f, 0.0f, 1.0f);
+					ImGui::DragFloat(vfmt("##BranchIntensity{}_{}_{}__keyframe_Min", i, idx, j), &data[i].vValue[0], 0.015f, 0.0f, 1.0f);
 					break;
 				case 2:
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-					FORMAT_TO_BUFF(buff, "##BranchIntensity{}_{}_{}__keyframe_Max", i, idx, j);
-					ImGui::DragFloat(buff, &data[i].vValue[1], 0.015f, 0.0f, 1.0f);
+					ImGui::DragFloat(vfmt("##BranchIntensity{}_{}_{}__keyframe_Max", i, idx, j), &data[i].vValue[1], 0.015f, 0.0f, 1.0f);
 					break;
 				default:
 					break;

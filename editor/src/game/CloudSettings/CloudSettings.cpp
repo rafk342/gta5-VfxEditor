@@ -70,7 +70,7 @@ void CloudsHandler::RequestCloudHat(const char* name, float time)
 	if (name == "NONE") {
 		RequestClearCloudHat();
 	} else {
-		scrInvoke([=] 
+		scrInvoke([=]
 			{
 				GAMEPLAY::LOAD_CLOUD_HAT(name, time);
 			});

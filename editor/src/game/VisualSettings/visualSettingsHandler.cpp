@@ -196,7 +196,7 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
             if (item.found)
                 continue;
 
-            for (size_t i = 0; i < handler->p_Vsettings->data.GetSize(); i++)
+            for (size_t i = 0; i < handler->p_Vsettings->data.size(); i++)
             {
                 auto& gItem = handler->p_Vsettings->data[i];
                 if (item.hash == gItem.hash)
@@ -335,7 +335,7 @@ void VisualSettingsHandler::importData(std::filesystem::path srcPath)
     fs::copy_file(srcPath, newPath, fs::copy_options::overwrite_existing);
     
     if (!fs::exists(newPath))
-        mlogger("couldn't copy vSettings file");
+        logger("couldn't copy vSettings file");
 
     RestoreFuncBytes();
 
@@ -350,7 +350,7 @@ void VisualSettingsHandler::importData(std::filesystem::path srcPath)
     std::memcpy(p_toOrigPath, origSavedPath, origPathLen);
    
     if (!res)
-        mlogger("couldn't load visual settings data (an old game version?)");
+        logger("couldn't load visual settings data (an old game version?)");
 
     if (fs::exists(newPath)) 
         fs::remove(newPath);  

@@ -66,7 +66,7 @@ void CloudSettingsXmlParser::ImportCloudKfData(const std::filesystem::path& path
 		}
 		else
 		{
-			mlogger("Couldn't find {} on import CloudKeyframes" , CloudsName);
+			LogInfo("Couldn't find {} on import CloudKeyframes" , CloudsName);
 		}
 	}
 }
@@ -242,7 +242,7 @@ void CloudSettingsXmlParser::AddKeyframeData(pugi::xml_node& settings_node, cons
 	pugi::xml_node keyData = KeyFramesName.append_child("keyData");
 	pugi::xml_node numKeyEntries = keyData.append_child("numKeyEntries");
 	
-	numKeyEntries.append_attribute("value") = std::format("{}", keyframesData.GetSize()).c_str();
+	numKeyEntries.append_attribute("value") = std::format("{}", keyframesData.size()).c_str();
 
 	pugi::xml_node keyEntryData = keyData.append_child("keyEntryData");
 	keyEntryData.append_attribute("content") = content_type::content_type_float_arr; 
@@ -256,7 +256,7 @@ std::string& CloudSettingsXmlParser::GetKeyframesTextParams(atArray<ptxKeyframeE
 	static std::string text;
 	text.clear();
 
-	for (size_t i = 0; i < keyframesData.GetSize(); i++)
+	for (size_t i = 0; i < keyframesData.size(); i++)
 	{
 											 //time      r       g        b        a	
 		text += std::format("\n\t\t\t\t\t\t  {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}", 
@@ -278,7 +278,7 @@ std::string& CloudSettingsXmlParser::GetProbabilityText(atArray<int>& arr)
 	static std::string text;
 	text.clear();
 
-	for (size_t i = 0; i < arr.GetSize(); i++)
+	for (size_t i = 0; i < arr.size(); i++)
 	{
 		text += std::format("\n\t\t\t\t\t  {}", arr[i]);
 	}

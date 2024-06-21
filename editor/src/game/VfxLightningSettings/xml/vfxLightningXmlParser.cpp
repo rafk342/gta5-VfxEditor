@@ -362,7 +362,7 @@ void VfxLightningsXmlParser::AppendKeyData(pugi::xml_node& parent, ptxKeyframe& 
 {
     pugi::xml_node keyData = parent.append_child("keyData");
     pugi::xml_node numKeyEntries = keyData.append_child("numKeyEntries");
-    numKeyEntries.append_attribute("value").set_value(keyframe.data.GetSize());
+    numKeyEntries.append_attribute("value").set_value(keyframe.data.size());
     pugi::xml_node keyEntryData = keyData.append_child("keyEntryData");
     keyEntryData.append_attribute("content") = "float_array";
 
@@ -376,7 +376,7 @@ std::string& VfxLightningsXmlParser::GetKeyframesTextParams(ptxKeyframe& keyfram
 	text.clear();
     auto& keyEntryArray = keyframe.data;
 
-	for (size_t i = 0; i < keyframe.data.GetSize(); i++)
+	for (size_t i = 0; i < keyframe.data.size(); i++)
 	{
 		text += std::format("\n\t\t\t\t\t\t\t  {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}",
             keyEntryArray[i].vTime[0],

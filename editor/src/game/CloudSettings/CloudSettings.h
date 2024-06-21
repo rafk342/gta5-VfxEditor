@@ -103,10 +103,10 @@ class CloudsHandler
 
 	atArray<CloudHatFragContainer>*	gCloudHatNames;
 	gCloudSettingsMap*				gCloudsMap = nullptr;
-	u8*								gCloudsMngr; // ----- might be useful to keep it here
+	u8*								gCloudsMngr;
 	// for our usage
 	std::vector<CloudSettingsNamed>	NamedCloudsSettingsVec;
-		
+	
 public: 
 
 	CloudsHandler();

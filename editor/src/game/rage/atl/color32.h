@@ -17,10 +17,10 @@ public:
 	
 	Color32(u32 value) : color(value) { }
 	
-	Color32(f32 _r, f32 _g, f32 _b, f32 _a = 1.0f) { Setf(_r,_g,_b,_a);}
-	Color32(u8 _r, u8 _g, u8 _b, u8 _a = 255) { SetU8(_r,_g,_b,_a);}
+	Color32(float _r, float _g, float _b, float _a = 1.0f){ Setf(_r,_g,_b,_a);}
+	Color32(int _r, int _g, int _b, int _a = 255) { SetU8(u8(_r), u8(_g), u8(_b), u8(_a));}
 	
-	Color32(float* p) { Setf(p[0], p[1], p[2], p[3]); }
+	Color32(float* p) { Setf (p[0], p[1], p[2], p[3]); }
 	Color32(u8* p) { SetU8(p[0], p[1], p[2], p[3]); }
 
 
@@ -29,8 +29,6 @@ public:
 
 	Color32& operator= (Color32& other)
 	{
-		if (this == &other)
-			return *this;
 		color = other.color;
 		return *this;
 	}

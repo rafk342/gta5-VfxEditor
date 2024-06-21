@@ -15,10 +15,8 @@
 #include "rage/math/vec.h"
 #include "rage/math/vecv.h"
 
-#include "overlayRender/Render.h"
+#include "overlayRender/DrawList.h"
 
-
-using namespace DirectX;
 
 enum FlareFxTextureType_e : u8
 {						 // SubGroups :
@@ -81,9 +79,9 @@ struct CLensFlareSettings
 	float m_fMaxExposureScale;
 	float m_fMinExposureIntensity;
 	float m_fMaxExposureIntensity;
-	
+private:
 	u8 pad[4];
-	
+public:
 	atArray<CFlareFX> m_arrFlareFX;
 };
 
@@ -100,39 +98,22 @@ class LensFlareHandler
 	private:
 		u8 pad02[7];
 	};
-
 	static void n_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, float* vPos);
-	
+
 	static LensFlareHandler* self;
-
-	static bool				sm_IsFlareFxRenderedOnThisFrame;
-	static bool				sm_DrawingFlares;
-	static rage::Vec3V		sm_StartPoint;
-	static rage::Vec3V		sm_EndPoint;
-
-
+	static rage::Vec3V	sm_StartPoint;
+	static rage::Vec3V	sm_EndPoint;
 
 public:
-
-
-
-	ComPtr<ID3D11Buffer>		m_VertexBuffer;
-	ComPtr<ID3D11InputLayout>	m_InputLayout;
-
-	ComPtr<ID3D11VertexShader>	m_vertexShader;
-	ComPtr<ID3D11PixelShader>	m_pixelShader;
 	
-	gCLensFlare*				m_CLensFlare = nullptr;
-
+	gCLensFlare* m_CLensFlare = nullptr;
+	
+	void Update();
 
 	LensFlareHandler();
 	~LensFlareHandler();
 
-	static void EndFrame();
-
 	const char* GetFileNameAtIndex(size_t idx);
 	const char* GetTextureTypeName(u8 NumTexture);
-
-	void PrepareForTheNextFrame();
 };
 

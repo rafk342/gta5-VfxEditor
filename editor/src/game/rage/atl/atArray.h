@@ -9,6 +9,8 @@
 #include "rage/base/tlsContext.h"
 #include "logger.h"
 #include "helpers/align.h"
+#include "helpers/helpers.h"
+
 
 #define rage_alloc true
 
@@ -27,13 +29,13 @@ class atArray
 	u16 m_size = 0;
 	u16 m_capacity = 0;
 
-	void manage_capacity(size_t sz)
+	void manage_capacity(u32 requested_sz)
 	{
 		if (m_capacity == 0)
 			reserve(16);
 
-		else if (sz >= m_capacity)
-			reserve(NEXT_POWER_OF_TWO_32(sz));
+		else if (requested_sz >= m_capacity)
+			reserve(NEXT_POWER_OF_TWO_32(requested_sz));
 	}
 
 public:
@@ -48,27 +50,25 @@ public:
 		}
 	}
 
-	atArray(u16 count)
+	atArray(u16 cap)
 	{
-		manage_capacity(count);
+		manage_capacity(cap);
 	}
 
 	atArray(std::initializer_list<TValue> il)
 	{
 		manage_capacity(il.size());
 		for (auto it = il.begin(); it != il.end(); ++it) {
-			push_back(*it);
+			push_back(std::move(*it));
 		}
 	}
 
-	template<typename Iter>
+	template <class Iter, 
+		std::enable_if_t<std::_Is_iterator_v<Iter>,int> = 0>
 	atArray(Iter start, Iter end)
 	{
-		static_assert(std::is_same_v<typename std::iterator_traits<Iter>::value_type, TValue>, "Invalid iterator type");
-
 		size_t sz = std::distance(start, end);
 		manage_capacity(sz);
-
 		while (start != end)
 		{
 			push_back(*start);
@@ -82,14 +82,15 @@ public:
 	TValue*         end()                   { return m_offset + m_size; }
 	TValue*         back()                  { return m_size == 0 ? nullptr : end() - 1; }
 	TValue*         data()                  { return m_offset; }
-	u16             GetCapacity() const     { return m_capacity; }
-	u16             GetSize() const	        { return m_size; }
+	u16             capacity() const        { return m_capacity; }
+	u16             size() const	        { return m_size; }
 	bool            empty() const           { return (m_size == 0); }
+	bool            contains(const TValue& v) const { return index_of(v).has_value(); }
 
-	TValue& Get(u16 offset) { return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
+	TValue& at(u16 offset) { return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
 
-	TValue&	      operator[](u16 idx)       { return Get(idx); }
-	const TValue& operator[](u16 idx) const { return Get(idx); }
+	TValue&	      operator[](u16 idx)       { return at(idx); }
+	const TValue& operator[](u16 idx) const { return at(idx); }
 
 	atArray& operator=(const atArray& other)
 	{
@@ -97,11 +98,11 @@ public:
 			return *this;
 
 		clear();
-		manage_capacity(other.GetSize());
+		manage_capacity(other.size());
 
-		for (size_t i = 0; i < other.GetSize(); ++i) {
+		for (size_t i = 0; i < other.size(); ++i) 
 			push_back(other.m_offset[i]);
-		}
+
 		return *this;
 	}
 
@@ -132,10 +133,9 @@ public:
 		clear();
 		manage_capacity(other.m_capacity);
 
-		for (size_t i = 0; i < other.GetSize(); i++)
-		{
+		for (size_t i = 0; i < other.size(); i++)
 			push_back(other.m_offset[i]);
-		}
+
 	}
 
 	atArray(atArray&& other) noexcept
@@ -160,10 +160,8 @@ public:
 		if (new_cap <= m_capacity)
 			return;
 
-		size_t cpySz = 0;
 		size_t alloc_sz = new_cap * sizeof(TValue);
 		TValue* newOffset = reinterpret_cast<TValue*>(alloc_fn(alloc_sz));
-
 		memset(newOffset, 0, alloc_sz);
 
 		if (!m_offset)
@@ -175,7 +173,7 @@ public:
 
 		if constexpr (reserve_with_directly_memcpy_for_this_type)
 		{
-			cpySz = m_size * sizeof(TValue);
+			size_t cpySz = m_size * sizeof(TValue);
 			memcpy_s(newOffset, alloc_sz, m_offset, cpySz);
 			memset(m_offset, 0, cpySz);
 			dealloc_fn(m_offset);
@@ -197,7 +195,7 @@ public:
 	TValue& push_back(const TValue& value)
 	{
 		manage_capacity(m_size);
-	
+
 		new (&m_offset[m_size]) TValue(value);
 		m_size++;
 		return *back();
@@ -206,13 +204,20 @@ public:
 	TValue& push_back(TValue&& value)
 	{
 		manage_capacity(m_size);
-	
+
 		new (&m_offset[m_size]) TValue(std::move(value));
 		m_size++;
 		return *back();
 	}
 
-	std::optional<s32> IndexOf(const TValue& v) const
+	void pop_back()
+	{
+		if (empty()) return;
+		m_size -= 1;
+		end()->~TValue();
+	}
+
+	std::optional<s32> index_of(const TValue& v) const
 	{
 		for (size_t i = 0; i < m_size; i++)
 		{
@@ -222,56 +227,126 @@ public:
 		return std::nullopt;
 	}
 
-	bool Contains(const TValue& v) const { return IndexOf(v).has_value(); }
 
-	void pop_back()
+	void insert(size_t _where, const TValue& value)
 	{
-		if (empty())
-			return;
+		if (_where > m_size)
+			throw std::out_of_range(vfmt("::insert()\nIdx : {} is out of range", _where));;
 
-		m_size -= 1;
-		end()->~TValue();
-	}
-
-	void RemoveAt(u16 idx)
-	{
-		if (idx >= m_size) {
+		if (_where == m_size)
+		{
+			push_back(value);
 			return;
 		}
-		m_offset[idx].~TValue();
-		memset(&m_offset[idx], 0, sizeof(TValue));
+		manage_capacity(m_size + 1);
+		size_t move_sz = (m_size - _where) * sizeof(TValue);
+		
+		memmove(
+			m_offset + _where + 1, //dst 
+			m_offset + _where, //src
+			move_sz ); //sz
+		
+		new (&m_offset[_where]) TValue(value);
+		m_size++;
+	}
 
-		size_t move_size = (m_size - idx - 1) * sizeof(TValue);
-		memmove_s(&m_offset[idx], move_size,
-			&m_offset[idx + 1], move_size);
+
+	void insert(size_t _where, std::initializer_list<TValue> il)
+	{
+		if (_where > m_size)
+			throw std::out_of_range(vfmt("::insert()\nIdx : {} is out of range", _where));
+		
+		manage_capacity(m_size + il.size());
+		auto it_begin = il.begin();
+		auto it_end = il.end();
+
+		if (_where == m_size)
+		{
+			while (it_begin != it_end)
+			{
+				push_back(std::move(*it_begin));
+				it_begin++;
+			}
+			return;
+		}
+
+		size_t move_sz = (m_size - _where) * sizeof(TValue);	
+		memmove(
+			m_offset + _where + il.size(), //dst 
+			m_offset + _where, //src
+			move_sz ); //sz
+
+		while (it_begin != it_end)
+		{
+			new (&m_offset[_where++]) TValue(std::move(*it_begin));
+			it_begin++;
+		}
+		m_size += il.size();
+	}
+
+
+	void remove_at(size_t idx)
+	{
+		if (idx >= m_size) 
+			return;
+		
+		m_offset[idx].~TValue();
+		size_t move_sz = (m_size - idx - 1) * sizeof(TValue);
+		
+		memmove(
+			&m_offset[idx], // dst
+			&m_offset[idx + 1], //src
+			move_sz ); //sz
 
 		m_size -= 1;
 		memset(end(), 0, sizeof(TValue));
 	}
 
-	void erase(const TValue& v)
+
+	void remove_range(size_t first_idx, size_t last_idx)
 	{
-		if (empty())
+		bool RangeCanBeRemoved = last_idx < m_size && first_idx < last_idx;
+		if (!RangeCanBeRemoved)
 			return;
 
-		for (size_t i = m_size - 1; i >= 0; --i)
-			if (v == m_offset[i])
-				RemoveAt(i);
+		auto* first = &m_offset[first_idx];
+		auto* last = &m_offset[last_idx];
+		size_t count = std::distance(first, last + 1);
+		std::destroy(first, last);
+		size_t move_sz = (m_size - last_idx - 1) * sizeof(TValue);
+
+		memmove(
+			first, // dst
+			last + 1, //src
+			move_sz); //sz
+
+		m_size -= count;
 	}
+
+
+	void erase_v(const TValue& v)
+	{
+		if (empty()) 
+		{
+			for (size_t i = m_size - 1; i >= 0; --i)
+				if (v == m_offset[i])
+					RemoveAt(i);
+		}
+	}
+
 
 	void clear()
 	{
-		if (empty())
-			return;
-
-		std::destroy(begin(), end());
-		m_size = 0;
+		if (!empty())
+		{
+			std::destroy(begin(), end());
+			m_size = 0;
+		}
 	}
 
 	~atArray()
 	{
 		clear();
-
 		if (m_offset)
 		{
 			std::memset(m_offset, 0, m_capacity * sizeof(TValue));

@@ -1,11 +1,11 @@
-#pragma once
+﻿#pragma once
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
 #include <mutex>
 #include <wrl.h>
 
-
+#include "DrawList.h"
 #include "app/memory/hook.h"
 
 #include "ImGui/imgui.h"
@@ -20,34 +20,25 @@
 #include "gameClock/CClock.h"
 #include "scripthookTh.h"
 #include "Preload/Preload.h";
+#include "DrawList.h"
 
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
-
-
-
-enum MSAAModeEnum
-{
-	MSAA_None = 0,
-	MSAA_NonMaskAble = 1,
-	MSAA_2 = 2,
-	MSAA_4 = 4,
-	MSAA_8 = 8,
-};
 
 using Microsoft::WRL::ComPtr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class Renderer
 {
-	static int  sm_OpenWindowButton;
-	static bool sm_IsWindowVisible;
-	static bool sm_Initialized;
-	static bool sm_ImGuiCursorUsage;
-	static bool sm_RenderState;
-	static float font_size;
+	static std::unique_ptr<GameDrawLists> sm_DrawLists;
 
-	static bool font_scale_expected_to_be_changed;
+	static int		sm_OpenWindowButton;
+	static bool		sm_IsWindowVisible;
+	static bool		sm_Initialized;
+	static bool		sm_ImGuiCursorUsage;
+	static bool		sm_RenderState;
+	static float	font_size;
+	static bool		font_scale_expected_to_be_changed;
 
 	static HWND	window;
 	static ComPtr<ID3D11Device> p_device;
@@ -56,20 +47,21 @@ class Renderer
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void Search_for_gDevice();
-	static void n_EndFrame();
+	static void hk_GpuEndFrame();
 	static void InitBackend();
 	static void ImRenderFrame();
-	
+	static void hk_PerformSafeModeOperations(void* instance);
+
 	static void n_ClipCursor(LPRECT rect);
 	static int  n_ShowCursor(bool visible);
 	static void SetMouseVisible(bool visible);
 
 	static void ChangeFontSize();
 	static void LoadFont();
-	static void mStyle();
+	static void ImStyle();
 
 	static void loadConfigParams();
-
+	
 public:
 
 	static ID3D11Device*			GetDevice();
@@ -79,3 +71,5 @@ public:
 	static void Init();
 	static void Shutdown();
 };
+
+

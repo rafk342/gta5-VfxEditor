@@ -17,7 +17,7 @@ public:
 	static void Init()
 	{
 		MH_STATUS status = MH_Initialize();
-		if (status != MH_OK) { mlogger("MH_Initialize err"); }
+		if (status != MH_OK) { LogInfo("MH_Initialize err"); }
 	}
 
 	/**
@@ -47,10 +47,10 @@ public:
 	static void Create(TFrom from, TTo to, TBackup* backup, std::string debug_name = "")
 	{
 		MH_STATUS create = MH_CreateHook((LPVOID)from, (LPVOID)to, (LPVOID*)backup);
-		if (create != MH_OK) { mlogger("{} create hook err", debug_name); };
+		if (create != MH_OK) { LogInfo("{} create hook err", debug_name); };
 
 		MH_STATUS enable = MH_EnableHook((LPVOID)from);
-		if (enable != MH_OK) { mlogger("{} enable hook err", debug_name); };
+		if (enable != MH_OK) { LogInfo("{} enable hook err", debug_name); };
 	}
 
 	/**
@@ -76,9 +76,9 @@ public:
 			return;
 
 		MH_STATUS disable = MH_DisableHook((pVoid)from);
-		if (disable != MH_OK) { mlogger("{} DisableHook err" , debug_name); };
+		if (disable != MH_OK) { LogInfo("{} DisableHook err" , debug_name); };
 
 		MH_STATUS remove = MH_RemoveHook((pVoid)from);
-		if (remove != MH_OK) { mlogger("{} RemoveHook err ", debug_name); };
+		if (remove != MH_OK) { LogInfo("{} RemoveHook err ", debug_name); };
 	}
 };

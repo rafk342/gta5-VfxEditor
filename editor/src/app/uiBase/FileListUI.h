@@ -13,11 +13,11 @@ class FileListUI
 {
 private:
 
-	FileHandler						fhandler;
+	FileHandler						m_fhandler;
 	char							buff[255];
 	std::filesystem::path			m_path;
-	bool							check_if_check_files_btn_was_pressed = false;
-	s32								selected_radio_btn = 0;
+	bool							m_check_if_check_files_btn_was_pressed = false;
+	s32								m_selected_radio_btn = 0;
 	void							check_files_btn_foo(char* buff);
 	void							fill_file_sel_window();
 

@@ -74,10 +74,11 @@ void TimecycleUI::MainParamsWindow()
 
 	ImGui::Separator();
 
-	if (Categories_usage)
+	if (Categories_usage){
 		MainParamsWindow_with_Categories();
-	else
+	} else {
 		MainParamsWindow_without_Categories();
+	}
 }
 
 
@@ -202,8 +203,7 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 
 	for (auto& category : categoryNames)
 	{
-		FORMAT_TO_BUFF(buff, "{}##ChTc0", category)
-		if (ImGui::CollapsingHeader(buff))
+		if (ImGui::CollapsingHeader(vfmt("{}##ChTc0", category)))
 		{
 			for (auto& [param_name, id] : categoriesMap.at(category))
 			{
@@ -227,13 +227,14 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 
 
 void TimecycleUI::makeTable(Regions region, int VarIndex)
-{
-	static char buff[128];
+{//FORMAT_TO_BUFF(buff, "##{}_{}_{}_tableTcItem", static_cast<int>(time), VarIndex, g_varInfos[VarIndex].name);
+	//static char buff[128];
+	//FORMAT_TO_BUFF(buff, "##{}_table_tc", VarIndex);
+
 	float color[4];
 	ImVec2 tableSize = ImGui::GetContentRegionAvail();
 
-	FORMAT_TO_BUFF(buff, "##{}_table_tc", VarIndex);
-	if (ImGui::BeginTable(buff, time_samples.size(), TcImguiFlags::table_flags))
+	if (ImGui::BeginTable(vfmt("##{}_table_tc", VarIndex), time_samples.size(), TcImguiFlags::table_flags))
 	{
 		for (size_t i = 0; i < 2; i++)
 		{
@@ -248,7 +249,8 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 				}
 				else if (i == 1)
 				{
-					FORMAT_TO_BUFF(buff, "##{}_{}_{}_tableTcItem", static_cast<int>(time), VarIndex, g_varInfos[VarIndex].name);
+					const char* text = vfmt("##{}_{}_{}_tableTcItem", static_cast<int>(time), VarIndex, g_varInfos[VarIndex].name);
+					
 
 					switch (g_varInfos[VarIndex].varType)
 					{
@@ -259,11 +261,11 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 						
 						ImGui::SetNextItemWidth(tableSize.x / 13);
 
-						manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
+						manageKeyframeValues<GET>(color, region, VarIndex, time);
 
-						if (ImGui::DragFloat(buff, &color[0], 0.05f))
+						if (ImGui::DragFloat(text, color, 0.05f))
 						{
-							handleParams((float*)&color, region, VarIndex, time);
+							handleParams(color, region, VarIndex, time);
 						}
 						break;
 						
@@ -272,11 +274,11 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 
 					case (VARTYPE_COL3):
 
-						manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
+						manageKeyframeValues<GET>(color, region, VarIndex, time);
 
-						if (ImGui::ColorEdit3(buff, (float*)&color, TcImguiFlags::color_vec3_flags))
+						if (ImGui::ColorEdit3(text, color, TcImguiFlags::color_vec3_flags))
 						{
-							handleParams((float*)&color, region, VarIndex, time);
+							handleParams(color, region, VarIndex, time);
 						}
 						break;
 						
@@ -285,11 +287,11 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 
 					case (VARTYPE_COL4):			
 						
-						manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
+						manageKeyframeValues<GET>(color, region, VarIndex, time);
 
-						if (ImGui::ColorEdit4(buff, (float*)&color, TcImguiFlags::color_vec4_flags))  
+						if (ImGui::ColorEdit4(text, color, TcImguiFlags::color_vec4_flags))
 						{
-							handleParams((float*)&color, region, VarIndex, time);
+							handleParams(color, region, VarIndex, time);
 						}
 						break;
 					
@@ -306,12 +308,12 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 
 void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 {
-	static char buff[128];
-	float color[4];
+	//static char buff[128];
+	//FORMAT_TO_BUFF(buff, "{} VarId : {}##_{}_var", time_samples[current_time_sample].second, VarIndex, static_cast<int>(time))
 	
+	float color[4];
 	size_t time = current_time_sample;
-
-	FORMAT_TO_BUFF(buff, "{} VarId : {}##_{}_var", time_samples[current_time_sample].second, VarIndex, static_cast<int>(time))
+	const char* text = vfmt("{} VarId : {}##_{}_var", time_samples[current_time_sample].second, VarIndex, static_cast<int>(time));
 
 	switch (g_varInfos[VarIndex].varType)
 	{
@@ -320,11 +322,11 @@ void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 
 	case (VARTYPE_FLOAT):
 
-		manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
+		manageKeyframeValues<GET>(color, region, VarIndex, time);
 
-		if (ImGui::DragFloat(buff, &color[0], 0.05f))
+		if (ImGui::DragFloat(text, color, 0.05f))
 		{
-			handleParams((float*)&color, region, VarIndex, time);
+			handleParams(color, region, VarIndex, time);
 		}
 		break;
 
@@ -333,12 +335,12 @@ void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 
 	case (VARTYPE_COL3):
 
-		manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
+		manageKeyframeValues<GET>(color, region, VarIndex, time);
 		
 		//ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-		if (ImGui::ColorEdit3(buff, (float*)&color, TcImguiFlags::color_vec3_flags_single))
+		if (ImGui::ColorEdit3(text, color, TcImguiFlags::color_vec3_flags_single))
 		{
-			handleParams((float*)&color, region, VarIndex, time);
+			handleParams(color, region, VarIndex, time);
 		}
 		break;
 
@@ -347,11 +349,11 @@ void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 
 	case (VARTYPE_COL4):
 
-		manageKeyframeValues<GET>((float*)&color, region, VarIndex, time);
+		manageKeyframeValues<GET>(color, region, VarIndex, time);
 		
-		if (ImGui::ColorEdit4(buff, (float*)&color, TcImguiFlags::color_vec4_flags_single))
+		if (ImGui::ColorEdit4(text, color, TcImguiFlags::color_vec4_flags_single))
 		{
-			handleParams((float*)&color, region, VarIndex, time);
+			handleParams(color, region, VarIndex, time);
 		}
 		break;
 

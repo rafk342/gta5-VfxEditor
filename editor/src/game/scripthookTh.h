@@ -164,7 +164,7 @@ public:
 		sm_ScriptID = SYSTEM::START_NEW_SCRIPT(sm_ScriptName, 0);
 		
 		if (sm_ScriptID == 0) {
-			mlogger("Failed to start script thread");
+			LogInfo("Failed to start script thread");
 		}
 		
 		sm_Running = true;
