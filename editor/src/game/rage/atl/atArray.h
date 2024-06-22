@@ -283,6 +283,39 @@ public:
 		}
 		m_size += il.size();
 	}
+	
+	template <class Iter, std::enable_if_t<std::_Is_iterator_v<Iter>, int> = 0>
+	void insert(size_t _where, Iter first, Iter last)
+	{
+		if (_where > m_size)
+			throw std::out_of_range(vfmt("::insert()\nIdx : {} is out of range", _where));
+
+		size_t count = std::distance(first, last);
+		manage_capacity(m_size + count);
+
+		if (_where == m_size)
+		{
+			while (first != last)
+			{
+				push_back(*first);
+				++first;
+			}
+			return;
+		}
+
+		size_t move_sz = (m_size - _where) * sizeof(TValue);
+		memmove(
+			m_offset + _where + count, // dst
+			m_offset + _where,         // src
+			move_sz);                  // size
+
+		while (first != last)
+		{
+			new (&m_offset[_where++]) TValue(*first);
+			++first;
+		}
+		m_size += count;
+	}
 
 
 	void remove_at(size_t idx)

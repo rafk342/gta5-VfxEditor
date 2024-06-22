@@ -10,104 +10,102 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //									Import
 
-
 void CloudSettingsXmlParser::ImportCloudKfData(const std::filesystem::path& path, CloudsHandler& CloudsHandler)
 {
-	if (CloudsHandler.GetCloudSettingsVec().empty()) {
-		return; 
-	}
+	std::unique_lock lock(mtx);
 
-	size_t bits_size = CloudsHandler.GetCloudSettingsVec()[0].bits.size();
-	
+	size_t bits_size = 21;
 	std::vector<int> mProbabilityVec(bits_size, 0);
-	std::string CloudsName, text;
+	std::vector<std::string> SettingsNames;
+	std::string SettingsName, text;
 
 	pugi::xml_document doc;
 	pugi::xml_parse_result res = doc.load_file(path.c_str());
 
-	if (!res) {
+	if (!res) 
 		return; 
-	}
 
 	pugi::xml_node root = doc.first_child();
-	
-	if (static_cast<std::string>(root.name()) != "CloudSettingsMap") {
+	if (static_cast<std::string>(root.name()) != "CloudSettingsMap") 
 		return;
-	}
+	pugi::xml_node SettingsMapNode = root.child("SettingsMap");
+	
+	auto& g_Map = (*CloudsHandler.gCloudsMap).CloudSettings;
+	g_Map.clear();
+	CloudsHandler.NamedCloudsSettingsVec.clear();
 
-	pugi::xml_node settings_map_node = root.child("SettingsMap");
 
-	for (auto& Item_node : settings_map_node)
+	for (auto& ItemNode : SettingsMapNode)
 	{
-		CloudsName = Item_node.child("Name").text().get();
-		auto* settings = CloudsHandler.FindCloudSettings(CloudsName.c_str());
-
-		if (settings)
+		CloudHatSettings TempSettingsItem;
+		TempSettingsItem.probability_array.reserve(21);
+		
+		SettingsName = ItemNode.child("Name").text().get();
+		SettingsNames.push_back(SettingsName);
+		
+		for (auto& ParamNode : ItemNode.child("Settings"))
 		{
-			pugi::xml_node settings_node = Item_node.child("Settings");
-
-			for (auto& param_node : settings_node)
+			if (static_cast<std::string>(ParamNode.name()) == "CloudList")
 			{
-				if (static_cast<std::string>(param_node.name()) == "CloudList")
-				{
-					text = param_node.child("mProbability").text().get();
-					FillProbabilityVecFromStr(mProbabilityVec, text);
-					
-					std::copy(mProbabilityVec.begin(), mProbabilityVec.begin() + bits_size, settings->CloudSettings->probability_array.begin());
-					std::fill(mProbabilityVec.begin(), mProbabilityVec.end(), 0);	// fill with 0 for the next node 
-					
-					settings->bits = param_node.child("mBits").text().as_uint();
-				}
-				else
-				{
-					LoadKeyframeData(param_node, settings);
-				}
+				FillProbabilityVecFromStr(mProbabilityVec, ParamNode.child("mProbability").text().get());
+				TempSettingsItem.probability_array.insert(0, mProbabilityVec.begin(), mProbabilityVec.end());
+				TempSettingsItem.bits = ParamNode.child("mBits").text().as_uint();
+				
+				std::fill(mProbabilityVec.begin(), mProbabilityVec.end(), 0);	// fill with 0 for the next node 
+			}
+			else
+			{
+				LoadKeyframeData(ParamNode, &TempSettingsItem);
 			}
 		}
+		g_Map.insert(SettingsName.c_str(), TempSettingsItem);
+	}
+
+	for (auto [hash, settings_ptr] : g_Map.toVec())
+	{
+		auto it = std::find_if(SettingsNames.begin(), SettingsNames.end(), [hash](std::string& name) { return rage::joaat(name.c_str()) == hash; });
+
+		if (it != SettingsNames.end())
+			CloudsHandler.NamedCloudsSettingsVec.push_back({ hash,*it,settings_ptr });
 		else
-		{
-			LogInfo("Couldn't find {} on import CloudKeyframes" , CloudsName);
-		}
+			CloudsHandler.NamedCloudsSettingsVec.push_back({ hash,std::format("Unknown /hash : 0x{:08X}",hash),settings_ptr });
 	}
 }
 
 
-void CloudSettingsXmlParser::LoadKeyframeData(pugi::xml_node& param_node, CloudSettingsNamed* settings)
+void CloudSettingsXmlParser::LoadKeyframeData(pugi::xml_node& param_node, CloudHatSettings* settings)
 {
 	//this can't be static
 	std::unordered_map<std::string, ptxKeyframe&> KeyframesMap =
 	{
-		{"CloudColor",				settings->CloudSettings->m_CloudColor			},
-		{"CloudLightColor",			settings->CloudSettings->m_CloudLightColor		},
-		{"CloudAmbientColor",		settings->CloudSettings->m_CloudAmbientColor	},
-		{"CloudSkyColor",			settings->CloudSettings->m_CloudSkyColor		},
-		{"CloudBounceColor",		settings->CloudSettings->m_CloudBounceColor		},
-		{"CloudEastColor",			settings->CloudSettings->m_CloudEastColor		},
-		{"CloudWestColor",			settings->CloudSettings->m_CloudWestColor		},
-		{"CloudScaleFillColors",	settings->CloudSettings->m_CloudScaleFillColors	},
-		{"CloudDensityShift_Scale_ScatteringConst_Scale",				settings->CloudSettings->m_CloudDensityShift_Scale_ScatteringConst_Scale	},
-		{"CloudPiercingLightPower_Strength_NormalStrength_Thickness",	settings->CloudSettings->m_CloudPiercingLightPower_Strength_NormalStrength_Thickness	},
-		{"CloudScaleDiffuseFillAmbient_WrapAmount",						settings->CloudSettings->m_CloudScaleDiffuseFillAmbient_WrapAmount	},
+		{"CloudColor",				settings->m_CloudColor			},
+		{"CloudLightColor",			settings->m_CloudLightColor		},
+		{"CloudAmbientColor",		settings->m_CloudAmbientColor	},
+		{"CloudSkyColor",			settings->m_CloudSkyColor		},
+		{"CloudBounceColor",		settings->m_CloudBounceColor	},
+		{"CloudEastColor",			settings->m_CloudEastColor		},
+		{"CloudWestColor",			settings->m_CloudWestColor		},
+		{"CloudScaleFillColors",	settings->m_CloudScaleFillColors},
+		{"CloudDensityShift_Scale_ScatteringConst_Scale",				settings->m_CloudDensityShift_Scale_ScatteringConst_Scale	},
+		{"CloudPiercingLightPower_Strength_NormalStrength_Thickness",	settings->m_CloudPiercingLightPower_Strength_NormalStrength_Thickness	},
+		{"CloudScaleDiffuseFillAmbient_WrapAmount",						settings->m_CloudScaleDiffuseFillAmbient_WrapAmount	},
 	};
 
 	//				 time	->	values
 	static std::map<float, std::array<float, 4>> preMap;	// we have an ability to check what time should have which values
-	static std::string	raw_text, node_name;
+	static std::string node_name;
 	preMap.clear();
-	raw_text.clear();
 	node_name.clear();
 
 
 	node_name = static_cast<std::string>(param_node.name());
-	if (!KeyframesMap.contains(node_name)){
+	if (!KeyframesMap.contains(node_name))
 		return;
-	}
 
 	pugi::xml_node keyData = param_node.child("keyData");
 	pugi::xml_node keyEntryData = keyData.child("keyEntryData");
-	raw_text = keyEntryData.text().get();
-
-	FillPreMap(raw_text, preMap);
+	
+	FillPreMap(keyEntryData.text().get(), preMap);
 	LoadKeyFrameDataToMem(KeyframesMap.at(node_name), preMap);
 }
 
@@ -124,9 +122,8 @@ void CloudSettingsXmlParser::FillPreMap(const std::string& raw_text, std::map<fl
 	int	idx = 0;
 	while (std::getline(iss, line, '\n') && idx < 15)
 	{
-		if (strip_str(line).empty()) {
+		if (strip_str(line).empty()) 
 			continue;
-		}
 
 		temp = convert_str_to_float_arr(line, 5);
 		preMap[temp[0]] = { temp[1], temp[2], temp[3], temp[4] };
@@ -138,29 +135,40 @@ void CloudSettingsXmlParser::FillPreMap(const std::string& raw_text, std::map<fl
 
 void CloudSettingsXmlParser::LoadKeyFrameDataToMem(ptxKeyframe& keyframe, std::map<float, std::array<float, 4>>& preMap)
 {
+	//atArray<ptxKeyframeEntry> data;
+
+	//struct ptxKeyframeEntry
+	//{
+	//	float vTime[4]{};
+	//	float vValue[4]{};
+
+	//	ptxKeyframeEntry(float* time, float* value)
+	//	{
+	//		for (int i = 0; i < 4; ++i) {
+	//			vTime[i] = time[i];
+	//			vValue[i] = value[i];
+	//		}
+	//	}
+	//};
+
+	atArray<ptxKeyframeEntry>& kf_entries = keyframe.data;
+
 	for (int i = 0; i < time_arr.size(); i++)
 	{
 		if (preMap.contains(time_arr[i]))
 		{
-			auto& values = preMap.at(time_arr[i]);
-
-			for (int w = 0; w < 4; w++)
-			{
-				keyframe.data[i].vValue[w] = values[w];
-			}
+			std::array<float, 4>& data = preMap.at(time_arr[i]);
+			kf_entries.push_back(ptxKeyframeEntry(time_arr[i], { data[0],data[1],data[2],data[3] }));
 		}
 		else
 		{
-			for (int w = 0; w < 4; w++)
-			{
-				keyframe.data[i].vValue[w] = 0;
-			}
+			kf_entries.push_back(ptxKeyframeEntry(time_arr[i], { 0,0,0,0 }));
 		}
 	}
 }
 
 
-void CloudSettingsXmlParser::FillProbabilityVecFromStr(std::vector<int>& vec, std::string& text)
+void CloudSettingsXmlParser::FillProbabilityVecFromStr(std::vector<int>& vec, const std::string& text)
 {
 	std::istringstream ss(text);
 	int num;

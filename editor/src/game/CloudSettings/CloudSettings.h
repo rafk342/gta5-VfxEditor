@@ -13,18 +13,27 @@
 #include "rage/atl/atHashMap.h"
 #include "rage/atl/atBitSet.h"
 #include "helpers/helpers.h"
-
+#include "rage/math/vecv.h"
 
 struct ptxKeyframeEntry
 {
-	float vTime[4];
-	float vValue[4];
+	float vTime[4]{};
+	float vValue[4]{};
 
-	ptxKeyframeEntry(float* time, float* value)
+	ptxKeyframeEntry(float* time, float* values)
 	{
 		for (int i = 0; i < 4; ++i) {
 			vTime[i] = time[i];
-			vValue[i] = value[i];
+			vValue[i] = values[i];
+		}
+	}
+
+	ptxKeyframeEntry(float time, rage::Vec4V values)
+	{
+		vTime[0] = time;
+
+		for (int i = 0; i < 4; ++i) {
+			vValue[i] = values[i];
 		}
 	}
 };
@@ -42,10 +51,10 @@ private:
 struct CloudHatSettings				
 {
 private:
-	u8 pad[16];	
+	u8 pad[16]{};
 public:
-	atArray<int>  probability_array;
-	atBitSet<u16> bits;
+	atArray<int> probability_array;
+	atBitSet bits;
 
 	ptxKeyframe m_CloudColor;
 	ptxKeyframe m_CloudLightColor;
@@ -58,6 +67,8 @@ public:
 	ptxKeyframe m_CloudDensityShift_Scale_ScatteringConst_Scale;
 	ptxKeyframe m_CloudPiercingLightPower_Strength_NormalStrength_Thickness;
 	ptxKeyframe m_CloudScaleDiffuseFillAmbient_WrapAmount;
+
+	CloudHatSettings() : bits(21) {};
 };
 
 
@@ -79,11 +90,11 @@ struct CloudSettingsNamed
 	CloudHatSettings*	CloudSettings = nullptr;
 	std::bitset<21>		bits;
 
-	CloudSettingsNamed(u32 hash, std::string name, CloudHatSettings* settings) :
-		hash_name(hash),
-		str_name(std::move(name)),
-		CloudSettings(settings),
-		bits(*(settings->bits.getRawPtr()))
+	CloudSettingsNamed(u32 hash, std::string name, CloudHatSettings* settings) 
+		: hash_name(hash)
+		, str_name(std::move(name))
+		, CloudSettings(settings)
+		, bits(*(settings->bits.m_bits))
 	{ }
 
 };
@@ -91,6 +102,8 @@ struct CloudSettingsNamed
 
 class CloudsHandler
 {
+	friend class CloudSettingsXmlParser;
+
 	// game related things
 	struct gCloudSettingsMap
 	{

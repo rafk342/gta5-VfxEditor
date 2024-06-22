@@ -5,7 +5,7 @@
 
 timeñycleHandler::timeñycleHandler()
 {
-	weather_names.reserve(15);
+	m_WeatherNames.reserve(15);
 
 	static void* tcMngr = gmAddress::Scan("48 C1 E0 03 41 80 E1 01 C6 44 24 20 00")
 		.GetRef(22)
@@ -13,13 +13,13 @@ timeñycleHandler::timeñycleHandler()
 
 	for (size_t i = 0; i < WEATHER_TC_FILES_COUNT; i++)
 	{
-		cyclesArray[i] = (tcCycle*) ((*(u8**)((u8*)(tcMngr) + 0x68)) + (i * 0x57e0));
-		weather_names.push_back(GetCycleName(i));
+		m_CyclesArray[i] = (tcCycle*) ((*(u8**)((u8*)(tcMngr) + 0x68)) + (i * 0x57e0));
+		m_WeatherNames.push_back(std::move(GetCycleName(i)));
 	}
 }
 
-const std::string timeñycleHandler::GetCycleName(int index)
-{	
+std::string timeñycleHandler::GetCycleName(int index)
+{		
 	static std::map<u32, std::string> NamesMap =
 	{
 		{rage::joaat("EXTRASUNNY")	, "EXTRASUNNY"	},
@@ -38,7 +38,7 @@ const std::string timeñycleHandler::GetCycleName(int index)
 		{rage::joaat("SNOWLIGHT")	, "SNOWLIGHT"	},
 		{rage::joaat("XMAS")		, "XMAS"		},
 	};
-	u32 n_hash = cyclesArray[index]->GetCycleNameHash();
+	u32 n_hash = m_CyclesArray[index]->GetCycleNameHash();
 	
 	if (NamesMap.contains(n_hash)) {
 		return NamesMap.at(n_hash);

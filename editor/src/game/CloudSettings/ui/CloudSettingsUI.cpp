@@ -246,7 +246,7 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 						if (ImGui::Checkbox(vfmt("##{}_{}_bitset_flag", row, clIdx), &bitFlag))
 						{
 							CloudsVec[clIdx].bits.set(row, bitFlag);
-							CloudsVec[clIdx].CloudSettings->bits.setRawPtrData(CloudsVec[clIdx].bits.to_ulong());
+							CloudsVec[clIdx].CloudSettings->bits = CloudsVec[clIdx].bits.to_ulong();
 						}
 						
 						break;

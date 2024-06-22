@@ -89,10 +89,8 @@ class DrawListExecutor
 	ComPtr<ID3D11RasterizerState>		m_RS;
 
 	DefaultShader						m_BaseShader;
-	ImageBlitShader						m_ImBlitShader;
-	ComPtr<ID3D11PixelShader>			m_GaussPS;
-
-	//amPtr<graphics::Shader>            m_GaussVS;
+	//ImageBlitShader						m_ImBlitShader;
+	//ComPtr<ID3D11PixelShader>			m_GaussPS;
 
 	void RenderDrawData(const DrawList::DrawData& drawData) const;
 	void CreateBackbuf();
@@ -123,8 +121,6 @@ public:
 	void EndFrame();
 	void ExecuteAll();	// Called from the game's draw command
 	DrawList* GetOverlayList();
-	
-
 };
 
 

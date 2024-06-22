@@ -22,6 +22,8 @@
 #include "Preload/Preload.h";
 #include "DrawList.h"
 
+#include "rage/atl/atHashMap.h"
+
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 

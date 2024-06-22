@@ -230,7 +230,7 @@ void DrawList::EndFrame()
 
 DrawListExecutor::DrawListExecutor() 
 {
-	LogInfo("m_BaseShader.Create();");
+	//LogInfo("m_BaseShader.Create();");
 	m_BaseShader.Create();
 	//LogInfo("m_ImBlitShader.Create();");
 	//m_ImBlitShader.Create();
@@ -334,7 +334,6 @@ DrawListExecutor::DrawListExecutor()
 
 	//LogInfo("DrawListExecutor::DrawListExecutor done");
 
-
 }
 
 
@@ -417,10 +416,9 @@ void DrawListExecutor::Execute(DrawList& drawList)
 	if (!drawList.m_HasLinesToDraw)
 		return;
 	
-	m_BaseShader.Locals.Unlit = true;
+	//m_BaseShader.Locals.Unlit = true;
 	m_BaseShader.Bind();
 	RenderDrawData(drawList.m_Lines);
-
 
 	//u32 width = -1, height = -1, sampleCount = -1;
 	//GetScreenSize(width, height);
@@ -527,7 +525,12 @@ void GameDrawLists::hk_CVisualEffects_RenderMarkers(u32 mask)
 		.GetAt(-0x2D)
 		.ToFunc<void(void(*)(), const char*)>();
 
-	dlc_AddInternal([] { if (self) self->ExecuteAll(); }, "DrawListExecuteCommand1");
+	dlc_AddInternal([] 
+		{ 
+			if (self)
+				self->ExecuteAll();
+		}, 
+		"DrawListExecuteCommand1");
 }
 
 

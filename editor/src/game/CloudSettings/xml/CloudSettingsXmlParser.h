@@ -17,7 +17,8 @@
 class CloudSettingsXmlParser
 {
 	std::array<float, 15> time_arr = { 0, 4, 5 ,6 ,7 ,10 ,12 ,16 ,17 ,18 ,19 ,20 ,21 ,22 ,24 };
-	
+	std::mutex mtx;
+
 	struct content_type
 	{
 		static constexpr const char* content_type_float_arr = "float_array";
@@ -25,8 +26,8 @@ class CloudSettingsXmlParser
 	};
 	
 	//import
-	void FillProbabilityVecFromStr(std::vector<int>& vec, std::string& text);
-	void LoadKeyframeData(pugi::xml_node& param_node, CloudSettingsNamed* settings);
+	void FillProbabilityVecFromStr(std::vector<int>& vec, const std::string& text);
+	void LoadKeyframeData(pugi::xml_node& param_node, CloudHatSettings* settings);
 	void FillPreMap(const std::string& raw_text, std::map<float, std::array<float, 4>>& preMap);
 	void LoadKeyFrameDataToMem(ptxKeyframe& keyframe, std::map<float, std::array<float, 4>>& preMap);
 
@@ -35,6 +36,7 @@ class CloudSettingsXmlParser
 	std::string&	GetProbabilityText(atArray<int>& arr);
 	void			AddKeyframeData(pugi::xml_node& settings_node,const char* param_name ,atArray<ptxKeyframeEntry>& keyframesData);
 	std::string&	GetKeyframesTextParams(atArray<ptxKeyframeEntry>& keyframesData);
+	
 
 public:
 

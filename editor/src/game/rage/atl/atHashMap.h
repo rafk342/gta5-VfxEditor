@@ -1,5 +1,7 @@
 #pragma once
+#include "crypto/joaat.h"
 #include "rage/base/tlsContext.h"
+#include "atArray.h"
 
 template<typename T>
 struct atMapHashFn
@@ -19,60 +21,175 @@ template<> inline u32 atMapHashFn<const char*>::operator()(const ConstString& st
 template<> inline u32 atMapHashFn<std::string>::operator()(const std::string& str) { return rage::joaat(str.c_str()); }
 
 template<typename TKey, typename TData, typename THashFn = atMapHashFn<TKey>>
-class atMap
-{
+class atMap {
 private:
-	struct Entry
-	{
+
+	struct Node {
 		u32 hash;
 		TData data;
-		Entry* next = nullptr;
+		Node* next = nullptr;
 	};
 
-	Entry** m_Buckets = nullptr;
+	Node** m_Buckets = nullptr;
 	u16 m_capacity = 0;
 	u16 m_size = 0;
 	char pad[3]{};
-	bool m_AllowGrowing = false;
+	bool m_AllowGrowing = true;
+
+	void grow()
+	{
+		u16 new_capacity = NEXT_POWER_OF_TWO_32(m_capacity);
+
+		size_t alloc_sz = new_capacity * sizeof(void*);
+		Node** new_buckets = static_cast<Node**>(alloc_fn(alloc_sz));
+		memset(new_buckets, 0, alloc_sz);
+
+		if (!m_Buckets && empty())
+		{
+			m_Buckets = new_buckets;
+			m_capacity = new_capacity;
+			return;
+		}
+
+		for (u16 i = 0; i < m_capacity; ++i)
+		{
+			Node* node = m_Buckets[i];
+			while (node)
+			{
+				Node* next = node->next;
+				u32 new_index = node->hash % new_capacity;
+				node->next = new_buckets[new_index];
+				new_buckets[new_index] = node;
+				node = next;
+			}
+		}
+
+		dealloc_fn(m_Buckets);
+		m_Buckets = new_buckets;
+		m_capacity = new_capacity;
+	}
+
+	void reset()
+	{
+		if (m_Buckets)
+		{
+			for (u16 i = 0; i < m_capacity; ++i)
+			{
+				Node* node = m_Buckets[i];
+				while (node)
+				{
+					Node* next = node->next;
+					dealloc_fn(node);
+					node = next;
+				}
+			}
+			dealloc_fn(m_Buckets);
+		}
+		m_Buckets = nullptr;
+		m_capacity = 0;
+		m_size = 0;
+	}
 
 public:
 
-	u16 getSize() { return m_size; }
-	u16 getCapacity() { return m_capacity; }
-
-	inline TData* find(const u32& idx)
+	atMap(u16 capacity = 32)
 	{
-		for (Entry* i = *(m_Buckets + (idx % m_capacity)); i; i = i->next) {
-			if (i->hash == idx) {
-				return &i->data;
+		m_capacity = NEXT_POWER_OF_TWO_32(capacity);
+		size_t alloc_sz = m_capacity * sizeof(void*);
+		m_Buckets = static_cast<Node**>(alloc_fn(alloc_sz));
+		memset(m_Buckets, 0, alloc_sz);
+	}
+
+	atMap(atMap&& other) noexcept
+	{
+		std::swap(m_Buckets, other.m_Buckets);
+		std::swap(m_size, other.m_size);
+		std::swap(m_capacity, other.m_capacity);
+	}
+
+	atMap& operator= (atMap&& other) noexcept
+	{
+		if (this == &other)
+			return *this;
+
+		std::swap(m_Buckets, other.m_Buckets);
+		std::swap(m_size, other.m_size);
+		std::swap(m_capacity, other.m_capacity);
+
+		return *this;
+	}
+
+
+	u16		size() const					{ return m_size; }
+	u16		capacity() const				{ return m_capacity; }
+	bool	empty()	const					{ return m_size == 0; }
+	TData&	at(const TKey& v)				{ return *(find(GetHash(v))); }
+	bool	contains(const TKey& v)	const	{ return find(GetHash(v)) != nullptr; }
+
+	inline TData* find(u32 _hash)
+	{
+		if (!empty())
+		{
+			for (Node* i = *(m_Buckets + (_hash % m_capacity)); i; i = i->next)
+			{
+				if (i->hash == _hash)
+				{
+					return &i->data;
+				}
 			}
 		}
 		return nullptr;
 	}
-	
+
 	inline u32 GetHash(const TKey& value) const
 	{
 		THashFn fn{};
 		return fn(value);
 	}
 
-	inline TData* at(const TKey& v)
+	void insert(const TKey& key, const TData& data)
 	{
-		return find(GetHash(v));
+		u32 hash = GetHash(key);
+		if (TData* ptr = find(hash); ptr)
+		{
+			*ptr = data;
+			return;
+		}
+		if (m_size >= m_capacity)
+		{
+			grow();
+		}
+
+		u32 bucket_index = hash % m_capacity;
+
+		void* new_node_mem = alloc_fn(sizeof(Node));
+		Node* new_node = new (new_node_mem) Node{ hash, data, m_Buckets[bucket_index] };
+
+		m_Buckets[bucket_index] = new_node;
+		m_size++;
 	}
 
-	// pair ( hash, data ptr )
+	void clear()
+	{
+		reset();
+	}
+
 	std::vector<std::pair<u32, TData*>> toVec()
 	{
 		std::vector<std::pair<u32, TData*>> vec;
-		std::for_each(m_Buckets, m_Buckets + m_capacity, [&vec](Entry* bucket) 
+		std::for_each(m_Buckets, m_Buckets + m_capacity, [&vec](Node* bucket)
 			{
-				for (Entry* e = bucket; e; e = e->next) 
+				for (Node* e = bucket; e; e = e->next)
 				{
 					vec.push_back({ e->hash, &e->data });
 				}
 			});
+
 		return vec;
 	}
-};
 
+	~atMap()
+	{
+		reset();
+	}
+};

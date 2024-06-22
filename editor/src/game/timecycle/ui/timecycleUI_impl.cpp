@@ -227,10 +227,7 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 
 
 void TimecycleUI::makeTable(Regions region, int VarIndex)
-{//FORMAT_TO_BUFF(buff, "##{}_{}_{}_tableTcItem", static_cast<int>(time), VarIndex, g_varInfos[VarIndex].name);
-	//static char buff[128];
-	//FORMAT_TO_BUFF(buff, "##{}_table_tc", VarIndex);
-
+{
 	float color[4];
 	ImVec2 tableSize = ImGui::GetContentRegionAvail();
 
@@ -425,11 +422,11 @@ void TimecycleUI::window()
 
 void TimecycleUI::importData(std::filesystem::path path)
 {
-	m_tcHandler.xmlParser.load_tcData(path, this->currentCycle);
+	m_tcHandler.m_XmlParser.load_tcData(path, this->currentCycle);
 }
 
 void TimecycleUI::exportData(std::filesystem::path path)
 {
-	m_tcHandler.xmlParser.export_tcData(path, this->currentCycle, m_tcHandler.GetCycleName(this->current_weather_index));
+	m_tcHandler.m_XmlParser.export_tcData(path, this->currentCycle, m_tcHandler.GetCycleName(this->current_weather_index));
 }
 

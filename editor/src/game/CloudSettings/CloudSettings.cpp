@@ -22,20 +22,31 @@ CloudsHandler::CloudsHandler()
 		"SNOWclouds",
 	};
 
+	LogInfo("CloudsHandler::CloudsHandler()");
+
 	this->gCloudsMap = gmAddress::Scan("48 83 EC 48 48 8B 05 ?? ?? ?? ?? 4C 8B 0D")
 		.GetRef(14)
 		.To<gCloudSettingsMap*>();
 
+	LogInfo("CloudSettings.toVec()");
 
 	for (auto [hash, settings_ptr] : gCloudsMap->CloudSettings.toVec())
 	{
 		auto it = std::find_if(CloudNames.begin(), CloudNames.end(), [hash](const char* name) { return rage::joaat(name) == hash; });
 
 		if (it != CloudNames.end()) 
+		{
+			LogInfo("{} {}", *it, hash);
 			NamedCloudsSettingsVec.push_back({ hash,*it,settings_ptr });
+		}
 		else 
+		{
+			LogInfo("Unknown /hash : 0x{:08X}", hash);
 			NamedCloudsSettingsVec.push_back({ hash,std::format("Unknown /hash : 0x{:08X}",hash),settings_ptr });
+		}
 	}
+	LogInfo("CloudSettings.toVec() done");
+
 
 	gCloudsMngr = *gmAddress::Scan("44 8A 49 ?? 48 8B 0D").GetRef(7).To<u8**>();
 	gCloudHatNames = (atArray<CloudHatFragContainer>*)(gCloudsMngr + 0x28);

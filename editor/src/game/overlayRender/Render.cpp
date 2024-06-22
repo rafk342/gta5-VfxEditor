@@ -165,7 +165,7 @@ void Renderer::hk_GpuEndFrame()
 		BaseUiWindow::Create();
 		ScriptHook::Start();
 		CClock::Init();
-	
+
 		sm_Initialized = true;
 	}
 	if (sm_Initialized && sm_IsWindowVisible)
