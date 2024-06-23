@@ -166,7 +166,7 @@ void CloudSettingsUI::ParamsWindow()
 
 	for (int i = 0; i < CloudsVec.size(); i++)
 	{
-		if (ImGui::CollapsingHeader(CloudsVec[i].str_name.c_str(), ImGuiTreeNodeFlags_None))
+		if (ImGui::CollapsingHeader(vfmt("{:<30} {}", CloudsVec[i].hash_name, CloudsVec[i].str_name), ImGuiTreeNodeFlags_None))
 		{
 			ImGui::SeparatorText("CloudList");
 			ProbabilityWidgets(i);
@@ -205,7 +205,7 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 			ImGui::TableSetupColumn("Enabled ", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableHeadersRow();
 
-			for ( size_t row = 0; row < CloudsVec[clIdx].CloudSettings->probability_array.size(); row++)
+			for (size_t row = 0; row < CloudsVec[clIdx].CloudSettings->probability_array.size(); row++)
 			{
 				ImGui::TableNextRow();
 

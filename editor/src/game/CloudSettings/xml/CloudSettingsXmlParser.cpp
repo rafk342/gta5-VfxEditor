@@ -17,7 +17,6 @@ void CloudSettingsXmlParser::ImportCloudKfData(const std::filesystem::path& path
 	size_t bits_size = 21;
 	std::vector<int> mProbabilityVec(bits_size, 0);
 	std::vector<std::string> SettingsNames;
-	std::string SettingsName, text;
 
 	pugi::xml_document doc;
 	pugi::xml_parse_result res = doc.load_file(path.c_str());
@@ -28,20 +27,17 @@ void CloudSettingsXmlParser::ImportCloudKfData(const std::filesystem::path& path
 	pugi::xml_node root = doc.first_child();
 	if (static_cast<std::string>(root.name()) != "CloudSettingsMap") 
 		return;
-	pugi::xml_node SettingsMapNode = root.child("SettingsMap");
 	
 	auto& g_Map = (*CloudsHandler.gCloudsMap).CloudSettings;
-	g_Map.clear();
 	CloudsHandler.NamedCloudsSettingsVec.clear();
+	g_Map.clear();
+	
 
-
-	for (auto& ItemNode : SettingsMapNode)
+	for (auto& ItemNode : root.child("SettingsMap"))
 	{
 		CloudHatSettings TempSettingsItem;
 		TempSettingsItem.probability_array.reserve(21);
-		
-		SettingsName = ItemNode.child("Name").text().get();
-		SettingsNames.push_back(SettingsName);
+		SettingsNames.push_back(ItemNode.child("Name").text().get());
 		
 		for (auto& ParamNode : ItemNode.child("Settings"))
 		{
@@ -58,17 +54,19 @@ void CloudSettingsXmlParser::ImportCloudKfData(const std::filesystem::path& path
 				LoadKeyframeData(ParamNode, &TempSettingsItem);
 			}
 		}
-		g_Map.insert(SettingsName.c_str(), TempSettingsItem);
+		g_Map.insert(SettingsNames.back().c_str(), TempSettingsItem);
 	}
+
 
 	for (auto [hash, settings_ptr] : g_Map.toVec())
 	{
 		auto it = std::find_if(SettingsNames.begin(), SettingsNames.end(), [hash](std::string& name) { return rage::joaat(name.c_str()) == hash; });
 
-		if (it != SettingsNames.end())
+		if (it != SettingsNames.end()) {
 			CloudsHandler.NamedCloudsSettingsVec.push_back({ hash,*it,settings_ptr });
-		else
+		} else {
 			CloudsHandler.NamedCloudsSettingsVec.push_back({ hash,std::format("Unknown /hash : 0x{:08X}",hash),settings_ptr });
+		}
 	}
 }
 
@@ -78,17 +76,17 @@ void CloudSettingsXmlParser::LoadKeyframeData(pugi::xml_node& param_node, CloudH
 	//this can't be static
 	std::unordered_map<std::string, ptxKeyframe&> KeyframesMap =
 	{
-		{"CloudColor",				settings->m_CloudColor			},
-		{"CloudLightColor",			settings->m_CloudLightColor		},
-		{"CloudAmbientColor",		settings->m_CloudAmbientColor	},
-		{"CloudSkyColor",			settings->m_CloudSkyColor		},
-		{"CloudBounceColor",		settings->m_CloudBounceColor	},
-		{"CloudEastColor",			settings->m_CloudEastColor		},
-		{"CloudWestColor",			settings->m_CloudWestColor		},
-		{"CloudScaleFillColors",	settings->m_CloudScaleFillColors},
-		{"CloudDensityShift_Scale_ScatteringConst_Scale",				settings->m_CloudDensityShift_Scale_ScatteringConst_Scale	},
-		{"CloudPiercingLightPower_Strength_NormalStrength_Thickness",	settings->m_CloudPiercingLightPower_Strength_NormalStrength_Thickness	},
-		{"CloudScaleDiffuseFillAmbient_WrapAmount",						settings->m_CloudScaleDiffuseFillAmbient_WrapAmount	},
+		{"CloudColor", settings->m_CloudColor},
+		{"CloudLightColor",	settings->m_CloudLightColor	},
+		{"CloudAmbientColor", settings->m_CloudAmbientColor	},
+		{"CloudSkyColor", settings->m_CloudSkyColor	},
+		{"CloudBounceColor", settings->m_CloudBounceColor},
+		{"CloudEastColor", settings->m_CloudEastColor},
+		{"CloudWestColor", settings->m_CloudWestColor},
+		{"CloudScaleFillColors", settings->m_CloudScaleFillColors},
+		{"CloudDensityShift_Scale_ScatteringConst_Scale", settings->m_CloudDensityShift_Scale_ScatteringConst_Scale	},
+		{"CloudPiercingLightPower_Strength_NormalStrength_Thickness",settings->m_CloudPiercingLightPower_Strength_NormalStrength_Thickness	},
+		{"CloudScaleDiffuseFillAmbient_WrapAmount",	settings->m_CloudScaleDiffuseFillAmbient_WrapAmount	},
 	};
 
 	//				 time	->	values
@@ -135,22 +133,6 @@ void CloudSettingsXmlParser::FillPreMap(const std::string& raw_text, std::map<fl
 
 void CloudSettingsXmlParser::LoadKeyFrameDataToMem(ptxKeyframe& keyframe, std::map<float, std::array<float, 4>>& preMap)
 {
-	//atArray<ptxKeyframeEntry> data;
-
-	//struct ptxKeyframeEntry
-	//{
-	//	float vTime[4]{};
-	//	float vValue[4]{};
-
-	//	ptxKeyframeEntry(float* time, float* value)
-	//	{
-	//		for (int i = 0; i < 4; ++i) {
-	//			vTime[i] = time[i];
-	//			vValue[i] = value[i];
-	//		}
-	//	}
-	//};
-
 	atArray<ptxKeyframeEntry>& kf_entries = keyframe.data;
 
 	for (int i = 0; i < time_arr.size(); i++)
@@ -187,6 +169,8 @@ void CloudSettingsXmlParser::FillProbabilityVecFromStr(std::vector<int>& vec, co
 
 void CloudSettingsXmlParser::ExportCloudKfData(const std::filesystem::path& path, const std::vector<CloudSettingsNamed>& CloudsData)
 {
+	std::unique_lock lock(mtx);
+
 	pugi::xml_document doc;
 	pugi::xml_node decl = doc.append_child(pugi::node_declaration);
 	decl.append_attribute("version") = "1.0";
@@ -221,9 +205,9 @@ void CloudSettingsXmlParser::ExportCloudKfData(const std::filesystem::path& path
 
 
 		pugi::xml_node mBits = CloudList.append_child("mBits");
-		mBits.append_attribute("bits") = std::format("{}", clouds.bits.size()).c_str();
+		mBits.append_attribute("bits") = vfmt("{}", clouds.bits.size());
 		mBits.append_attribute("content") = content_type::content_type_int_arr;
-		mBits.text() = std::format("\n\t\t\t\t\t  0x{:08X}\n\t\t\t\t\t", clouds.bits.to_ulong()).c_str();
+		mBits.text() = vfmt("\n\t\t\t\t\t  0x{:08X}\n\t\t\t\t\t", clouds.bits.to_ulong());
 
 		
 		{
@@ -267,7 +251,7 @@ std::string& CloudSettingsXmlParser::GetKeyframesTextParams(atArray<ptxKeyframeE
 	for (size_t i = 0; i < keyframesData.size(); i++)
 	{
 											 //time      r       g        b        a	
-		text += std::format("\n\t\t\t\t\t\t  {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}", 
+		text += vfmt("\n\t\t\t\t\t\t  {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}\t {:.6f}",
 			keyframesData[i].vTime[0],
 			keyframesData[i].vValue[0], 
 			keyframesData[i].vValue[1],
@@ -288,7 +272,7 @@ std::string& CloudSettingsXmlParser::GetProbabilityText(atArray<int>& arr)
 
 	for (size_t i = 0; i < arr.size(); i++)
 	{
-		text += std::format("\n\t\t\t\t\t  {}", arr[i]);
+		text += vfmt("\n\t\t\t\t\t  {}", arr[i]);
 	}
 
 	text += "\n\t\t\t\t\t";
@@ -303,7 +287,7 @@ std::string& CloudSettingsXmlParser::GetTimeStr()
 
 	for (size_t i = 0; i < time_arr.size() - 1; i++)
 	{
-		text += std::format("\n\t  {:.6f}\t", time_arr[i]);
+		text += vfmt("\n\t  {:.6f}\t", time_arr[i]);
 	}
 
 	text += "\n\t";

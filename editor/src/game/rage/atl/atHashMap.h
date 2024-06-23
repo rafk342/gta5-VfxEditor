@@ -21,10 +21,12 @@ template<> inline u32 atMapHashFn<const char*>::operator()(const ConstString& st
 template<> inline u32 atMapHashFn<std::string>::operator()(const std::string& str) { return rage::joaat(str.c_str()); }
 
 template<typename TKey, typename TData, typename THashFn = atMapHashFn<TKey>>
-class atMap {
+class atMap 
+{
 private:
 
-	struct Node {
+	struct Node
+	{
 		u32 hash;
 		TData data;
 		Node* next = nullptr;
@@ -79,6 +81,7 @@ private:
 				while (node)
 				{
 					Node* next = node->next;
+					node->data.~TData();
 					dealloc_fn(node);
 					node = next;
 				}
@@ -90,6 +93,24 @@ private:
 		m_size = 0;
 	}
 
+	inline TData* find(u32 _hash)
+	{
+		if (!empty())
+		{
+			u32 index = _hash % m_capacity;
+			Node* bucket = m_Buckets[index];
+
+			for (Node* node = bucket; node; node = node->next)
+			{
+				if (node->hash == _hash)
+				{
+					return &node->data;
+				}
+			}
+		}
+		return nullptr;
+	}
+
 public:
 
 	atMap(u16 capacity = 32)
@@ -99,6 +120,9 @@ public:
 		m_Buckets = static_cast<Node**>(alloc_fn(alloc_sz));
 		memset(m_Buckets, 0, alloc_sz);
 	}
+
+	atMap(const atMap&) = delete; //TODO
+	atMap& operator= (const atMap&) = delete;
 
 	atMap(atMap&& other) noexcept
 	{
@@ -119,27 +143,12 @@ public:
 		return *this;
 	}
 
-
 	u16		size() const					{ return m_size; }
 	u16		capacity() const				{ return m_capacity; }
 	bool	empty()	const					{ return m_size == 0; }
 	TData&	at(const TKey& v)				{ return *(find(GetHash(v))); }
 	bool	contains(const TKey& v)	const	{ return find(GetHash(v)) != nullptr; }
 
-	inline TData* find(u32 _hash)
-	{
-		if (!empty())
-		{
-			for (Node* i = *(m_Buckets + (_hash % m_capacity)); i; i = i->next)
-			{
-				if (i->hash == _hash)
-				{
-					return &i->data;
-				}
-			}
-		}
-		return nullptr;
-	}
 
 	inline u32 GetHash(const TKey& value) const
 	{
@@ -152,7 +161,8 @@ public:
 		u32 hash = GetHash(key);
 		if (TData* ptr = find(hash); ptr)
 		{
-			*ptr = data;
+			ptr->~TData();
+			new (ptr) TData(data);
 			return;
 		}
 		if (m_size >= m_capacity)
@@ -163,7 +173,7 @@ public:
 		u32 bucket_index = hash % m_capacity;
 
 		void* new_node_mem = alloc_fn(sizeof(Node));
-		Node* new_node = new (new_node_mem) Node{ hash, data, m_Buckets[bucket_index] };
+		Node* new_node = new (new_node_mem) Node({ hash, data, m_Buckets[bucket_index] });
 
 		m_Buckets[bucket_index] = new_node;
 		m_size++;
@@ -184,7 +194,6 @@ public:
 					vec.push_back({ e->hash, &e->data });
 				}
 			});
-
 		return vec;
 	}
 

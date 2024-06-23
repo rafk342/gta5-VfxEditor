@@ -359,7 +359,7 @@ public:
 
 	void erase_v(const TValue& v)
 	{
-		if (empty()) 
+		if (!empty()) 
 		{
 			for (size_t i = m_size - 1; i >= 0; --i)
 				if (v == m_offset[i])
