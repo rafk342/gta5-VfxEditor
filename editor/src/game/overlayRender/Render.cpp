@@ -33,8 +33,9 @@ bool	Renderer::sm_RenderState = false;
 float	Renderer::font_size = 15.0f;
 bool	Renderer::font_scale_expected_to_be_changed = false;
 
+#if Using_DrawList
 std::unique_ptr<GameDrawLists> Renderer::sm_DrawLists = nullptr;
-
+#endif
 
 ID3D11Device*			Renderer::GetDevice()	{ return p_device.Get(); }
 ID3D11DeviceContext*	Renderer::GetContext()	{ return p_context.Get(); }
@@ -133,16 +134,13 @@ LRESULT Renderer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) 
 			return true;
 	}
-	
+
 	return g_WndProc(hWnd, uMsg, wParam, lParam);
 }
 
 
-bool test_flag = false;
-//Vector3 pos1{};
-//Vector3 pos2{};
-//float col[4]{};
 
+#if Using_DrawList
 // Called from CApp::RunGame() -> fwRenderThreadInterface::Synchronise()
 // Render thread is guaranteed to be blocked here
 void (*g_PerformSafeModeOperations)(void*);
@@ -154,7 +152,7 @@ void Renderer::hk_PerformSafeModeOperations(void* instance)
 	g_PerformSafeModeOperations(instance);
 
 }
-
+#endif
 void(*g_GpuEndFrame)();
 void Renderer::hk_GpuEndFrame()
 {
@@ -197,11 +195,12 @@ void Renderer::Init()
 		Hook::Create(ClipCursor, Renderer::n_ClipCursor, &g_ClipCursor, "ClipCursor");
 		Hook::Create(ShowCursor, Renderer::n_ShowCursor, &g_ShowCursor, "ShowCursor");
 	}
-	
+#if Using_DrawList
 	s_SafeModeOperationsAddr = gmAddress::Scan("B9 2D 92 F5 3C", "CGtaRenderThreadGameInterface::PerformSafeModeOperations")
 		.GetAt(-0x31);
 	Hook::Create(s_SafeModeOperationsAddr, hk_PerformSafeModeOperations, &g_PerformSafeModeOperations, "CGtaRenderThreadGameInterface::PerformSafeModeOperations");
 	sm_DrawLists = std::make_unique<GameDrawLists>();
+#endif
 }
 
 void Renderer::loadConfigParams()
@@ -256,25 +255,6 @@ void Renderer::ImRenderFrame()
 	//	ImGui::End();
 	//}
 
-	//if (ImGui::Begin("tmp window1"))
-	//{
-	//	if (ImGui::Button("GetFirstPos"))
-	//	{
-	//		scrInvoke([] { pos1 = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), false); });
-	//	}
-
-	//	if (ImGui::Button("GetSecondPos"))
-	//	{
-	//		scrInvoke([] {pos2 = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), false); });
-	//	}
-
-	//	if (ImGui::Checkbox("Draw", &test_flag));
-
-	//	ImGui::ColorEdit4("m_color_edit", col, 0 | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaBar);
-
-	//	ImGui::End();
-	//}
-
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -309,8 +289,9 @@ void Renderer::Shutdown()
 	Hook::Remove(s_EndFrameAddr);
 	Hook::Remove(s_WndProcAddr);
 	Hook::Remove(s_SafeModeOperationsAddr);
-
+#if Using_DrawList
 	sm_DrawLists = nullptr;
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

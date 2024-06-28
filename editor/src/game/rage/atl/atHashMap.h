@@ -24,7 +24,7 @@ template<typename TKey, typename TData, typename THashFn = atMapHashFn<TKey>>
 class atMap 
 {
 private:
-
+	
 	struct Node
 	{
 		u32 hash;
@@ -35,7 +35,7 @@ private:
 	Node** m_Buckets = nullptr;
 	u16 m_capacity = 0;
 	u16 m_size = 0;
-	char pad[3]{};
+	u8  pad[3]{};
 	bool m_AllowGrowing = true;
 
 	void grow()
@@ -46,13 +46,12 @@ private:
 		Node** new_buckets = static_cast<Node**>(alloc_fn(alloc_sz));
 		memset(new_buckets, 0, alloc_sz);
 
-		if (!m_Buckets && empty())
+		if (!m_Buckets)
 		{
 			m_Buckets = new_buckets;
 			m_capacity = new_capacity;
 			return;
 		}
-
 		for (u16 i = 0; i < m_capacity; ++i)
 		{
 			Node* node = m_Buckets[i];
@@ -65,32 +64,9 @@ private:
 				node = next;
 			}
 		}
-
 		dealloc_fn(m_Buckets);
 		m_Buckets = new_buckets;
 		m_capacity = new_capacity;
-	}
-
-	void reset()
-	{
-		if (m_Buckets)
-		{
-			for (u16 i = 0; i < m_capacity; ++i)
-			{
-				Node* node = m_Buckets[i];
-				while (node)
-				{
-					Node* next = node->next;
-					node->data.~TData();
-					dealloc_fn(node);
-					node = next;
-				}
-			}
-			dealloc_fn(m_Buckets);
-		}
-		m_Buckets = nullptr;
-		m_capacity = 0;
-		m_size = 0;
 	}
 
 	inline TData* find(u32 _hash)
@@ -170,18 +146,34 @@ public:
 			grow();
 		}
 
-		u32 bucket_index = hash % m_capacity;
-
 		void* new_node_mem = alloc_fn(sizeof(Node));
-		Node* new_node = new (new_node_mem) Node({ hash, data, m_Buckets[bucket_index] });
 
+		u32 bucket_index = hash % m_capacity;
+		Node* new_node = new (new_node_mem) Node(hash, data, m_Buckets[bucket_index]);
 		m_Buckets[bucket_index] = new_node;
 		m_size++;
 	}
 
 	void clear()
 	{
-		reset();
+		if (m_Buckets)
+		{
+			for (u16 i = 0; i < m_capacity; ++i)
+			{
+				Node* node = m_Buckets[i];
+				while (node)
+				{
+					Node* next = node->next;
+					node->data.~TData();
+					dealloc_fn(node);
+					node = next;
+				}
+			}
+			dealloc_fn(m_Buckets);
+		}
+		m_Buckets = nullptr;
+		m_capacity = 0;
+		m_size = 0;
 	}
 
 	std::vector<std::pair<u32, TData*>> toVec()
@@ -199,6 +191,6 @@ public:
 
 	~atMap()
 	{
-		reset();
+		clear();
 	}
 };

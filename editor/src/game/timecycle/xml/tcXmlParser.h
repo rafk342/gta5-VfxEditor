@@ -12,7 +12,6 @@
 #include "game/timecycle/tcData.h"
 #include "app/helpers/helpers.h"
 #include "pugixml/pugixml.hpp"
-#include "../tcdef.h"
 
 
 class tcXmlParser

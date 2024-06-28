@@ -27,20 +27,19 @@ class CloudSettingsXmlParser
 	
 	//import
 	void FillProbabilityVecFromStr(std::vector<int>& vec, const std::string& text);
-	void LoadKeyframeData(pugi::xml_node& param_node, CloudHatSettings* settings);
-	void FillPreMap(const std::string& raw_text, std::map<float, std::array<float, 4>>& preMap);
-	void LoadKeyFrameDataToMem(ptxKeyframe& keyframe, std::map<float, std::array<float, 4>>& preMap);
+	void LoadKeyframeData(pugi::xml_node& params_node, CloudHatSettings& settings);
+	void FillPreMap(const std::string& raw_text, std::map<float, rage::Vec4V>& preMap);
+	void LoadKeyFrameDataToMem(ptxKeyframe& keyframe, std::map<float, rage::Vec4V>& preMap);
 
 	//export
 	std::string&	GetTimeStr();
 	std::string&	GetProbabilityText(atArray<int>& arr);
-	void			AddKeyframeData(pugi::xml_node& settings_node,const char* param_name ,atArray<ptxKeyframeEntry>& keyframesData);
+	void			AppendKeyframeData(pugi::xml_node& settings_node,const char* param_name ,atArray<ptxKeyframeEntry>& keyframesData);
 	std::string&	GetKeyframesTextParams(atArray<ptxKeyframeEntry>& keyframesData);
-	
 
 public:
 
 	void ImportCloudKfData(const std::filesystem::path& path, CloudsHandler& CloudsHandler);
-	void ExportCloudKfData(const std::filesystem::path& path, const std::vector<CloudSettingsNamed>& CloudsData);
+	void ExportCloudKfData(const std::filesystem::path& path, CloudsHandler& cloudsHandler);
 
 };

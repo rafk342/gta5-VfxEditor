@@ -15,6 +15,7 @@
 #include "rage/math/vecv.h"
 #include "rage/atl/color32.h"
 
+#if Using_DrawList
 
 using Microsoft::WRL::ComPtr;
 
@@ -125,4 +126,4 @@ public:
 
 
 void DrawLine2D(const rage::Vec3V& p1, const rage::Vec3V& p2, Color32 col1, Color32 col2);
-
+#endif

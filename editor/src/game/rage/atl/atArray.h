@@ -22,7 +22,7 @@
 #define dealloc_fn(ptr) free(ptr)
 #endif
 
-template<class TValue, bool reserve_with_directly_memcpy_for_this_type = false>
+template<class TValue>
 class atArray
 {
 	TValue* m_offset = nullptr;
@@ -63,8 +63,7 @@ public:
 		}
 	}
 
-	template <class Iter, 
-		std::enable_if_t<std::_Is_iterator_v<Iter>,int> = 0>
+	template <class Iter, std::enable_if_t<std::_Is_iterator_v<Iter>,int> = 0>
 	atArray(Iter start, Iter end)
 	{
 		size_t sz = std::distance(start, end);
@@ -78,19 +77,16 @@ public:
 	
 	atArray(std::vector<TValue>& vec) : atArray(vec.begin(), vec.end()) {}
 	
-	TValue*         begin()                 { return m_offset; }
-	TValue*         end()                   { return m_offset + m_size; }
-	TValue*         back()                  { return m_size == 0 ? nullptr : end() - 1; }
-	TValue*         data()                  { return m_offset; }
-	u16             capacity() const        { return m_capacity; }
-	u16             size() const	        { return m_size; }
-	bool            empty() const           { return (m_size == 0); }
-	bool            contains(const TValue& v) const { return index_of(v).has_value(); }
 
-	TValue& at(u16 offset) { return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
+	atArray(const atArray& other)
+	{
+		clear();
+		manage_capacity(other.m_capacity);
 
-	TValue&	      operator[](u16 idx)       { return at(idx); }
-	const TValue& operator[](u16 idx) const { return at(idx); }
+		for (size_t i = 0; i < other.size(); i++) {
+			push_back(other.m_offset[i]);
+		}
+	}
 
 	atArray& operator=(const atArray& other)
 	{
@@ -100,60 +96,43 @@ public:
 		clear();
 		manage_capacity(other.size());
 
-		for (size_t i = 0; i < other.size(); ++i) 
+		for (size_t i = 0; i < other.size(); ++i)
 			push_back(other.m_offset[i]);
 
 		return *this;
-	}
-
-	atArray& operator=(atArray&& other) noexcept 
-	{
-		if (this == &other)
-			return *this;
-
-		if (m_offset)
-		{
-			clear();
-			dealloc_fn(m_offset);
-			m_offset = nullptr;
-		}
-		
-		m_size = 0;
-		m_capacity = 0;
-
-		std::swap(m_offset, other.m_offset);
-		std::swap(m_size, other.m_size);
-		std::swap(m_capacity, other.m_capacity);
-
-		return *this;
-	}
-
-	atArray(const atArray& other)
-	{
-		clear();
-		manage_capacity(other.m_capacity);
-
-		for (size_t i = 0; i < other.size(); i++)
-			push_back(other.m_offset[i]);
-
 	}
 
 	atArray(atArray&& other) noexcept
 	{
-		if (m_offset)
-		{
-			clear();
-			dealloc_fn(m_offset);
-			m_offset = nullptr;
-		}
-		
-		m_size = 0;
-		m_capacity = 0;
-
 		std::swap(m_offset, other.m_offset);
 		std::swap(m_size, other.m_size);
 		std::swap(m_capacity, other.m_capacity);
 	}
+
+	atArray& operator=(atArray&& other) noexcept
+	{
+		if (this == &other)
+			return *this;
+
+		std::swap(m_offset, other.m_offset);
+		std::swap(m_size, other.m_size);
+		std::swap(m_capacity, other.m_capacity);
+
+		return *this;
+	}
+
+	TValue*         begin()                 { return m_offset; }
+	TValue*         end()                   { return m_offset + m_size; }
+	TValue*         back()                  { return m_size == 0 ? nullptr : end() - 1; }
+	TValue*         data()                  { return m_offset; }
+	u16             capacity() const        { return m_capacity; }
+	u16             size() const	        { return m_size; }
+	bool            empty() const           { return (m_size == 0); }
+	bool            contains(const TValue& v) const { return index_of(v).has_value(); }
+
+	TValue&			at(u16 offset)				{ return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
+	TValue&			operator[](u16 idx)			{ return at(idx); }
+	const TValue&	operator[](u16 idx) const	{ return at(idx); }
 
 	void reserve(size_t new_cap)
 	{
@@ -170,24 +149,18 @@ public:
 			m_capacity = new_cap;
 			return;
 		}
-
-		if constexpr (reserve_with_directly_memcpy_for_this_type)
+		if constexpr (std::is_nothrow_move_constructible_v<TValue> || !std::is_copy_constructible_v<TValue>) 
 		{
-			size_t cpySz = m_size * sizeof(TValue);
-			memcpy_s(newOffset, alloc_sz, m_offset, cpySz);
-			memset(m_offset, 0, cpySz);
-			dealloc_fn(m_offset);
-
-		} else {
-
-			for (size_t i = 0; i < m_size; ++i) {
-				new (&newOffset[i]) TValue(std::move(m_offset[i]));
-			}
+			std::uninitialized_move(m_offset, m_offset + m_size, newOffset);
 			std::destroy(begin(), end());
-			memset(m_offset, 0, m_capacity * sizeof(TValue));
-			dealloc_fn(m_offset);
+		} else {
+			//size_t cpySz = m_size * sizeof(TValue);
+			//memcpy_s(newOffset, alloc_sz, m_offset, cpySz);
+			//memset(m_offset, 0, cpySz);
+			std::uninitialized_copy(m_offset, m_offset + m_size, newOffset);
+			std::destroy(begin(), end());
 		}
-
+		dealloc_fn(m_offset);
 		m_offset = newOffset;
 		m_capacity = new_cap;
 	}
@@ -212,9 +185,10 @@ public:
 
 	void pop_back()
 	{
-		if (empty()) return;
-		m_size -= 1;
-		end()->~TValue();
+		if (!empty()) {
+			m_size -= 1;
+			end()->~TValue();
+		}
 	}
 
 	std::optional<s32> index_of(const TValue& v) const
@@ -249,7 +223,6 @@ public:
 		new (&m_offset[_where]) TValue(value);
 		m_size++;
 	}
-
 
 	void insert(size_t _where, std::initializer_list<TValue> il)
 	{
@@ -335,7 +308,6 @@ public:
 		memset(end(), 0, sizeof(TValue));
 	}
 
-
 	void remove_range(size_t first_idx, size_t last_idx)
 	{
 		bool RangeCanBeRemoved = last_idx < m_size && first_idx < last_idx;
@@ -356,14 +328,13 @@ public:
 		m_size -= count;
 	}
 
-
 	void erase_v(const TValue& v)
 	{
 		if (!empty()) 
 		{
 			for (size_t i = m_size - 1; i >= 0; --i)
 				if (v == m_offset[i])
-					RemoveAt(i);
+					remove_at(i);
 		}
 	}
 

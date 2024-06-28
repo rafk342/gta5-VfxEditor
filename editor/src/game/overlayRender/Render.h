@@ -27,12 +27,15 @@
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 
+
 using Microsoft::WRL::ComPtr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class Renderer
 {
+#if Using_DrawList
 	static std::unique_ptr<GameDrawLists> sm_DrawLists;
+#endif
 
 	static int		sm_OpenWindowButton;
 	static bool		sm_IsWindowVisible;
@@ -52,8 +55,9 @@ class Renderer
 	static void hk_GpuEndFrame();
 	static void InitBackend();
 	static void ImRenderFrame();
+#if Using_DrawList
 	static void hk_PerformSafeModeOperations(void* instance);
-
+#endif
 	static void n_ClipCursor(LPRECT rect);
 	static int  n_ShowCursor(bool visible);
 	static void SetMouseVisible(bool visible);

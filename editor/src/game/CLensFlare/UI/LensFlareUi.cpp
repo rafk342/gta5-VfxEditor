@@ -13,8 +13,13 @@ void LensFlareUi::window()
 	float col[4];
 
 	CLensFlareSettings* settings = &m_Handler.m_CLensFlare->m_Settings[0];
+	//ImGui::GetBackgroundDrawList()->AddLine({ 0.0f, 0.0f }, { 1.0f, 1.0f }, u32(Color32(1.0f, 0.0f, 0.0f, 1.0f)));
+	//ImGui::GetForegroundDrawList()->AddLine({ 0.0f, 0.0f }, { 1.0f, 1.0f }, u32(Color32(1.0f, 0.0f, 0.0f, 1.0f)));
 
-	ImGui::Text("Active Lensflare : %s", m_Handler.GetFileNameAtIndex(static_cast<size_t>(m_Handler.m_CLensFlare->m_ActiveIndex)));
+	//ImGui::GetBackgroundDrawList()->AddCircle(window_center, window_size.x * 0.6f, IM_COL32(255, 0, 0, 200), 0, 10 + 4);
+	//ImGui::GetBackgroundDrawList()->AddCircle({ 100, 100 }, 50, IM_COL32(255, 0, 0, 200), 0, 10 + 4);
+
+	ImGui::Text("Active Lensflare : %s", m_Handler.GetFileNameAtIndex(m_Handler.m_CLensFlare->m_ActiveIndex));
 
 	for (size_t i = 0; i < 3; i++)
 	{

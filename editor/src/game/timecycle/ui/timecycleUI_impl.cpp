@@ -173,7 +173,7 @@ void TimecycleUI::GetCurrentTimeSample(int current_hour)
 
 void TimecycleUI::MainParamsWindow_without_Categories()
 {
-	for (size_t i = 0; i < TIMECYCLE_VAR_COUNT; i++)
+	for (size_t i = 0; i < TCVAR_NUM; i++)
 	{			
 		if (g_varInfos[i].varType == tcVarType_e::VARTYPE_NONE)
 			continue;

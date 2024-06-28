@@ -1,4 +1,5 @@
 #include "overlayRender/Render.h"
+#if Using_DrawList
 
 
 #define SAFE_RELEASE(p) if (p) { p->Release(); p = nullptr; }
@@ -584,3 +585,4 @@ void DrawLine2D(const rage::Vec3V& p1, const rage::Vec3V& p2, Color32 col1, Colo
 	dl->GetOverlayList()->DrawLine2D_Unsafe(p1, p2, col1, col2);
 }
 
+#endif

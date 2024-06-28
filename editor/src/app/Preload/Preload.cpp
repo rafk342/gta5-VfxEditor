@@ -117,7 +117,7 @@ bool TcCategoriesHandler::load_from_file(const char* filename)
     RemoveDuplicatesInVector(raw_lines);
 
     std::string var_name;
-    size_t category_idx = -1;
+    int category_idx = -1;
     size_t varId;
     for (auto& line : raw_lines)
     {
@@ -266,12 +266,10 @@ void Preload::Init()
     if (cfg->GetBoolean("Settings", "Names_replacement", true)) 
         if (!(TcNames.load_names_replacement(fileNames::tcNames_repl_file)))
             cfg->ChangeValueIfExists("Settings", "Names_replacement", false);
-
     
     if (cfg->GetBoolean("Settings", "Categories", true))
         if (!(TcCategories.load_categories(fileNames::tcCategories_file))) 
             cfg->ChangeValueIfExists("Settings", "Categories", false);
-
 
     preload_done = true;
 }
@@ -506,8 +504,7 @@ void TcNamesReplacemantHandler::save_hardcoded_params_to_file(const char* filena
  sky_cloud_gen_density_offset                      : Shadow Threshold
  sky_cloud_offset                                  : Color / Shadow Offset)";
 
-    text += R"( 
- sky_cloud_overall_strength                        : Detail Overlay
+    text += R"( sky_cloud_overall_strength                        : Detail Overlay
  sky_cloud_overall_color                           : Detail Overlay Color
  sky_cloud_edge_strength                           : Edge Detail
  sky_cloud_fadeout                                 : Fadeout

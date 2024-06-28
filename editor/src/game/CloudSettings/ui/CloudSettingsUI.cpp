@@ -47,19 +47,9 @@ namespace
 }
 
 
-CloudSettingsUI::CloudSettingsUI(const char* title) : App(title), CloudsVec(mCloudsHandler.GetCloudSettingsVec())
+CloudSettingsUI::CloudSettingsUI(const char* title) : App(title)
 {
-	auto& gHatsNames = mCloudsHandler.GetCloudHatNamesArray();
-	CloudHatNames.reserve(gHatsNames.size() + 1);	
-
-	for (size_t i = 0; i < gHatsNames.size(); i++)
-	{
-		CloudHatNames.push_back(gHatsNames[i].Name);
-	}
-
-	CloudHatNames.push_back("NONE");
-
-	time_samples = {
+	m_TimeSamples = {
 		{0, "00:00"},
 		{4, "04:00"},
 		{5, "05:00"},
@@ -76,7 +66,7 @@ CloudSettingsUI::CloudSettingsUI(const char* title) : App(title), CloudsVec(mClo
 		{22, "22:00"},
 	};
 
-	time_array = {	
+	m_TimeArray = {	
 		"00:00" , "04:00" , "05:00" , 
 		"06:00" , "07:00" , "10:00" , 
 		"12:00" , "16:00" , "17:00" , 
@@ -88,19 +78,19 @@ CloudSettingsUI::CloudSettingsUI(const char* title) : App(title), CloudsVec(mClo
 
 void CloudSettingsUI::GetCurrentTimeSample(int current_hour)
 {
-	for (size_t i = 0; i < time_samples.size(); i++)
+	for (size_t i = 0; i < m_TimeSamples.size(); i++)
 	{
-		if (current_hour <= time_samples[i].first)
+		if (current_hour <= m_TimeSamples[i].first)
 		{
-			if (current_hour == time_samples[i].first) {
-				current_time_sample_idx = i;
+			if (current_hour == m_TimeSamples[i].first) {
+				m_CurrentTimeSampleIndex = i;
 				return;
 			}
-			current_time_sample_idx = i - 1;
+			m_CurrentTimeSampleIndex = i - 1;
 			return;
 		}
 		if (current_hour > 22) {
-			current_time_sample_idx = time_samples.size() - 1;
+			m_CurrentTimeSampleIndex = m_TimeSamples.size() - 1;
 			return;
 		}
 	}
@@ -110,16 +100,17 @@ void CloudSettingsUI::GetCurrentTimeSample(int current_hour)
 
 void CloudSettingsUI::ParamsWindow()
 {
-	auto& arr = mCloudsHandler.GetCloudHatNamesArray();
+	auto& CloudHatNames = m_CloudsHandler.GetCloudHatNamesArray();
+	auto& CloudsVec = m_CloudsHandler.GetCloudSettingsVec();
 	int CloudsComboIndex;
 	
 	GetCurrentTimeSample(CClock::GetCurrentHour());
 
-	current_hat = mCloudsHandler.GetActiveCloudhatIndex();
-	if (current_hat == -1) {
+	int CurrentHat = m_CloudsHandler.GetActiveCloudhatIndex();
+	if (CurrentHat == -1) {
 		CloudsComboIndex = CloudHatNames.size() - 1;
 	} else {
-		CloudsComboIndex = current_hat;
+		CloudsComboIndex = CurrentHat;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,8 +132,8 @@ void CloudSettingsUI::ParamsWindow()
 
 		if (ImGui::Combo("Active CloudHat", &CloudsComboIndex, CloudHatNames.data(), CloudHatNames.size()))
 		{
-			if (CloudsComboIndex != current_hat) {
-				mCloudsHandler.RequestCloudHat(CloudHatNames[CloudsComboIndex], 0.1f);
+			if (CloudsComboIndex != CurrentHat) {
+				m_CloudsHandler.RequestCloudHat(CloudHatNames[CloudsComboIndex], 0.1f);
 			}
 		}
 
@@ -153,7 +144,7 @@ void CloudSettingsUI::ParamsWindow()
 		
 		if (ImGui::BeginPopup("settingsToggle"))
 		{
-			ImGui::MenuItem("Show only the current sample", "", &ShowOnlyTheCurrentSample);
+			ImGui::MenuItem("Show only the current sample", "", &m_ShowOnlyTheCurrentSample);
 			ImGui::EndPopup();
 		}
 
@@ -166,7 +157,7 @@ void CloudSettingsUI::ParamsWindow()
 
 	for (int i = 0; i < CloudsVec.size(); i++)
 	{
-		if (ImGui::CollapsingHeader(vfmt("{:<30} {}", CloudsVec[i].hash_name, CloudsVec[i].str_name), ImGuiTreeNodeFlags_None))
+		if (ImGui::CollapsingHeader(vfmt("{}", CloudsVec[i].name), ImGuiTreeNodeFlags_None))
 		{
 			ImGui::SeparatorText("CloudList");
 			ProbabilityWidgets(i);
@@ -183,6 +174,9 @@ void CloudSettingsUI::ParamsWindow()
 
 void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 {
+	auto& CloudHatNames = m_CloudsHandler.GetCloudHatNamesArray();
+	auto& CloudsVec = m_CloudsHandler.GetCloudSettingsVec();
+
 	bool bitFlag;
 	u32 CurrentBits;
 	const int cols_count = 3;
@@ -191,10 +185,10 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 
 	if (ImGui::TreeNode(vfmt("Probabilities ##TrPr{}", clIdx)))
 	{
-		CurrentBits = CloudsVec[clIdx].bits.to_ulong();
+		CurrentBits = *CloudsVec[clIdx].CloudSettings->bits.data();
 
-		ImGui::Text(vfmt("Binary bitset : {:021b}", CurrentBits));
-		ImGui::Text(vfmt("Hex bitset : 0x{:08X}", CurrentBits));
+		ImGui::Text(vfmt("Binary bitset view : {:021b}", CurrentBits));
+		ImGui::Text(vfmt("Hex bitset view: 0x{:08X}", CurrentBits));
 
 		PushStyleCompact(0.7);
 
@@ -238,15 +232,14 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 						break;
 					case (2):
 
-						bitFlag = CloudsVec[clIdx].bits.test(row);
+						bitFlag = CloudsVec[clIdx].CloudSettings->bits.test(row);
 
 						ImGui::SameLine();
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5);
 
 						if (ImGui::Checkbox(vfmt("##{}_{}_bitset_flag", row, clIdx), &bitFlag))
 						{
-							CloudsVec[clIdx].bits.set(row, bitFlag);
-							CloudsVec[clIdx].CloudSettings->bits = CloudsVec[clIdx].bits.to_ulong();
+							CloudsVec[clIdx].CloudSettings->bits.set(row, bitFlag);
 						}
 						
 						break;
@@ -266,8 +259,8 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 
 		if (ImGui::Button("PressMe"))
 		{
-			nextIdx = mCloudsHandler.GetNewRandomCloudhatIndex();
-			mCloudsHandler.RequestCloudHat(CloudHatNames[nextIdx], 0.1f);
+			nextIdx = m_CloudsHandler.GetNewRandomCloudhatIndex();
+			m_CloudsHandler.RequestCloudHat(CloudHatNames[nextIdx], 0.1f);
 		}
 		ImGui::Text("Selected index : %i" , nextIdx);
 		
@@ -288,9 +281,11 @@ void CloudSettingsUI::CloudDataTreeNode(const char* label, int clIdx,atArray<ptx
 
 void CloudSettingsUI::CloudsDataWidgets(int clIdx)
 {
+	auto& CloudsVec = m_CloudsHandler.GetCloudSettingsVec();
+
 	auto ColoursFunc = [this](atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 		{
-			if (ShowOnlyTheCurrentSample) {
+			if (m_ShowOnlyTheCurrentSample) {
 				CloudSettingsColourSingleParam(arr, table_id, param_name);
 			} else {
 				CloudSettingsColourTable(arr, table_id, param_name);
@@ -299,7 +294,7 @@ void CloudSettingsUI::CloudsDataWidgets(int clIdx)
 
 	auto VariablesFunc = [this](atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 		{
-			if (ShowOnlyTheCurrentSample) {
+			if (m_ShowOnlyTheCurrentSample) {
 				CloudSettingsVariablesSingleParam(arr, table_id, param_name);
 			} else {
 				CloudSettingsVariablesTable(arr, table_id, param_name);
@@ -316,19 +311,23 @@ void CloudSettingsUI::CloudsDataWidgets(int clIdx)
 	CloudDataTreeNode("West Fill Color",	clIdx,	CloudsVec[clIdx].CloudSettings->m_CloudWestColor.data,		ColoursFunc);
 	
 	CloudDataTreeNode("Scale Sky Color / Scale Bounce / Scale East Colour / Scale West Colour",		
-		clIdx, CloudsVec[clIdx].CloudSettings->m_CloudScaleFillColors.data,	
+		clIdx,
+		CloudsVec[clIdx].CloudSettings->m_CloudScaleFillColors.data,	
 		VariablesFunc);
 
 	CloudDataTreeNode("Density Shift -> Scale / Scattering Constant -> Scale",
-		clIdx, CloudsVec[clIdx].CloudSettings->m_CloudDensityShift_Scale_ScatteringConst_Scale.data, 
+		clIdx, 
+		CloudsVec[clIdx].CloudSettings->m_CloudDensityShift_Scale_ScatteringConst_Scale.data, 
 		VariablesFunc);
 	
 	CloudDataTreeNode("Piercing Light Power / Strength / Normal Strength / Thickness",
-		clIdx, CloudsVec[clIdx].CloudSettings->m_CloudPiercingLightPower_Strength_NormalStrength_Thickness.data, 
+		clIdx, 
+		CloudsVec[clIdx].CloudSettings->m_CloudPiercingLightPower_Strength_NormalStrength_Thickness.data, 
 		VariablesFunc);
 	
 	CloudDataTreeNode("Scale Diffuse / Scale Fill / Scale Ambient / Wrap Amount",
-		clIdx, CloudsVec[clIdx].CloudSettings->m_CloudScaleDiffuseFillAmbient_WrapAmount.data, 
+		clIdx, 
+		CloudsVec[clIdx].CloudSettings->m_CloudScaleDiffuseFillAmbient_WrapAmount.data, 
 		VariablesFunc);
 
 }
@@ -341,19 +340,19 @@ void CloudSettingsUI::CloudsDataWidgets(int clIdx)
 
 void CloudSettingsUI::CloudSettingsColourTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	if (ImGui::BeginTable(vfmt("##table_{}_{}", table_id, param_name), time_array.size() - 1, CloudsImguiFlags::table_flags))
+	if (ImGui::BeginTable(vfmt("##table_{}_{}", table_id, param_name), m_TimeArray.size() - 1, CloudsImguiFlags::table_flags))
 	{
 		for (size_t i = 0; i < 2; i++)
 		{
 			ImGui::TableNextRow();
 
-			for (size_t time = 0; time < time_array.size() - 1; time++) 
+			for (size_t time = 0; time < m_TimeArray.size() - 1; time++) 
 			{
 				ImGui::TableNextColumn();
 
 				if (i == 0)
 				{
-					ImGui::Text(time_array[time]);
+					ImGui::Text(m_TimeArray[time]);
 				}
 				if (i == 1)
 				{	
@@ -371,9 +370,9 @@ void CloudSettingsUI::CloudSettingsColourTable(atArray<ptxKeyframeEntry>& arr, i
 
 void CloudSettingsUI::CloudSettingsColourSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	u8 time = current_time_sample_idx;
+	u8 time = m_CurrentTimeSampleIndex;
 
-	if (ImGui::ColorEdit4(vfmt("{}##_{}_{}_col", time_samples[time].second, table_id, param_name), arr[time].vValue, CloudsImguiFlags::color_vec4_flags_single))
+	if (ImGui::ColorEdit4(vfmt("{}##_{}_{}_col", m_TimeSamples[time].second, table_id, param_name), arr[time].vValue, CloudsImguiFlags::color_vec4_flags_single))
 	{
 		if (time == 0) { std::copy(arr[time].vValue, arr[time].vValue + 4, arr[14].vValue); }
 	}
@@ -389,7 +388,7 @@ void CloudSettingsUI::CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr
 	{
 		ImGui::TableSetupColumn("One", ImGuiTableColumnFlags_WidthFixed, 55);
 
-		for (size_t time = 0; time < time_array.size() - 1; time++)
+		for (size_t time = 0; time < m_TimeArray.size() - 1; time++)
 		{
 			ImGui::TableNextRow();
 			
@@ -399,7 +398,7 @@ void CloudSettingsUI::CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr
 
 				if (i == 0)
 				{
-					ImGui::Text(time_array[time]);
+					ImGui::Text(m_TimeArray[time]);
 				}
 				if (i == 1)
 				{
@@ -421,9 +420,9 @@ void CloudSettingsUI::CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr
 
 void CloudSettingsUI::CloudSettingsVariablesSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name)
 {
-	u8 time = current_time_sample_idx;
+	u8 time = m_CurrentTimeSampleIndex;
 
-	if (ImGui::DragFloat4(vfmt("{}##_{}_{}_var_", time_samples[time].second, table_id, param_name), arr[time].vValue, 0.015))
+	if (ImGui::DragFloat4(vfmt("{}##_{}_{}_var_", m_TimeSamples[time].second, table_id, param_name), arr[time].vValue, 0.015))
 	{
 		if (time == 0) { std::copy(arr[time].vValue, arr[time].vValue + 4, arr[14].vValue); }
 	}
@@ -442,11 +441,11 @@ void CloudSettingsUI::window()
 
 void CloudSettingsUI::importData(std::filesystem::path path)
 {
-	mXmlParser.ImportCloudKfData(path, mCloudsHandler);
+	m_XmlParser.ImportCloudKfData(path, m_CloudsHandler);
 }
 
 void CloudSettingsUI::exportData(std::filesystem::path path)
 {
-	mXmlParser.ExportCloudKfData(path, mCloudsHandler.GetCloudSettingsVec());
+	m_XmlParser.ExportCloudKfData(path, m_CloudsHandler);
 }
 

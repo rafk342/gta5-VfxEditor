@@ -4,7 +4,6 @@
 #include <functional>
 #include <thread>
 #include <vector>
-#include <deque>
 
 #include "memory/address.h"
 #include "memory/hook.h"
@@ -21,8 +20,8 @@ class ScriptThreadDispatcher
 {
 	std::mutex m_Mutex;
 	
-	std::deque<ScriptHookDelegate> m_Subscribers;
-	std::deque<ScriptHookDelegate> m_FrameTasks;
+	std::vector<ScriptHookDelegate> m_Subscribers;
+	std::vector<ScriptHookDelegate> m_FrameTasks;
 
 public:
 	void Subscribe(const ScriptHookDelegate& delegate)
@@ -54,6 +53,7 @@ public:
 		m_FrameTasks.clear();
 	}
 };
+
 
 class ScriptHook
 {

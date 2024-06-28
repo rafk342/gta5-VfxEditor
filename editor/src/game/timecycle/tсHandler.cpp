@@ -14,7 +14,7 @@ timeñycleHandler::timeñycleHandler()
 	for (size_t i = 0; i < WEATHER_TC_FILES_COUNT; i++)
 	{
 		m_CyclesArray[i] = (tcCycle*) ((*(u8**)((u8*)(tcMngr) + 0x68)) + (i * 0x57e0));
-		m_WeatherNames.push_back(std::move(GetCycleName(i)));
+		m_WeatherNames.push_back(GetCycleName(i));
 	}
 }
 
@@ -39,7 +39,6 @@ std::string timeñycleHandler::GetCycleName(int index)
 		{rage::joaat("XMAS")		, "XMAS"		},
 	};
 	u32 n_hash = m_CyclesArray[index]->GetCycleNameHash();
-	
 	if (NamesMap.contains(n_hash)) {
 		return NamesMap.at(n_hash);
 	} else {

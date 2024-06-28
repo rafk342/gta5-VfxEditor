@@ -21,12 +21,12 @@ public:
 
 class BaseUiWindow : private FileListUI
 {
+    using AppsVecType = std::vector<std::unique_ptr<App>>;
     static BaseUiWindow* self;
 
     const char* MainWindowTitle = "VisualEffects Editor";
-   
-    std::vector<std::unique_ptr<App>>   appsVec;
-    App*                                activeApp = nullptr;
+    AppsVecType appsVec;
+    App*        activeApp = nullptr;
 
     void setActiveApp(App* app);
     App* getActiveApp() const;

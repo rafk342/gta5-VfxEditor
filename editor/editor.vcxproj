@@ -182,6 +182,7 @@
     <ClCompile Include="src\game\overlayRender\Shaders.cpp" />
     <ClCompile Include="src\game\rage\math\vec.cpp" />
     <ClCompile Include="src\game\rage\math\vecv.cpp" />
+    <ClCompile Include="src\game\timecycle\tcData.cpp" />
     <ClCompile Include="src\game\timecycle\tccycle.cpp" />
     <ClCompile Include="src\game\timecycle\tсHandler.cpp" />
     <ClCompile Include="src\game\timecycle\ui\timecycleUI_impl.cpp" />
@@ -261,7 +262,6 @@
     <ClInclude Include="src\game\rageControl\control.h" />
     <ClInclude Include="src\game\timecycle\tccycle.h" />
     <ClInclude Include="src\game\timecycle\tcData.h" />
-    <ClInclude Include="src\game\timecycle\tcdef.h" />
     <ClInclude Include="src\game\timecycle\tсHandler.h" />
     <ClInclude Include="src\game\timecycle\ui\timecycleUI_impl.h" />
     <ClInclude Include="src\app\uiBase\FileListUI.h" />

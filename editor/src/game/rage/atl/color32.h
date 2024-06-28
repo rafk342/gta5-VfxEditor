@@ -11,21 +11,17 @@ class Color32
 	const static u8 g_shift = 8;
 	const static u8 b_shift = 0;
 	const static u8 a_shift = 24;
-
 public:
+
 	Color32() = default;
 	
 	Color32(u32 value) : color(value) { }
-	
-	Color32(float _r, float _g, float _b, float _a = 1.0f){ Setf(_r,_g,_b,_a);}
-	Color32(int _r, int _g, int _b, int _a = 255) { SetU8(u8(_r), u8(_g), u8(_b), u8(_a));}
-	
-	Color32(float* p) { Setf (p[0], p[1], p[2], p[3]); }
-	Color32(u8* p) { SetU8(p[0], p[1], p[2], p[3]); }
+	Color32(float _r, float _g, float _b, float _a = 1.0f) { Setf(_r,_g,_b,_a); }
+	Color32(int _r, int _g, int _b, int _a = 255) { SetU8(u8(_r), u8(_g), u8(_b), u8(_a)); }
+	Color32(float* p)	{ Setf (p[0], p[1], p[2], p[3]); }
+	Color32(u8* p)		{ SetU8(p[0], p[1], p[2], p[3]); }
 
-
-	Color32(const Color32& other) : color(other.color)
-	{ }
+	Color32(const Color32& other) : color(other.color) { }
 
 	Color32& operator= (Color32& other)
 	{
@@ -33,42 +29,42 @@ public:
 		return *this;
 	}
 
-	Color32& operator= (std::initializer_list<float> il)
+	void operator= (std::initializer_list<float> il)
 	{
 		auto it = il.begin();
 		if (il.size() >= 1) setRedf(*it++);
 		if (il.size() >= 2) setGreenf(*it++);
 		if (il.size() >= 3) setBluef(*it++);
 		if (il.size() >= 4) setAlphaf(*it);
-		return *this;
 	}
 	
-	Color32& operator= (std::initializer_list<u8> il)
+	void operator= (std::initializer_list<int> il)
 	{
 		auto it = il.begin();
 		if (il.size() >= 1) setRedU8(*it++);
 		if (il.size() >= 2) setGreenU8(*it++);
 		if (il.size() >= 3) setBlueU8(*it++);
 		if (il.size() >= 4) setAlphaU8(*it);
-		return *this;
 	}
 	
-	Color32& operator= (float* p)
+	void operator= (float* p)
 	{
 		Setf(p[0], p[1], p[2], p[3]);
-		return *this;
 	}
 	
-	Color32& operator= (u8* p)
+	void operator= (u8* p)
 	{
 		SetU8(p[0], p[1], p[2], p[3]);
-		return *this;
 	}
 
-	Color32& operator= (u32 v)
+	void operator= (u32 value)
 	{
-		color = v;
-		return *this;
+		color = value;
+	}
+
+	operator u32()
+	{
+		return color;
 	}
 
 	inline u8 getRedU8() const		{ return static_cast<u8>(color >> r_shift); }
@@ -91,9 +87,8 @@ public:
 	inline void setGreenU8	(u8 v) { color = (color & ~(0xffu << g_shift) | (v << g_shift)); }
 	inline void setAlphaU8	(u8 v) { color = (color & ~(0xffu << a_shift) | (v << a_shift)); }
 
-	rage::Vector4 Getf_col4() const { return { getRedf(), getGreenf(), getBluef(), getAlphaf() }; }
-	rage::Vector3 Getf_col3() const { return { getRedf(), getGreenf(), getBluef() };
-}
+	inline rage::Vector4 Getf_col4() const { return { getRedf(), getGreenf(), getBluef(), getAlphaf() }; }
+	inline rage::Vector3 Getf_col3() const { return { getRedf(), getGreenf(), getBluef() };}
 
 	inline void SetU8(u8 _r, u8 _g, u8 _b, u8 _a = 255)
 	{
@@ -117,5 +112,5 @@ public:
 	}
 
 	inline void SetRawU32Data(u32 v) { color = v; }
-	inline u32  GetRawU32Data() { return color; }
+	inline u32  GetRawU32Data() const { return color; }
 };

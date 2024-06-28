@@ -9,7 +9,8 @@
 FileListUI::FileListUI()
 {
     std::memset(buff, 0, 255);
-    strcpy_s(buff, Preload::Get()->getConfigParser()->GetString("Settings","Default_path","E:\\GTAV\\timecycles").c_str());
+    std::string str = Preload::Get()->getConfigParser()->GetString("Settings", "Default_path", "E:\\GTAV\\timecycles").c_str();
+    strncpy_s(buff, str.c_str(), str.size() + 1);
 }
 
 

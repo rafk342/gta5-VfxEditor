@@ -6,6 +6,10 @@
 #include <d3dcompiler.h>
 #pragma comment(lib, "d3dcompiler.lib")
 
+#include "compiler/compiler.h"
+
+
+#include "ImGui/imgui.h"
 
 #include "memory/address.h"
 #include "memory/hook.h"
@@ -16,7 +20,6 @@
 #include "rage/math/vecv.h"
 
 #include "overlayRender/DrawList.h"
-
 
 enum FlareFxTextureType_e : u8
 {						 // SubGroups :
@@ -46,7 +49,7 @@ struct CFlareFX
 	float	m_fIntensityFade = 0.0f;
 	float	m_fAnimorphicScaleFactorU = 0.0f;
 	float	m_fAnimorphicScaleFactorV = 0.0f;
-	Color32 m_color = { 1.0f,1.0f,1.0f };
+	Color32 m_color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float	m_fTextureColorDesaturate = 0.0f;
 	float	m_fGradientMultiplier = 0.0f;
 	u8		m_nTexture = 0;

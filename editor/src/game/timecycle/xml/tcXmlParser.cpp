@@ -55,21 +55,21 @@ void tcXmlParser::load_tcData(const std::filesystem::path& path, tcCycle* cycle_
 
 	//std::string attr_cycle_name = root.child("cycle").attribute("name").value();	//doesn't matter here
 	pugi::xml_node cycle_node = root.child("cycle");
-	std::string param_line;
+	std::string params_line;
 
 	int region_index = 0;
 
 	for (auto region_node : cycle_node.children("region"))
 	{
-		for (size_t v_idx = 0; v_idx < TIMECYCLE_VAR_COUNT; v_idx++)
+		for (size_t v_idx = 0; v_idx < TCVAR_NUM; v_idx++)
 		{
 			AttributePredicate predicate(g_varInfos[v_idx].name);
-			pugi::xml_node param_node = region_node.find_child(predicate);
+			pugi::xml_node params_node = region_node.find_child(predicate);
 			
-			if (param_node)
+			if (params_node)
 			{
-				param_line = static_cast<std::string>(param_node.text().get());
-				std::vector<float> tmp_vec = convert_str_to_float_arr(param_line, TC_TIME_SAMPLES);
+				params_line = static_cast<std::string>(params_node.text().get());
+				std::vector<float> tmp_vec = convert_str_to_float_arr(params_line, TC_TIME_SAMPLES);
 
 				for (size_t time = 0; time < TC_TIME_SAMPLES; time++)
 				{
@@ -125,7 +125,7 @@ void tcXmlParser::export_tcData(const std::filesystem::path& path, const tcCycle
 			break;
 		}
 
-		for (size_t param_index = 0; param_index < TIMECYCLE_VAR_COUNT; param_index++)
+		for (size_t param_index = 0; param_index < TCVAR_NUM; param_index++)
 		{
 			region_node.append_child(g_varInfos[param_index].name).text() = getTcParamsLine(cycle, static_cast<Regions>(region_idx), param_index).c_str();
 		}

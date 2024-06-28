@@ -4,9 +4,7 @@
 #include "app/memory/address.h"
 #include "app/crypto/float16.h"
 #include <string>
-#include "tcdef.h"
 
-#include "tcdef.h"
 #include "tcData.h"
 
 enum Regions

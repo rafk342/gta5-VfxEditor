@@ -20,18 +20,9 @@ struct ptxKeyframeEntry
 	float vTime[4]{};
 	float vValue[4]{};
 
-	ptxKeyframeEntry(float* time, float* values)
-	{
-		for (int i = 0; i < 4; ++i) {
-			vTime[i] = time[i];
-			vValue[i] = values[i];
-		}
-	}
-
 	ptxKeyframeEntry(float time, rage::Vec4V values)
 	{
 		vTime[0] = time;
-
 		for (int i = 0; i < 4; ++i) {
 			vValue[i] = values[i];
 		}
@@ -72,39 +63,24 @@ public:
 };
 
 
-struct CloudHatFragContainer
-{
-private:
-	char pad01[64];
-public:
-	char Name[64];		//we need just names from here
-private:
-	char pad02[336];
-};
-
 
 struct CloudSettingsNamed
 {
-	u32					hash_name = 0;
-	std::string			str_name;
+	u32					hash = 0;
+	std::string			name;
 	CloudHatSettings*	CloudSettings = nullptr;
-	std::bitset<21>		bits;
 
 	CloudSettingsNamed(u32 hash, std::string name, CloudHatSettings* settings) 
-		: hash_name(hash)
-		, str_name(std::move(name))
+		: hash(hash)
+		, name(std::move(name))
 		, CloudSettings(settings)
-		, bits(*(settings->bits.m_bits))
 	{ }
-
 };
 
 
 class CloudsHandler
 {
 	friend class CloudSettingsXmlParser;
-
-	// game related things
 	struct gCloudSettingsMap
 	{
 	private:
@@ -114,23 +90,35 @@ class CloudsHandler
 		atArray<float> TimeData;
 	};
 
-	atArray<CloudHatFragContainer>*	gCloudHatNames;
 	gCloudSettingsMap*				gCloudsMap = nullptr;
-	u8*								gCloudsMngr;
-	// for our usage
+	void*							gCloudsMngr;
+	std::vector<const char*>		gCloudHatNames;
 	std::vector<CloudSettingsNamed>	NamedCloudsSettingsVec;
 	
 public: 
 
 	CloudsHandler();
 
-	CloudSettingsNamed*					FindCloudSettings(u32 hash);
-	CloudSettingsNamed*					FindCloudSettings(const char* name);
-	std::vector<CloudSettingsNamed>&	GetCloudSettingsVec() { return this->NamedCloudsSettingsVec; }
-	atArray<CloudHatFragContainer>&		GetCloudHatNamesArray() { return *(this->gCloudHatNames); }
-	u8*									Get_raw_gCloudsMngrPtr() { return this->gCloudsMngr; }
-	u16									GetNewRandomCloudhatIndex();
-	void								RequestClearCloudHat();
-	void								RequestCloudHat(const char* name, float time);
-	int									GetActiveCloudhatIndex();
+	auto& GetCloudSettingsVec() { return this->NamedCloudsSettingsVec; }
+	auto& GetCloudHatNamesArray() { return this->gCloudHatNames; }
+	
+	void  RequestClearCloudHat();
+	void  RequestCloudHat(const char* name, float time);
+	u16	  GetNewRandomCloudhatIndex();
+	int	  GetActiveCloudhatIndex();
+
+	void fillCloudSettingsNamedVec(const auto& NamesContainer)
+	{
+		NamedCloudsSettingsVec.clear();
+		for (auto [hash, settings_ptr] : gCloudsMap->CloudSettings.toVec())
+		{
+			auto it = std::find_if(NamesContainer.begin(), NamesContainer.end(), [hash](const std::string& name) { return rage::joaat(name.c_str()) == hash; });
+			if (it != NamesContainer.end()) {
+				NamedCloudsSettingsVec.push_back({ hash,*it,settings_ptr });
+			} else {
+				NamedCloudsSettingsVec.push_back({ hash,std::format("Unknown /hash : 0x{:08X}",hash),settings_ptr });
+			}
+		}
+	}
 };
+

@@ -1,34 +1,5 @@
 #include "CLensFlare.h"
 
-
-void UpdateVertexBuffer(ID3D11DeviceContext* context, ID3D11Buffer* vertexBuffer, const rage::Vec3V& start, const rage::Vec3V& end)
-{
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-
-	if (FAILED(context->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
-		return;
-	
-	float* data = reinterpret_cast<float*>(mappedResource.pData);
-
-	data[0] = start.X();
-	data[1] = start.Y();
-
-	data[2] = 0.01f;
-	data[3] = 0.0f;
-	data[4] = 1.0f;
-	data[5] = 1.0f;
-
-	data[6] = end.X();
-	data[7] = end.Y();
-
-	data[8] = 1.0f;
-	data[9] = 0.0f;
-	data[10] = 0.0f;
-	data[11] = 1.0f;
-
-	context->Unmap(vertexBuffer, 0);
-}
-
 //void LensFlareHandler::LensFlaresDrawLines()
 //{
 //	if (!(self && sm_IsFlareFxRenderedOnThisFrame))
@@ -104,7 +75,21 @@ void LensFlareHandler::n_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, f
 
 void LensFlareHandler::Update()
 {
+	//auto wnd_sz = ImGui::GetMainViewport()->Size;
+
+	//ImVec2 start_p = { sm_StartPoint.X() * wnd_sz.x, sm_StartPoint.Y() * wnd_sz.y };
+	//ImVec2 end_p = { sm_EndPoint.X() * wnd_sz.x, sm_EndPoint.Y() * wnd_sz.y };
+
+	//ImGui::GetBackgroundDrawList()->AddLine(start_p, end_p, u32(Color32(1.0f, 0.0f, 0.0f, 1.0f)), 0.5f);
+	//
+	//auto sz = ImGui::GetMainViewport()->Size;
+	//sz.x = 0.5 * sz.x;
+	//sz.y = 0.5 * sz.y;
+
+	//ImGui::GetBackgroundDrawList()->AddLine({ 0.0f, 0.0f }, sz, IM_COL32(255, 0, 0, 200));
+#if Using_DrawList
 	DrawLine2D(sm_StartPoint, sm_EndPoint, { 1.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 1.0f, 1.0f });
+#endif
 }
 
 LensFlareHandler::LensFlareHandler()
@@ -118,7 +103,7 @@ LensFlareHandler::LensFlareHandler()
 
 LensFlareHandler::~LensFlareHandler()
 {
-	Hook::Remove(s_RenderFlareFxAddr);
+	Hook::Remove(s_RenderFlareFxAddr, "RenderFlareFx");
 	self = nullptr;
 }
 

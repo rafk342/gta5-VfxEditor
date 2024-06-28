@@ -150,7 +150,6 @@ void VfxLightningsXmlParser::mImportLightningData(const std::filesystem::path& p
         }
         LoadCloudBurstCommonSettings(settings->m_StrikeSettings.m_CloudBurstCommonSettings, StrikeSettingsNode.child("CloudBurstCommonSettings"));
     }
-    
 }
 
 void VfxLightningsXmlParser::LoadCloudBurstCommonSettings(CloudBurstCommonSettings& settings, const pugi::xml_node& node)
@@ -176,32 +175,21 @@ void VfxLightningsXmlParser::LoadKeyframeData(const pugi::xml_node& keyData, ptx
 {
     if (!keyData)
         return;
-
-    std::string	raw_text;
-
     pugi::xml_node keyEntryData = keyData.child("keyEntryData");
-    raw_text = keyEntryData.text().get();
-
+   
+    std::string	raw_text = keyEntryData.text().get();
     std::istringstream iss(raw_text);
     std::string line;
     std::vector<float> temp;
-    
-    int	idx = 0;
-
+   
     keyframe.data.clear();
-
     while (std::getline(iss, line, '\n')) 
     {
         if (strip_str(line).empty()) 
             continue;
 
         temp = convert_str_to_float_arr(line, 5);
-        
-        float v1[4]{temp[0],0,0,0};
-        float v2[4]{temp[1],temp[2],temp[3],temp[4]};
-        keyframe.data.push_back(ptxKeyframeEntry(v1, v2));
-        
-        idx++;
+        keyframe.data.push_back(ptxKeyframeEntry(temp[0], { temp[1],temp[2],temp[3],temp[4] }));
     }
 }
 
@@ -389,7 +377,6 @@ std::string& VfxLightningsXmlParser::GetKeyframesTextParams(ptxKeyframe& keyfram
 	text += "\n\t\t\t\t\t\t\t";
 	return text;
 }
-
 
 
 void VfxLightningsXmlParser::AppendCloudBurstCommonSettingsXmlNodes(pugi::xml_node& parent, CloudBurstCommonSettings& settings)

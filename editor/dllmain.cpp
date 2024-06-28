@@ -72,8 +72,6 @@ AM_EXPORT void Shutdown()
 #endif
 	Hook::Shutdown();
 	std::this_thread::sleep_for(std::chrono::milliseconds(300));
-	
-	LogInfo("Shutdown done");
 
 #else
 

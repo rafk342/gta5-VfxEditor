@@ -1,31 +1,23 @@
 #include "helpers.h"
 
-
-
 std::vector<float> convert_str_to_float_arr(const std::string& str , int size)
 {
     std::vector<float> arr;
     std::stringstream iss(str);
     float num;
-
-    while (iss >> num)
+    while (iss >> num) {
         arr.push_back(num);
-
-    if (arr.size() > size)
-    {
+    }
+    if (arr.size() > size) {
         arr.erase(arr.begin() + size, arr.end());
     }
-    if (arr.size() < size)
-    {
-        for (size_t i = arr.size(); i < size; i++)
-        {
+    if (arr.size() < size) {
+        for (size_t i = arr.size(); i < size; i++) {
             arr.push_back(0);
         }
     }
-    
     return arr;
 }
-
 
 std::string strip_str(const std::string& str)
 {
@@ -44,7 +36,6 @@ std::string strip_str(const std::string& str)
 	return str.substr(start_pos, end_pos - start_pos + 1);
 }
 
-
 std::vector<std::string> split_string(const std::string& input, const std::string& delimiters, u16 expected_vec_size) {
     std::vector<std::string> elements;
     std::size_t start = 0, end = 0;
@@ -56,11 +47,9 @@ std::vector<std::string> split_string(const std::string& input, const std::strin
         }
         start = end + 1;
     }
-
     if (start < input.size()) {
         elements.push_back(input.substr(start));
     }
-
     return elements;
 }
 

@@ -13,16 +13,15 @@
 
 class CloudSettingsUI : public App
 {
-	CloudsHandler								mCloudsHandler;
-	
-	std::vector<CloudSettingsNamed>&			CloudsVec;
-	std::vector<const char*>					CloudHatNames;
-	std::array<const char*, 15>					time_array;
-	std::vector<std::pair<int, const char*>>	time_samples;
-	int											current_hat = 0;
-	u8											current_time_sample_idx = 0;
-	bool										ShowOnlyTheCurrentSample = false;
+	using TimeArray_t = std::array<const char*, 15>;
+	using TimeSamplesArray_t = std::vector<std::pair<int, const char*>>;
 
+	CloudsHandler			m_CloudsHandler;
+	CloudSettingsXmlParser	m_XmlParser;
+	TimeArray_t				m_TimeArray;
+	TimeSamplesArray_t		m_TimeSamples;
+	u8						m_CurrentTimeSampleIndex = 0;
+	bool					m_ShowOnlyTheCurrentSample = false;
 
 	void GetCurrentTimeSample(int current_hour);
 
@@ -37,14 +36,14 @@ class CloudSettingsUI : public App
 	void CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
 	void CloudSettingsVariablesSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
 
+	void ParamsWindow();
+
+public:
+
+	CloudSettingsUI(const char* title);
+
 	virtual void	window() override;
 	virtual void	importData(std::filesystem::path path) override;
 	virtual void	exportData(std::filesystem::path path) override;
-
-public:
-	CloudSettingsXmlParser	mXmlParser;
-	
-	CloudSettingsUI(const char* title);
-	void ParamsWindow();
 };
 
