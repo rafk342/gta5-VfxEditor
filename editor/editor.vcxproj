@@ -159,8 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\game\overlayRender\DrawList.cpp" />
-    <ClCompile Include="src\game\CLensFlare\XmlParser\CLensFlareXmlParser.cpp" />
+    <ClCompile Include="src\game\CLensFlare\CLensFlareXmlParser.cpp" />
     <ClCompile Include="src\game\CLensFlare\UI\LensFlareUi.cpp" />
     <ClCompile Include="src\game\CLensFlare\CLensFlare.cpp" />
     <ClCompile Include="src\game\bloodfx\gBloodFxReloader.cpp" />
@@ -170,7 +169,6 @@
     <ClCompile Include="src\game\CloudSettings\ui\CloudSettingsUI.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="src\app\amString\string.cpp" />
-    <ClCompile Include="src\app\crypto\float16.cpp" />
     <ClCompile Include="src\app\fileSystem\FileHandler.cpp" />
     <ClCompile Include="src\app\helpers\helpers.cpp" />
     <ClCompile Include="src\app\helpers\win32.cpp" />
@@ -179,11 +177,9 @@
     <ClCompile Include="src\game\CloudSettings\CloudSettings.cpp" />
     <ClCompile Include="src\game\gameClock\CClock.cpp" />
     <ClCompile Include="src\game\overlayRender\Render.cpp" />
-    <ClCompile Include="src\game\overlayRender\Shaders.cpp" />
     <ClCompile Include="src\game\rage\math\vec.cpp" />
     <ClCompile Include="src\game\rage\math\vecv.cpp" />
     <ClCompile Include="src\game\timecycle\tcData.cpp" />
-    <ClCompile Include="src\game\timecycle\tccycle.cpp" />
     <ClCompile Include="src\game\timecycle\tсHandler.cpp" />
     <ClCompile Include="src\game\timecycle\ui\timecycleUI_impl.cpp" />
     <ClCompile Include="src\app\uiBase\FileListUI.cpp" />
@@ -209,13 +205,11 @@
     <ClCompile Include="src\game\VisualSettings\ui\visualSettingsUi.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\game\overlayRender\DrawList.h" />
     <ClInclude Include="src\app\helpers\ranges.h" />
-    <ClInclude Include="src\game\CLensFlare\XmlParser\CLensFlareXmlParser.h" />
+    <ClInclude Include="src\game\CLensFlare\CLensFlareXmlParser.h" />
     <ClInclude Include="src\game\CLensFlare\UI\LensFlareUi.h" />
     <ClInclude Include="src\game\CLensFlare\CLensFlare.h" />
     <ClInclude Include="src\game\bloodfx\gBloodFxReloader.h" />
-    <ClInclude Include="src\game\overlayRender\Shaders.h" />
     <ClInclude Include="src\game\rage\atl\color32.h" />
     <ClInclude Include="src\game\rage\base\atRTTI.h" />
     <ClInclude Include="src\game\rage\base\tlsContext.h" />
@@ -260,7 +254,6 @@
     <ClInclude Include="src\game\gameClock\CClock.h" />
     <ClInclude Include="src\game\overlayRender\Render.h" />
     <ClInclude Include="src\game\rageControl\control.h" />
-    <ClInclude Include="src\game\timecycle\tccycle.h" />
     <ClInclude Include="src\game\timecycle\tcData.h" />
     <ClInclude Include="src\game\timecycle\tсHandler.h" />
     <ClInclude Include="src\game\timecycle\ui\timecycleUI_impl.h" />

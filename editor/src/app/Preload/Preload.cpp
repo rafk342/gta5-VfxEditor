@@ -502,7 +502,8 @@ void TcNamesReplacemantHandler::save_hardcoded_params_to_file(const char* filena
  sky_cloud_shadow_col                              : Shadow Color
  sky_cloud_shadow_strength                         : Shadow Strength
  sky_cloud_gen_density_offset                      : Shadow Threshold
- sky_cloud_offset                                  : Color / Shadow Offset)";
+ sky_cloud_offset                                  : Color / Shadow Offset
+)";
 
     text += R"( sky_cloud_overall_strength                        : Detail Overlay
  sky_cloud_overall_color                           : Detail Overlay Color

@@ -19,8 +19,7 @@ void VfxLightningsXmlParser::mImportLightningData(const std::filesystem::path& p
         return;
 
     pugi::xml_node root = doc.first_child();
-
-    if (!(static_cast<std::string>(root.name()) == "VfxLightningSettings"))
+    if (std::string_view(root.name()) != "VfxLightningSettings")
         return;
 
     settings->lightningOccurranceChance = root.child("lightningOccurranceChance").attribute("value").as_int(0);
@@ -188,7 +187,8 @@ void VfxLightningsXmlParser::LoadKeyframeData(const pugi::xml_node& keyData, ptx
         if (strip_str(line).empty()) 
             continue;
 
-        temp = convert_str_to_float_arr(line, 5);
+        std::array temp = ConvertStrToArray<float, 5>(line.c_str());
+        //temp = convert_str_to_float_arr(line, 5);
         keyframe.data.push_back(ptxKeyframeEntry(temp[0], { temp[1],temp[2],temp[3],temp[4] }));
     }
 }

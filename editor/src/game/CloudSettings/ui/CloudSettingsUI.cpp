@@ -89,7 +89,7 @@ void CloudSettingsUI::GetCurrentTimeSample(int current_hour)
 			m_CurrentTimeSampleIndex = i - 1;
 			return;
 		}
-		if (current_hour > 22) {
+		if (current_hour > m_TimeSamples.back().first) {
 			m_CurrentTimeSampleIndex = m_TimeSamples.size() - 1;
 			return;
 		}
@@ -178,17 +178,16 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 	auto& CloudsVec = m_CloudsHandler.GetCloudSettingsVec();
 
 	bool bitFlag;
-	u32 CurrentBits;
 	const int cols_count = 3;
 	float width_arr[cols_count] = { 128.5, 150, 0 };
 
 
 	if (ImGui::TreeNode(vfmt("Probabilities ##TrPr{}", clIdx)))
 	{
-		CurrentBits = *CloudsVec[clIdx].CloudSettings->bits.data();
+		u32 CurrentBits = *CloudsVec[clIdx].CloudSettings->m_Bits.data();
 
-		ImGui::Text(vfmt("Binary bitset view : {:021b}", CurrentBits));
-		ImGui::Text(vfmt("Hex bitset view: 0x{:08X}", CurrentBits));
+		ImGui::Text(vfmt("Binary bitset view : {:032b}", CurrentBits));
+		ImGui::Text(vfmt("Hex bitset view : 0x{:08X}", CurrentBits));
 
 		PushStyleCompact(0.7);
 
@@ -199,7 +198,7 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 			ImGui::TableSetupColumn("Enabled ", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableHeadersRow();
 
-			for (size_t row = 0; row < CloudsVec[clIdx].CloudSettings->probability_array.size(); row++)
+			for (size_t row = 0; row < CloudsVec[clIdx].CloudSettings->m_ProbabilitiesArray.size(); row++)
 			{
 				ImGui::TableNextRow();
 
@@ -222,9 +221,9 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 					case (1):
 
 						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-						if (ImGui::InputInt(vfmt("##_{}_{}_CloudHat_index", row, clIdx), &CloudsVec[clIdx].CloudSettings->probability_array[row], 1, 5))
+						if (ImGui::InputInt(vfmt("##_{}_{}_CloudHat_index", row, clIdx), &CloudsVec[clIdx].CloudSettings->m_ProbabilitiesArray[row], 1, 5))
 						{
-							int& var = CloudsVec[clIdx].CloudSettings->probability_array[row];
+							int& var = CloudsVec[clIdx].CloudSettings->m_ProbabilitiesArray[row];
 							if (var < 0) var = 0;
 							if (var > 500) var = 500;
 						}
@@ -232,14 +231,14 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 						break;
 					case (2):
 
-						bitFlag = CloudsVec[clIdx].CloudSettings->bits.test(row);
+						bitFlag = CloudsVec[clIdx].CloudSettings->m_Bits.test(row);
 
 						ImGui::SameLine();
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5);
 
 						if (ImGui::Checkbox(vfmt("##{}_{}_bitset_flag", row, clIdx), &bitFlag))
 						{
-							CloudsVec[clIdx].CloudSettings->bits.set(row, bitFlag);
+							CloudsVec[clIdx].CloudSettings->m_Bits.set(row, bitFlag);
 						}
 						
 						break;

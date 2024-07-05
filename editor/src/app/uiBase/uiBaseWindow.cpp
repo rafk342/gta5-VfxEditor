@@ -15,12 +15,12 @@ App::App(const char* title) : title(title) {}
 
 BaseUiWindow::BaseUiWindow()
 {
-    appsVec.emplace_back(new TimecycleUI("Timecycles"));
-    appsVec.emplace_back(new CloudSettingsUI("Cloudkeyframes"));
-    appsVec.emplace_back(new VisualSettingsUi("VisualSettings"));
-    appsVec.emplace_back(new VfxLightningUi("Lightnings"));
-    appsVec.emplace_back(new gBloodfxUi("Bloodfx"));
-  //  appsVec.emplace_back(new LensFlareUi("LensFlare"));
+    //appsVec.emplace_back(new TimecycleUI("Timecycles"));
+    //appsVec.emplace_back(new CloudSettingsUI("Cloudkeyframes"));
+    //appsVec.emplace_back(new VisualSettingsUi("VisualSettings"));
+    //appsVec.emplace_back(new VfxLightningUi("Lightnings"));
+    //appsVec.emplace_back(new gBloodfxUi("Bloodfx"));
+    appsVec.emplace_back(new LensFlareUi("LensFlares"));
 }
 
 const char* App::get_title()

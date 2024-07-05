@@ -9,25 +9,8 @@
 #include "game/overlayRender/Render.h"
 #include "app/logger.h"
 #include "app/compiler/compiler.h"
-#include "game/CloudSettings/CloudSettings.h"
 #include "scripthookTh.h"
-#include "helpers/SimpleTimer.h"
 
-#include "CLensFlare/CLensFlare.h"
-//
-//void* operator new(decltype(sizeof(0)) n) noexcept(false)
-//{
-//	void* ptr = malloc(n);
-//	std::cout << vfmt("alloc sz : {} bytes | addr : {:016X}\n", n, (u64)ptr);
-//	return ptr;
-//}
-//
-//void operator delete(void* p) noexcept
-//{
-//	std::cout << vfmt("erased at : {0:016X}\n", (u64)p);
-//	free(p);
-//}
-//
 
 FILE* f;
 
@@ -64,15 +47,20 @@ AM_EXPORT void Shutdown()
 	FreeConsole();
 #endif
 #if !test_ver
+	LogInfo("Renderer::Shutdown()");
 
 	Renderer::Shutdown();
+	LogInfo("Preload::Destroy()");
 	Preload::Destroy();
+	LogInfo("ScriptHook::Shutdown()");
+
 #if am_version
 	ScriptHook::Shutdown();
 #endif
+	LogInfo("Hook::Shutdown()");
 	Hook::Shutdown();
 	std::this_thread::sleep_for(std::chrono::milliseconds(300));
-
+	LogInfo("Shutdown Done()");
 #else
 
 #endif

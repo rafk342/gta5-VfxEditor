@@ -29,42 +29,56 @@ public:
 		return *this;
 	}
 
-	void operator= (std::initializer_list<float> il)
+	Color32& operator= (std::initializer_list<float> il)
 	{
 		auto it = il.begin();
 		if (il.size() >= 1) setRedf(*it++);
 		if (il.size() >= 2) setGreenf(*it++);
 		if (il.size() >= 3) setBluef(*it++);
 		if (il.size() >= 4) setAlphaf(*it);
+		return *this;
 	}
 	
-	void operator= (std::initializer_list<int> il)
+	Color32& operator= (std::initializer_list<int> il)
 	{
 		auto it = il.begin();
 		if (il.size() >= 1) setRedU8(*it++);
 		if (il.size() >= 2) setGreenU8(*it++);
 		if (il.size() >= 3) setBlueU8(*it++);
 		if (il.size() >= 4) setAlphaU8(*it);
+		return *this;
 	}
 	
-	void operator= (float* p)
+	Color32& operator= (float* p)
 	{
 		Setf(p[0], p[1], p[2], p[3]);
+		return *this;
 	}
 	
-	void operator= (u8* p)
+	Color32& operator= (u8* p)
 	{
 		SetU8(p[0], p[1], p[2], p[3]);
+		return *this;
 	}
 
-	void operator= (u32 value)
+	Color32& operator= (u32 value)
 	{
 		color = value;
+		return *this;
 	}
 
 	operator u32()
 	{
 		return color;
+	}
+
+	Color32 operator*(const Color32& other) const
+	{
+		return Color32(
+			(getRedU8() * other.getRedU8()) / 255,
+			(getGreenU8() * other.getGreenU8()) / 255,
+			(getBlueU8() * other.getBlueU8()) / 255,
+			(getAlphaU8() * other.getAlphaU8()) / 255);
 	}
 
 	inline u8 getRedU8() const		{ return static_cast<u8>(color >> r_shift); }

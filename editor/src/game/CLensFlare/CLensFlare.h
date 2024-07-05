@@ -2,9 +2,9 @@
 
 #include <iostream>
 #include <map>
-#include <directxmath.h>
-#include <d3dcompiler.h>
-#pragma comment(lib, "d3dcompiler.lib")
+//#include <directxmath.h>
+//#include <d3dcompiler.h>
+//#pragma comment(lib, "d3dcompiler.lib")
 
 #include "compiler/compiler.h"
 
@@ -19,14 +19,14 @@
 #include "rage/math/vec.h"
 #include "rage/math/vecv.h"
 
-#include "overlayRender/DrawList.h"
+
 
 enum FlareFxTextureType_e : u8
 {						 // SubGroups :
-	AnimorphicType	= 0, // 0
-	ArtefactType	= 1, // 1-8 here
-	ChromaticType	= 2, // 0
-	CoronaType		= 3, //	0
+	AnimorphicFx = 0, // 0
+	ArtefactFx	 = 1, // 1-8 here
+	ChromaticFx	 = 2, // 0
+	CoronaFx	 = 3, // 0
 };
 
 enum LensFlareFile_e
@@ -89,34 +89,92 @@ public:
 };
 
 
+class LensFlareHandler;
+class LensFlares_DebugOverlay 
+{
+	friend class LensFlareHandler;
+	using self_t = LensFlares_DebugOverlay;
+	static self_t* self;
+	
+	LensFlareHandler*	m_Handler = nullptr;
+	rage::Vec3V			m_StartPoint{};
+	rage::Vec3V			m_EndPoint{};
+	
+	struct CircleDrawData
+	{
+		ImVec2 pos;
+		float rotate;
+		Color32 col;
+		ImVec2 scale;
+	};
+	
+	std::vector<CircleDrawData> m_CirclesDrawData;
+	
+	//std::map<CFlareFX*, rage::ScalarV> m_DistantsFromLight;
+
+	static void hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, float fIntensity, float* vPos);
+	
+	Color32 line_color = { 255, 0, 0, 187 };
+	float line_thickness = 1;
+	
+public:
+	
+	float scale = 10;
+	Color32 scalar_color = { 200, 200, 200, 187};
+
+	LensFlares_DebugOverlay(LensFlareHandler* handler);
+	~LensFlares_DebugOverlay();
+	
+	void EndFrame();
+};
+
 
 class LensFlareHandler
 {
-	class gCLensFlare
-	{
-		u8 pad01[0x78];
-	public:
-		CLensFlareSettings m_Settings[3];
-		u8 m_ActiveIndex;
-	private:
-		u8 pad02[7];
-	};
-	static void n_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, float* vPos);
+	friend class LensFlares_DebugOverlay;
+	using self_t = LensFlareHandler;
+	static self_t* self;
 
-	static LensFlareHandler* self;
-	static rage::Vec3V	sm_StartPoint;
-	static rage::Vec3V	sm_EndPoint;
+
+	class CLensFlares
+	{
+	public:
+		u8 pad001[0x40];
+		float m_fExposureScale;
+		float m_fExposureIntensity;
+		float m_fExposureRotation;
+		u8 pad002[32];
+		float m_SunVisibility;
+		u8 pad003[8];
+		CLensFlareSettings m_Settings[3];
+		u8 m_ActiveSettingsIndex;
+		u8 pad004[31];
+		u8 m_DestinationSettingsIndex;
+	};
+
+	bool m_ShowDebugOverlay = false;
 
 public:
 	
-	gCLensFlare* m_CLensFlare = nullptr;
+	CLensFlares*			gCLensFlares = nullptr;
+	LensFlares_DebugOverlay	m_DebugOverlay;
 	
-	void Update();
-
 	LensFlareHandler();
 	~LensFlareHandler();
 
+	void ChangeSettings(u8 index)
+	{
+		if (gCLensFlares)
+		{
+			gCLensFlares->m_ActiveSettingsIndex = index;
+			gCLensFlares->m_DestinationSettingsIndex = index;
+		}
+	}
+
 	const char* GetFileNameAtIndex(size_t idx);
 	const char* GetTextureTypeName(u8 NumTexture);
+	void SetDebugOverlayVisibility(bool show);
+	void SortFlaresByDistance(atArray<CFlareFX>& arr);
+	static void EndFrame();
 };
 

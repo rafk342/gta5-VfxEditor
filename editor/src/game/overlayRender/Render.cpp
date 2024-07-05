@@ -1,6 +1,7 @@
 #include <chrono>
 #include <thread>
 
+#include "game/CLensFlare/CLensFlare.h"
 #include "Render.h"
 #include "app/logger.h"
 #include "app/compiler/compiler.h"
@@ -33,10 +34,6 @@ bool	Renderer::sm_RenderState = false;
 float	Renderer::font_size = 15.0f;
 bool	Renderer::font_scale_expected_to_be_changed = false;
 
-#if Using_DrawList
-std::unique_ptr<GameDrawLists> Renderer::sm_DrawLists = nullptr;
-#endif
-
 ID3D11Device*			Renderer::GetDevice()	{ return p_device.Get(); }
 ID3D11DeviceContext*	Renderer::GetContext()	{ return p_context.Get(); }
 HWND					Renderer::GetHandle()	{ return window; }
@@ -56,7 +53,7 @@ void Renderer::Search_for_gDevice()
 		("85 C0 BF 00 00 CA 00").GetAt(80)
 #endif
 	.GetRef(3);
-	
+
 	p_SwapChain = ComPtr<IDXGISwapChain>(*s_ResizeBuffersAddr.GetAt(33).GetRef(3).To<IDXGISwapChain**>());
 	if (SUCCEEDED(p_SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void**>(p_device.GetAddressOf()))))
 	{
@@ -140,19 +137,16 @@ LRESULT Renderer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 
 
-#if Using_DrawList
 // Called from CApp::RunGame() -> fwRenderThreadInterface::Synchronise()
 // Render thread is guaranteed to be blocked here
-void (*g_PerformSafeModeOperations)(void*);
-void Renderer::hk_PerformSafeModeOperations(void* instance)
-{
-	if (sm_DrawLists)
-		sm_DrawLists->EndFrame();
-
-	g_PerformSafeModeOperations(instance);
-
-}
-#endif
+//void (*g_PerformSafeModeOperations)(void*);
+//void Renderer::hk_PerformSafeModeOperations(void* instance)
+//{
+//
+//	g_PerformSafeModeOperations(instance);
+//
+//}
+// 
 void(*g_GpuEndFrame)();
 void Renderer::hk_GpuEndFrame()
 {
@@ -166,9 +160,15 @@ void Renderer::hk_GpuEndFrame()
 
 		sm_Initialized = true;
 	}
-	if (sm_Initialized && sm_IsWindowVisible)
+	if (sm_Initialized && !shutdown_request)
 	{
-		ImRenderFrame();
+		ImStartFrame();
+		if (sm_IsWindowVisible) 
+		{
+			ImDrawUI();
+		}
+		LensFlareHandler::EndFrame();
+		ImEndFrame();
 	}
 	g_GpuEndFrame();
 	sm_RenderState = false;
@@ -180,27 +180,24 @@ void Renderer::hk_GpuEndFrame()
 
 void Renderer::Init()
 {
-	WaitWhileGameIsStarting();
 	loadConfigParams();
+	WaitWhileGameIsStarting();
 
 	if (shutdown_request)
 		return;
 
 	Search_for_gDevice();
 	Hook::Create(s_EndFrameAddr,	Renderer::hk_GpuEndFrame,	&g_GpuEndFrame,	"EndFrame");
-	Hook::Create(s_WndProcAddr,		Renderer::WndProc,		&g_WndProc,		"WndProc");
+	Hook::Create(s_WndProcAddr,		Renderer::WndProc,			&g_WndProc,		"WndProc");
 
 	if (!sm_ImGuiCursorUsage)
 	{
 		Hook::Create(ClipCursor, Renderer::n_ClipCursor, &g_ClipCursor, "ClipCursor");
 		Hook::Create(ShowCursor, Renderer::n_ShowCursor, &g_ShowCursor, "ShowCursor");
 	}
-#if Using_DrawList
-	s_SafeModeOperationsAddr = gmAddress::Scan("B9 2D 92 F5 3C", "CGtaRenderThreadGameInterface::PerformSafeModeOperations")
-		.GetAt(-0x31);
-	Hook::Create(s_SafeModeOperationsAddr, hk_PerformSafeModeOperations, &g_PerformSafeModeOperations, "CGtaRenderThreadGameInterface::PerformSafeModeOperations");
-	sm_DrawLists = std::make_unique<GameDrawLists>();
-#endif
+	//s_SafeModeOperationsAddr = gmAddress::Scan("B9 2D 92 F5 3C", "CGtaRenderThreadGameInterface::PerformSafeModeOperations")
+	//	.GetAt(-0x31);
+	//Hook::Create(s_SafeModeOperationsAddr, hk_PerformSafeModeOperations, &g_PerformSafeModeOperations, "CGtaRenderThreadGameInterface::PerformSafeModeOperations");
 }
 
 void Renderer::loadConfigParams()
@@ -234,29 +231,18 @@ void Renderer::InitBackend()
 	ImGui_ImplDX11_Init(p_device.Get(), p_context.Get());
 }
 
-
-void Renderer::ImRenderFrame()
+void Renderer::ImStartFrame()
 {
-	
-	GameInput::DisableAllControlsThisFrame();
-
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+}
 
-	BaseUiWindow::GetInstance()->OnRender();
-
-	//if (ImGui::Begin("tmp window"))
-	//{
-	//	if (ImGui::DragFloat("font sz", &font_size, 0.1f, 1, 100))
-	//	{
-	//		font_scale_expected_to_be_changed = true;
-	//	}
-	//	ImGui::End();
-	//}
-
+void Renderer::ImEndFrame()
+{
 	ImGui::EndFrame();
 	ImGui::Render();
+
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	
 	if (font_scale_expected_to_be_changed) {
@@ -265,33 +251,40 @@ void Renderer::ImRenderFrame()
 	}
 }
 
+
+void Renderer::ImDrawUI()
+{
+	GameInput::DisableAllControlsThisFrame();
+	BaseUiWindow::GetInstance()->OnRender();
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Renderer::Shutdown()
 {
 	shutdown_request = true;
-
+	
 	if (!sm_Initialized) 
 		return;	
 
 	sm_IsWindowVisible = false;
-	while (sm_RenderState) {};
-
+	while (sm_RenderState) { LogInfo("sm_RenderState "); };
+	
 	BaseUiWindow::Destroy();
 
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
-	
+
 	ImPlot::DestroyContext();
 	ImGui::DestroyContext();
 
 	Hook::Remove(s_EndFrameAddr);
 	Hook::Remove(s_WndProcAddr);
 	Hook::Remove(s_SafeModeOperationsAddr);
-#if Using_DrawList
-	sm_DrawLists = nullptr;
-#endif
+	//#if Using_DrawList
+	//sm_DrawLists = nullptr;
+//#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -393,3 +386,15 @@ static void WaitWhileGameIsStarting()
 ////	//p_SwapChain = *gAddr.GetRef(47).To<IDXGISwapChain**>();
 
 ////#endif
+
+
+
+
+	//if (ImGui::Begin("tmp window"))
+	//{
+	//	if (ImGui::DragFloat("font sz", &font_size, 0.1f, 1, 100))
+	//	{
+	//		font_scale_expected_to_be_changed = true;
+	//	}
+	//	ImGui::End();
+	//}

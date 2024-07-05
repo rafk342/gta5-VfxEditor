@@ -1,8 +1,14 @@
 #pragma once
 
-#define WEATHER_TC_FILES_COUNT 15
-#define REGIONS_COUNT 2
-#define TC_TIME_SAMPLES 13
+constexpr size_t WEATHER_TC_FILES_COUNT = 15;
+constexpr size_t TC_TIME_SAMPLES = 13;
+
+enum Regions
+{
+	GLOBAL,
+	URBAN,
+	TC_REGIONS_COUNT
+};
 
 enum TimeCycleVar_e
 {

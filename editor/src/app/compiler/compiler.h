@@ -11,9 +11,10 @@
 #define AM_NOINLINE		__declspec(noinline)
 #define AM_FORCEINLINE	__forceinline
 
-#define am_version		0
+#define am_version		1
 #define with_console	0
 #define test_ver		0
+#define Using_DrawList	0
 
 #define gameVer3095	1
 #define gameVer2060	2
@@ -26,4 +27,3 @@
 #define AM_EXPORT
 #endif
 
-#define Using_DrawList false;

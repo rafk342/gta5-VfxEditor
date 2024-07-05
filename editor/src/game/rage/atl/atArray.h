@@ -68,21 +68,17 @@ public:
 	{
 		size_t sz = std::distance(start, end);
 		manage_capacity(sz);
-		while (start != end)
-		{
+		for (; start != end; start++) {
 			push_back(*start);
-			start++;
 		}
 	}
 	
 	atArray(std::vector<TValue>& vec) : atArray(vec.begin(), vec.end()) {}
 	
-
 	atArray(const atArray& other)
 	{
 		clear();
 		manage_capacity(other.m_capacity);
-
 		for (size_t i = 0; i < other.size(); i++) {
 			push_back(other.m_offset[i]);
 		}
@@ -95,10 +91,9 @@ public:
 
 		clear();
 		manage_capacity(other.size());
-
-		for (size_t i = 0; i < other.size(); ++i)
+		for (size_t i = 0; i < other.size(); ++i) {
 			push_back(other.m_offset[i]);
-
+		}
 		return *this;
 	}
 
@@ -123,7 +118,8 @@ public:
 
 	TValue*         begin()                 { return m_offset; }
 	TValue*         end()                   { return m_offset + m_size; }
-	TValue*         back()                  { return m_size == 0 ? nullptr : end() - 1; }
+	TValue&         front()                 { return *(begin); }
+	TValue&         back()                  { return *(end() - 1); }
 	TValue*         data()                  { return m_offset; }
 	u16             capacity() const        { return m_capacity; }
 	u16             size() const	        { return m_size; }
@@ -149,17 +145,12 @@ public:
 			m_capacity = new_cap;
 			return;
 		}
-		if constexpr (std::is_nothrow_move_constructible_v<TValue> || !std::is_copy_constructible_v<TValue>) 
-		{
-			std::uninitialized_move(m_offset, m_offset + m_size, newOffset);
-			std::destroy(begin(), end());
+		if constexpr (std::is_nothrow_move_constructible_v<TValue> || !std::is_copy_constructible_v<TValue>) {
+			std::uninitialized_move(begin(), end(), newOffset);
 		} else {
-			//size_t cpySz = m_size * sizeof(TValue);
-			//memcpy_s(newOffset, alloc_sz, m_offset, cpySz);
-			//memset(m_offset, 0, cpySz);
-			std::uninitialized_copy(m_offset, m_offset + m_size, newOffset);
-			std::destroy(begin(), end());
+			std::uninitialized_copy(begin(), end(), newOffset);
 		}
+		std::destroy(begin(), end());
 		dealloc_fn(m_offset);
 		m_offset = newOffset;
 		m_capacity = new_cap;
@@ -168,19 +159,17 @@ public:
 	TValue& push_back(const TValue& value)
 	{
 		manage_capacity(m_size);
-
 		new (&m_offset[m_size]) TValue(value);
 		m_size++;
-		return *back();
+		return back();
 	}
 	
 	TValue& push_back(TValue&& value)
 	{
 		manage_capacity(m_size);
-
 		new (&m_offset[m_size]) TValue(std::move(value));
 		m_size++;
-		return *back();
+		return back();
 	}
 
 	void pop_back()
@@ -214,7 +203,6 @@ public:
 		}
 		manage_capacity(m_size + 1);
 		size_t move_sz = (m_size - _where) * sizeof(TValue);
-		
 		memmove(
 			m_offset + _where + 1, //dst 
 			m_offset + _where, //src
@@ -232,27 +220,22 @@ public:
 		manage_capacity(m_size + il.size());
 		auto it_begin = il.begin();
 		auto it_end = il.end();
-
 		if (_where == m_size)
 		{
-			while (it_begin != it_end)
-			{
-				push_back(std::move(*it_begin));
-				it_begin++;
+			for (; it_begin != it_end; it_begin++) {
+				push_back(*it_begin);
 			}
 			return;
 		}
-
 		size_t move_sz = (m_size - _where) * sizeof(TValue);	
 		memmove(
 			m_offset + _where + il.size(), //dst 
 			m_offset + _where, //src
 			move_sz ); //sz
 
-		while (it_begin != it_end)
+		for (; it_begin != it_end; it_begin++)
 		{
 			new (&m_offset[_where++]) TValue(std::move(*it_begin));
-			it_begin++;
 		}
 		m_size += il.size();
 	}
@@ -265,27 +248,22 @@ public:
 
 		size_t count = std::distance(first, last);
 		manage_capacity(m_size + count);
-
 		if (_where == m_size)
 		{
-			while (first != last)
-			{
+			for (; first != last; first++) {
 				push_back(*first);
-				++first;
 			}
 			return;
 		}
-
 		size_t move_sz = (m_size - _where) * sizeof(TValue);
 		memmove(
 			m_offset + _where + count, // dst
 			m_offset + _where,         // src
 			move_sz);                  // size
 
-		while (first != last)
+		for (; first != last; first++) 
 		{
 			new (&m_offset[_where++]) TValue(*first);
-			++first;
 		}
 		m_size += count;
 	}
@@ -298,7 +276,6 @@ public:
 		
 		m_offset[idx].~TValue();
 		size_t move_sz = (m_size - idx - 1) * sizeof(TValue);
-		
 		memmove(
 			&m_offset[idx], // dst
 			&m_offset[idx + 1], //src
@@ -308,23 +285,21 @@ public:
 		memset(end(), 0, sizeof(TValue));
 	}
 
-	void remove_range(size_t first_idx, size_t last_idx)
+	void remove_range(size_t left, size_t right)
 	{
-		bool RangeCanBeRemoved = last_idx < m_size && first_idx < last_idx;
+		bool RangeCanBeRemoved = right < m_size && left < right;
 		if (!RangeCanBeRemoved)
 			return;
 
-		auto* first = &m_offset[first_idx];
-		auto* last = &m_offset[last_idx];
+		auto* first = &m_offset[left];
+		auto* last = &m_offset[right];
 		size_t count = std::distance(first, last + 1);
 		std::destroy(first, last);
-		size_t move_sz = (m_size - last_idx - 1) * sizeof(TValue);
-
+		size_t move_sz = (m_size - right - 1) * sizeof(TValue);
 		memmove(
 			first, // dst
 			last + 1, //src
 			move_sz); //sz
-
 		m_size -= count;
 	}
 
@@ -337,7 +312,6 @@ public:
 					remove_at(i);
 		}
 	}
-
 
 	void clear()
 	{

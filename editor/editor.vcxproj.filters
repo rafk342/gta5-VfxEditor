@@ -21,9 +21,6 @@
     <ClCompile Include="src\app\amString\string.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\app\crypto\float16.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="src\app\fileSystem\FileHandler.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -49,9 +46,6 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="src\game\timecycle\xml\tcXmlParser.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="src\game\timecycle\tccycle.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="src\game\timecycle\tсHandler.cpp">
@@ -141,19 +135,13 @@
     <ClCompile Include="src\game\CLensFlare\UI\LensFlareUi.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\CLensFlare\XmlParser\CLensFlareXmlParser.cpp">
+    <ClCompile Include="src\game\CLensFlare\CLensFlareXmlParser.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="src\game\rage\math\vec.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="src\game\rage\math\vecv.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="src\game\overlayRender\DrawList.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="src\game\overlayRender\Shaders.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="src\game\timecycle\tcData.cpp">
@@ -219,9 +207,6 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\game\timecycle\xml\tcXmlParser.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="src\game\timecycle\tccycle.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\game\timecycle\tcData.h">
@@ -686,7 +671,7 @@
     <ClInclude Include="src\game\CLensFlare\UI\LensFlareUi.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\game\CLensFlare\XmlParser\CLensFlareXmlParser.h">
+    <ClInclude Include="src\game\CLensFlare\CLensFlareXmlParser.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\app\helpers\ranges.h">
@@ -717,12 +702,6 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Cougar\FixedSizeAllocator.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="src\game\overlayRender\DrawList.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="src\game\overlayRender\Shaders.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

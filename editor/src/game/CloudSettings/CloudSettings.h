@@ -44,8 +44,8 @@ struct CloudHatSettings
 private:
 	u8 pad[16]{};
 public:
-	atArray<int> probability_array;
-	atBitSet bits;
+	atArray<int> m_ProbabilitiesArray;
+	atBitSet m_Bits;
 
 	ptxKeyframe m_CloudColor;
 	ptxKeyframe m_CloudLightColor;
@@ -59,9 +59,8 @@ public:
 	ptxKeyframe m_CloudPiercingLightPower_Strength_NormalStrength_Thickness;
 	ptxKeyframe m_CloudScaleDiffuseFillAmbient_WrapAmount;
 
-	CloudHatSettings() : bits(21) {};
+	CloudHatSettings() : m_Bits(21) {};
 };
-
 
 
 struct CloudSettingsNamed

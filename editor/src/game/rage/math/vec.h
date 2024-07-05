@@ -34,6 +34,31 @@ namespace rage
 		void FromArray(const float* arr) { X = arr[0]; Y = arr[1]; }
 		void ToArray(float* arr) const { arr[0] = X; arr[1] = Y; }
 
+		float Length() const
+		{
+			return sqrt(X * X + Y * Y);
+		}
+
+		Vector2 Normalize() const
+		{
+			float length = Length();
+			return Vector2(X / length, Y / length);
+		}
+
+		float Dot(const Vector2& other) const
+		{
+			return X * other.X + Y * other.Y;
+		}
+
+		float Angle(const Vector2& other) const
+		{
+			Vector2 normalizedThis = Normalize();
+			Vector2 normalizedOther = other.Normalize();
+			float dotProduct = normalizedThis.Dot(normalizedOther);
+			return acosf(dotProduct);
+		}
+
+
 		float& operator[](int index)
 		{
 			switch (index)

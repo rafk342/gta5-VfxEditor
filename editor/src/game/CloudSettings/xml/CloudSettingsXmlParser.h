@@ -17,7 +17,6 @@
 class CloudSettingsXmlParser
 {
 	std::array<float, 15> time_arr = { 0, 4, 5 ,6 ,7 ,10 ,12 ,16 ,17 ,18 ,19 ,20 ,21 ,22 ,24 };
-	std::mutex mtx;
 
 	struct content_type
 	{
@@ -26,7 +25,9 @@ class CloudSettingsXmlParser
 	};
 	
 	//import
-	void FillProbabilityVecFromStr(std::vector<int>& vec, const std::string& text);
+	void fillBits(CloudHatSettings& settings, pugi::xml_node& ParamNode);
+	void fillProbabilitiesArray(CloudHatSettings& settings, pugi::xml_node& ParamNode);
+	//std::vector<int> GetProbabilitiesVecFromStr(const char* text, u32 bits_count);
 	void LoadKeyframeData(pugi::xml_node& params_node, CloudHatSettings& settings);
 	void FillPreMap(const std::string& raw_text, std::map<float, rage::Vec4V>& preMap);
 	void LoadKeyFrameDataToMem(ptxKeyframe& keyframe, std::map<float, rage::Vec4V>& preMap);

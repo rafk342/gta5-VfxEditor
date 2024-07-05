@@ -1,6 +1,6 @@
 #include "visualSettingsHandler.h"
 
-/* It's a bit of a shitcode. Almost all of this has to be remade, and I will remake it, someday... */
+/* It's a bit of a shitcode. Almost all of this has to be remade, and I will do it, someday... */
 
 namespace
 {
@@ -102,7 +102,7 @@ VisualSettingsHandler::VisualSettingsHandler()
     //origPathLen         = strlen(p_toOrigPath) + 1;
     //std::memcpy(origSavedPath, p_toOrigPath, origPathLen);
 
-    bytesAddr = reinterpret_cast<u8*>(addr.GetAt(4).Value);
+    bytesAddr = addr.GetAt(4).To<u8*>();
     
     getUsedParamNames();
     mContainer.initContainer(this);
@@ -264,15 +264,15 @@ void VScontainer::updateContainer(VisualSettingsHandler* handler)
 }
 
 
-namespace 
-{
-    void find_and_erase_till_the_end(std::string& str, const char* v)
-    {
-        size_t pos = str.find(v);
-        if (pos != -1)
-            str.erase(str.begin() + pos, str.end());
-    };
-}
+//namespace 
+//{
+//    void find_and_erase_till_the_end(std::string& str, const char* v)
+//    {
+//        size_t pos = str.find(v);
+//        if (pos != -1)
+//            str.erase(str.begin() + pos, str.end());
+//    };
+//}
 
 void VisualSettingsParser::importData(const std::filesystem::path& path, VisualSettingsHandler* handler)
 {
@@ -293,11 +293,10 @@ void VisualSettingsParser::importData(const std::filesystem::path& path, VisualS
         if (line.empty())
             continue;
 
-        find_and_erase_till_the_end(line, "#");
-        find_and_erase_till_the_end(line, "//");
-
-        if (line.empty())
-            continue;
+        //find_and_erase_till_the_end(line, "#");
+        //find_and_erase_till_the_end(line, "//");
+        //if (line.empty())
+        //    continue;
 
         if (!(std::any_of(line.begin(), line.end(), [](const char& c) -> bool { return isdigit(c); } ))) {
             continue;

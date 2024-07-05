@@ -43,7 +43,7 @@ struct TcImguiFlags
 
 TimecycleUI::TimecycleUI(const char* title) : App(title)
 {
-	currentCycle = m_tcHandler.GetCycle(0);
+	m_CurrentCycle = m_tcHandler.GetCycle(0);
 	regions = { "Global", "Urban" };
 	time_samples = {
 		 {0 , " 00:00"},
@@ -60,7 +60,7 @@ TimecycleUI::TimecycleUI(const char* title) : App(title)
 		 {21, " 21:00"},
 		 {22, " 22:00"},
 	};
-	Categories_usage = Preload::Get()->getConfigParser()->GetBoolean("Settings","Categories",false);
+	m_CategoriesUsage = Preload::Get()->getConfigParser()->GetBoolean("Settings","Categories",false);
 }
 
 
@@ -74,7 +74,7 @@ void TimecycleUI::MainParamsWindow()
 
 	ImGui::Separator();
 
-	if (Categories_usage){
+	if (m_CategoriesUsage){
 		MainParamsWindow_with_Categories();
 	} else {
 		MainParamsWindow_without_Categories();
@@ -90,7 +90,7 @@ void TimecycleUI::WeatherAndRegions()
 	if (!init)
 	{
 		GAMEPLAY::_GET_CURRENT_WEATHER_TYPE();
-		GAMEPLAY::SET_OVERRIDE_WEATHER((char*)m_tcHandler.GetCycleName(current_weather_index).c_str());
+		GAMEPLAY::SET_OVERRIDE_WEATHER((char*)m_tcHandler.GetCycleName(m_CurrentWeatherIndex).c_str());
 		for (size_t i = 0; i < m_tcHandler.GetWeatherNamesVec().size(); i++) {
 			weather_names.push_back(m_tcHandler.GetWeatherNamesVec()[i].c_str());
 		}
@@ -115,10 +115,10 @@ void TimecycleUI::WeatherAndRegions()
 			ImGui::SetNextItemWidth(result);
 		}
 
-		if (ImGui::Combo("Weather", (int*)&current_weather_index, weather_names.data(), weather_names.size()))
+		if (ImGui::Combo("Weather", (int*)&m_CurrentWeatherIndex, weather_names.data(), weather_names.size()))
 		{
-			currentCycle = m_tcHandler.GetCycle(current_weather_index);
-			GAMEPLAY::SET_OVERRIDE_WEATHER((char*)m_tcHandler.GetCycleName(current_weather_index).c_str());
+			m_CurrentCycle = m_tcHandler.GetCycle(m_CurrentWeatherIndex);
+			GAMEPLAY::SET_OVERRIDE_WEATHER((char*)m_tcHandler.GetCycleName(m_CurrentWeatherIndex).c_str());
 		}
 
 		ImGui::TableNextColumn();
@@ -128,9 +128,9 @@ void TimecycleUI::WeatherAndRegions()
 
 		if (ImGui::BeginPopup("settingsToggle"))
 		{
-			ImGui::MenuItem("Edit both regions", "", &edit_both_regions);
-			ImGui::MenuItem("Show only the current sample", "", &show_only_current_sample);
-			ImGui::MenuItem("Edit all time samples", "", &edit_all_time_samples);
+			ImGui::MenuItem("Edit both regions", "", &m_EditBothRegions);
+			ImGui::MenuItem("Show only the current sample", "", &m_ShowOnlyTheCurrentSample);
+			ImGui::MenuItem("Edit all time samples", "", &m_EditAllTimeSamples);
 
 			ImGui::EndPopup();
 		}
@@ -143,7 +143,7 @@ void TimecycleUI::WeatherAndRegions()
 			ImGui::SetNextItemWidth(result);
 		}
 
-		ImGui::Combo("Regions", (int*)&current_region, regions.data(), regions.size());
+		ImGui::Combo("Regions", (int*)&m_CurrentRegion, regions.data(), regions.size());
 
 		ImGui::EndTable();
 	}
@@ -157,14 +157,14 @@ void TimecycleUI::GetCurrentTimeSample(int current_hour)
 		if (current_hour <= time_samples[i].first)
 		{
 			if (current_hour == time_samples[i].first) {
-				current_time_sample = i;
+				m_CurrentTimeSample = i;
 				return;
 			}
-			current_time_sample = i - 1;
+			m_CurrentTimeSample = i - 1;
 			return;
 		}
 		if (current_hour > 22) {
-			current_time_sample = 12;
+			m_CurrentTimeSample = 12;
 			return;
 		}
 	}
@@ -180,10 +180,10 @@ void TimecycleUI::MainParamsWindow_without_Categories()
 
 		if (ImGui::TreeNode(g_varInfos[i].menuName))
 		{
-			if (show_only_current_sample) {
-				makeJustSingleParamWidget(current_region, i);
+			if (m_ShowOnlyTheCurrentSample) {
+				makeJustSingleParamWidget(m_CurrentRegion, i);
 			} else {
-				makeTable(current_region, i);
+				makeTable(m_CurrentRegion, i);
 			}
 
 			ImGui::TreePop();
@@ -199,7 +199,7 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 	static auto& categoriesMap = Preload::Get()->getTcCategoriesHandler()->getCategoriesMap();
 
 //					category name -> vec ( pair (new param_name , varId))
-//std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> CategoriesMapIngr;
+//std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> CategoriesMap;
 
 	for (auto& category : categoryNames)
 	{
@@ -212,11 +212,11 @@ void TimecycleUI::MainParamsWindow_with_Categories()
 
 				if (ImGui::TreeNode(g_varInfos[id].menuName))
 				{
-					if (show_only_current_sample)
-						makeJustSingleParamWidget(current_region, id);
-					else
-						makeTable(current_region, id);
-
+					if (m_ShowOnlyTheCurrentSample) {
+						makeJustSingleParamWidget(m_CurrentRegion, id);
+					} else {
+						makeTable(m_CurrentRegion, id);
+					}
 					ImGui::TreePop();
 				}
 			}
@@ -258,11 +258,11 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 						
 						ImGui::SetNextItemWidth(tableSize.x / 13);
 
-						manageKeyframeValues<GET>(color, region, VarIndex, time);
+						ManageKeyframeValues<GET>(color, region, VarIndex, time);
 
 						if (ImGui::DragFloat(text, color, 0.05f))
 						{
-							handleParams(color, region, VarIndex, time);
+							SetParams(color, region, VarIndex, time);
 						}
 						break;
 						
@@ -271,11 +271,11 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 
 					case (VARTYPE_COL3):
 
-						manageKeyframeValues<GET>(color, region, VarIndex, time);
+						ManageKeyframeValues<GET>(color, region, VarIndex, time);
 
 						if (ImGui::ColorEdit3(text, color, TcImguiFlags::color_vec3_flags))
 						{
-							handleParams(color, region, VarIndex, time);
+							SetParams(color, region, VarIndex, time);
 						}
 						break;
 						
@@ -284,11 +284,11 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 
 					case (VARTYPE_COL4):			
 						
-						manageKeyframeValues<GET>(color, region, VarIndex, time);
+						ManageKeyframeValues<GET>(color, region, VarIndex, time);
 
 						if (ImGui::ColorEdit4(text, color, TcImguiFlags::color_vec4_flags))
 						{
-							handleParams(color, region, VarIndex, time);
+							SetParams(color, region, VarIndex, time);
 						}
 						break;
 					
@@ -305,12 +305,9 @@ void TimecycleUI::makeTable(Regions region, int VarIndex)
 
 void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 {
-	//static char buff[128];
-	//FORMAT_TO_BUFF(buff, "{} VarId : {}##_{}_var", time_samples[current_time_sample].second, VarIndex, static_cast<int>(time))
-	
 	float color[4];
-	size_t time = current_time_sample;
-	const char* text = vfmt("{} VarId : {}##_{}_var", time_samples[current_time_sample].second, VarIndex, static_cast<int>(time));
+	size_t time = m_CurrentTimeSample;
+	const char* text = vfmt("{} VarId : {}##_{}_var", time_samples[m_CurrentTimeSample].second, VarIndex, static_cast<int>(time));
 
 	switch (g_varInfos[VarIndex].varType)
 	{
@@ -319,11 +316,11 @@ void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 
 	case (VARTYPE_FLOAT):
 
-		manageKeyframeValues<GET>(color, region, VarIndex, time);
+		ManageKeyframeValues<GET>(color, region, VarIndex, time);
 
 		if (ImGui::DragFloat(text, color, 0.05f))
 		{
-			handleParams(color, region, VarIndex, time);
+			SetParams(color, region, VarIndex, time);
 		}
 		break;
 
@@ -332,12 +329,12 @@ void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 
 	case (VARTYPE_COL3):
 
-		manageKeyframeValues<GET>(color, region, VarIndex, time);
+		ManageKeyframeValues<GET>(color, region, VarIndex, time);
 		
 		//ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::ColorEdit3(text, color, TcImguiFlags::color_vec3_flags_single))
 		{
-			handleParams(color, region, VarIndex, time);
+			SetParams(color, region, VarIndex, time);
 		}
 		break;
 
@@ -346,11 +343,11 @@ void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 
 	case (VARTYPE_COL4):
 
-		manageKeyframeValues<GET>(color, region, VarIndex, time);
+		ManageKeyframeValues<GET>(color, region, VarIndex, time);
 		
 		if (ImGui::ColorEdit4(text, color, TcImguiFlags::color_vec4_flags_single))
 		{
-			handleParams(color, region, VarIndex, time);
+			SetParams(color, region, VarIndex, time);
 		}
 		break;
 
@@ -364,7 +361,7 @@ void TimecycleUI::makeJustSingleParamWidget(Regions region, int VarIndex)
 
 
 template<TimecycleUI::Action action>
-void TimecycleUI::manageKeyframeValues(float* color, Regions region, int VarIndex, size_t time)
+void TimecycleUI::ManageKeyframeValues(float* color, Regions region, int VarIndex, size_t time)
 {
 	u8 n =	g_varInfos[VarIndex].varType == VARTYPE_COL3  ? 3 :
 			g_varInfos[VarIndex].varType == VARTYPE_COL4  ? 4 :
@@ -375,10 +372,10 @@ void TimecycleUI::manageKeyframeValues(float* color, Regions region, int VarInde
 		switch (action)
 		{
 		case TimecycleUI::Action::SET:
-			currentCycle->SetKeyframeValue(region, g_varInfos[VarIndex + i].varId, time, color[i]);
+			m_CurrentCycle->SetKeyframeValue(region, g_varInfos[VarIndex + i].varId, time, color[i]);
 			break;
 		case TimecycleUI::Action::GET:
-			color[i] = currentCycle->GetKeyframeValue(region, g_varInfos[VarIndex + i].varId, time);
+			color[i] = m_CurrentCycle->GetKeyframeValue(region, g_varInfos[VarIndex + i].varId, time);
 			break;
 		default:
 			break;
@@ -390,24 +387,24 @@ void TimecycleUI::manageKeyframeValues(float* color, Regions region, int VarInde
 void TimecycleUI::setValuesForAllTimeSamples(float* color, Regions region, int VarIndex)
 {
 	for (u8 time = 0; time < 13; time++)
-		manageKeyframeValues<SET>(color, region, VarIndex, time);
+		ManageKeyframeValues<SET>(color, region, VarIndex, time);
 }
 
 
-void TimecycleUI::handleParams(float* color, Regions region, int VarIndex, size_t time)
+void TimecycleUI::SetParams(float* color, Regions region, int VarIndex, size_t time)
 {
 	Regions other_region = static_cast<Regions>(!(static_cast<bool>(region)));
 	
-	manageKeyframeValues<SET>(color, region, VarIndex, time);
+	ManageKeyframeValues<SET>(color, region, VarIndex, time);
 	
-	if (edit_all_time_samples) 
+	if (m_EditAllTimeSamples) 
 		setValuesForAllTimeSamples(color, region, VarIndex);
 	
-	if (edit_both_regions) //other region 
+	if (m_EditBothRegions) //other region 
 	{
-		manageKeyframeValues<SET>(color, other_region, VarIndex, time);
+		ManageKeyframeValues<SET>(color, other_region, VarIndex, time);	
 		
-		if (edit_all_time_samples)  
+		if (m_EditAllTimeSamples)  
 			setValuesForAllTimeSamples(color, other_region, VarIndex);
 	}
 }
@@ -422,11 +419,11 @@ void TimecycleUI::window()
 
 void TimecycleUI::importData(std::filesystem::path path)
 {
-	m_tcHandler.m_XmlParser.load_tcData(path, this->currentCycle);
+	m_XmlParser.load_tcData(path, this->m_CurrentCycle);
 }
 
 void TimecycleUI::exportData(std::filesystem::path path)
 {
-	m_tcHandler.m_XmlParser.export_tcData(path, this->currentCycle, m_tcHandler.GetCycleName(this->current_weather_index));
+	m_XmlParser.export_tcData(path, this->m_CurrentCycle, m_tcHandler.GetCycleName(this->m_CurrentWeatherIndex));
 }
 

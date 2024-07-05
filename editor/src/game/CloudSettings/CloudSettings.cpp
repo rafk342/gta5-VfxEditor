@@ -26,23 +26,24 @@ CloudsHandler::CloudsHandler()
 		.GetRef(14)
 		.To<gCloudSettingsMap*>();
 
-	fillCloudSettingsNamedVec(std::array{
-		"HEAVYclouds",
-		"STORMclouds",
-		"default",
-		"LIGHTclouds",
-		"MEDIUMclouds",
-		"POSTRAINclouds",
-		"HALLOWEENclouds",
-		"SNOWclouds",
+	fillCloudSettingsNamedVec(std::array
+		{
+			"HEAVYclouds",
+			"STORMclouds",
+			"default",
+			"LIGHTclouds",
+			"MEDIUMclouds",
+			"POSTRAINclouds",
+			"HALLOWEENclouds",
+			"SNOWclouds"
 		});
-
-	gCloudsMngr = *gmAddress::Scan("44 8A 49 ?? 48 8B 0D").GetRef(7).To<u8**>();
+	
+	gCloudsMngr = *gmAddress::Scan("44 8A 49 ?? 48 8B 0D").GetRef(7).To<void**>();
 	atArray<CloudHatFragContainer>* CloudHatFrags = (decltype(CloudHatFrags))((u8*)gCloudsMngr + 0x28);
 	
-	for (auto& data : *(CloudHatFrags))
+	for (auto& v : *(CloudHatFrags))
 	{
-		gCloudHatNames.push_back(data.Name);
+		gCloudHatNames.push_back(v.Name);
 	}
 	gCloudHatNames.push_back("NONE");
 

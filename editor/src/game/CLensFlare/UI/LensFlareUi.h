@@ -13,10 +13,10 @@ class LensFlareUi : public App
 {
 	LensFlareHandler m_Handler;
 
-	void TreeNodeForAnimorphicType();
-	void TreeNodeForArtefactType();
-	void TreeNodeForChromaticType();
-	void TreeNodeForCoronaType();
+	void TreeNodeForAnimorphicType	(CFlareFX& CurrFlareFx, size_t fileIndex, size_t FlareFxIndex);
+	void TreeNodeForArtefactType	(CFlareFX& CurrFlareFx, size_t fileIndex, size_t FlareFxIndex);
+	void TreeNodeForChromaticType	(CFlareFX& CurrFlareFx, size_t fileIndex, size_t FlareFxIndex);
+	void TreeNodeForCoronaType		(CFlareFX& CurrFlareFx, size_t fileIndex, size_t FlareFxIndex);
 
 public:
 

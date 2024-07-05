@@ -5,7 +5,7 @@
 #include "atArray.h"
 #include "helpers/align.h"
 
-
+#undef min
 class atBitSet
 {
 	u32* m_bits = nullptr;
@@ -93,10 +93,11 @@ public:
 		return *this;
 	}
 
-	void operator= (u32 value)
+	atBitSet& operator= (u32 value)
 	{
 		if (m_bits)
 			*m_bits = value;
+		return *this;
 	}
 
 	void reset()
@@ -127,6 +128,41 @@ public:
 			m_bits[wordIndex] |= mask;
 	}
 
+	void resize(u16 NewBitsCount)
+	{
+		if (NewBitsCount == m_BitsCount)
+			return;
+
+		if (NewBitsCount == 0)
+		{
+			if (m_bits)
+			{
+				dealloc_fn(m_bits);
+				m_bits = nullptr;
+			}
+			m_BitWordsCount = 0;
+			m_BitsCount = 0;
+		}
+		else
+		{
+			u16 NewBitWordsCount = ALIGN_32(NewBitsCount) / (sizeof(u32) * 8);
+			size_t alloc_sz = NewBitWordsCount * sizeof(u32);
+			u32* new_bits = static_cast<u32*>(alloc_fn(alloc_sz));
+			memset(new_bits, 0, alloc_sz);
+
+			if (m_bits)
+			{
+				size_t cpy_sz = std::min(m_BitWordsCount, NewBitWordsCount) * sizeof(u32);
+				memcpy(new_bits, m_bits, cpy_sz);
+				dealloc_fn(m_bits);
+			}
+
+			m_bits = new_bits;
+			m_BitsCount = NewBitsCount;
+			m_BitWordsCount = NewBitWordsCount;
+		}
+	}
+
 	const char* to_string()
 	{
 		static char buff[0x400];
@@ -150,4 +186,3 @@ public:
 		}
 	}
 };
-

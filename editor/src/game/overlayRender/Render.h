@@ -5,7 +5,6 @@
 #include <mutex>
 #include <wrl.h>
 
-#include "DrawList.h"
 #include "app/memory/hook.h"
 
 #include "ImGui/imgui.h"
@@ -20,7 +19,6 @@
 #include "gameClock/CClock.h"
 #include "scripthookTh.h"
 #include "Preload/Preload.h";
-#include "DrawList.h"
 
 #include "rage/atl/atHashMap.h"
 
@@ -28,14 +26,15 @@
 #pragma comment(lib, "d3d11.lib")
 
 
+
+#define SAFE_RELEASE(obj) if(obj) { (obj)->Release(); (obj) = nullptr; }
+#define AM_ASSERT_STATUS(expr) if ((expr) != S_OK) LogInfo("Line : {} | File : {} | Something went wrong", __LINE__, __FILE__);
+
 using Microsoft::WRL::ComPtr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class Renderer
 {
-#if Using_DrawList
-	static std::unique_ptr<GameDrawLists> sm_DrawLists;
-#endif
 
 	static int		sm_OpenWindowButton;
 	static bool		sm_IsWindowVisible;
@@ -54,10 +53,11 @@ class Renderer
 	static void Search_for_gDevice();
 	static void hk_GpuEndFrame();
 	static void InitBackend();
-	static void ImRenderFrame();
-#if Using_DrawList
-	static void hk_PerformSafeModeOperations(void* instance);
-#endif
+	
+	static void ImStartFrame();
+	static void ImEndFrame();
+	static void ImDrawUI();
+
 	static void n_ClipCursor(LPRECT rect);
 	static int  n_ShowCursor(bool visible);
 	static void SetMouseVisible(bool visible);
@@ -78,4 +78,7 @@ public:
 	static void Shutdown();
 };
 
+
+#define DX11Context (Renderer::GetContext())
+#define DX11Device (Renderer::GetDevice())
 

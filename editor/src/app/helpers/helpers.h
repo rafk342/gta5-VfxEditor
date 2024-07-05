@@ -10,7 +10,8 @@
 #include "common/types.h"
 #include <mutex>
 
-std::vector<float>          convert_str_to_float_arr        (const std::string& str, int size);
+#include "Cougar/FixedSizeAllocator.h"
+
 std::string                 strip_str                       (const std::string& str);
 std::vector<std::string>    split_string                    (const std::string& input, const std::string& delimiters, u16 expected_vec_size = 16);
 
@@ -30,9 +31,7 @@ namespace details
 		template<typename... T>
 		static const char* _vfmt(std::format_string<T...> fmt, T&&... args)
 		{
-			static std::recursive_mutex mtx;
 			thread_local static char tls_buff[buff_sz];
-			std::unique_lock lock(mtx);
 			std::memset(tls_buff, 0, std::size(tls_buff));
 			std::format_to(tls_buff, fmt, std::forward<T>(args)...);
 			tls_buff[buff_sz - 1] = '\0';
@@ -55,3 +54,21 @@ template<typename... T>
 const char* vfmt1024(std::format_string<T...> fmt, T&&... args) {
 	return details::vfmt_helper<size_t(0x400)>::_vfmt(fmt, std::forward<T>(args)...);
 }
+
+template<typename Type, size_t Size>
+auto ConvertStrToArray(const char* str)
+{
+	std::array<Type, Size> arr{{}};
+	std::basic_stringstream<char, std::char_traits<char>, hmcgr::StackFirstFitAllocator<char, 10000>> iss(str);
+	Type value{};
+	for (size_t i = 0; iss >> value && i < arr.size(); i++)
+	{
+		arr[i] = value;
+	}
+	return arr;
+}
+
+
+
+
+

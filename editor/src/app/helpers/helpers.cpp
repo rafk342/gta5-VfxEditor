@@ -1,24 +1,5 @@
 #include "helpers.h"
 
-std::vector<float> convert_str_to_float_arr(const std::string& str , int size)
-{
-    std::vector<float> arr;
-    std::stringstream iss(str);
-    float num;
-    while (iss >> num) {
-        arr.push_back(num);
-    }
-    if (arr.size() > size) {
-        arr.erase(arr.begin() + size, arr.end());
-    }
-    if (arr.size() < size) {
-        for (size_t i = arr.size(); i < size; i++) {
-            arr.push_back(0);
-        }
-    }
-    return arr;
-}
-
 std::string strip_str(const std::string& str)
 {
 	if (str.empty())
