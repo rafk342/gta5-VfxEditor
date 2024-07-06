@@ -20,6 +20,12 @@
 #include "rage/math/vecv.h"
 
 
+enum LensFlareFile_e
+{
+	lensflare_m = 0,
+	lensflare_f = 1,
+	lensflare_t = 2,
+};
 
 enum FlareFxTextureType_e : u8
 {						 // SubGroups :
@@ -28,14 +34,6 @@ enum FlareFxTextureType_e : u8
 	ChromaticFx	 = 2, // 0
 	CoronaFx	 = 3, // 0
 };
-
-enum LensFlareFile_e
-{
-	lensflare_m = 0,
-	lensflare_f = 1,
-	lensflare_t = 2,
-};
-
 
 struct CFlareFX
 {
@@ -83,7 +81,7 @@ struct CLensFlareSettings
 	float m_fMinExposureIntensity;
 	float m_fMaxExposureIntensity;
 private:
-	u8 pad[4];
+	u8 pad[4]; 
 public:
 	atArray<CFlareFX> m_arrFlareFX;
 };
@@ -95,31 +93,28 @@ class LensFlares_DebugOverlay
 	friend class LensFlareHandler;
 	using self_t = LensFlares_DebugOverlay;
 	static self_t* self;
-	
-	LensFlareHandler*	m_Handler = nullptr;
-	rage::Vec3V			m_StartPoint{};
-	rage::Vec3V			m_EndPoint{};
-	
+
 	struct CircleDrawData
 	{
-		ImVec2 pos;
-		float rotate;
+		ImVec2	pos;
+		float	rotate;
 		Color32 col;
-		ImVec2 scale;
+		ImVec2	scale;
 	};
-	
-	std::vector<CircleDrawData> m_CirclesDrawData;
-	
-	//std::map<CFlareFX*, rage::ScalarV> m_DistantsFromLight;
 
-	static void hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, float fIntensity, float* vPos);
+	LensFlareHandler*	m_Handler = nullptr;
+	rage::Vec3V			m_StartPoint;
+	rage::Vec3V			m_EndPoint;
+	Color32				line_color = { 255, 0, 0, 187 };
+	float				thickness = 1;
+	u32*				p_msTime = nullptr;
 	
-	Color32 line_color = { 255, 0, 0, 187 };
-	float line_thickness = 1;
+	std::vector<CircleDrawData, hmcgr::StaticBestFitAllocator<CircleDrawData, 1000>> m_CirclesDrawData;
+	
+	static void hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, float fIntensity, float* vPos);
 	
 public:
 	
-	float scale = 10;
 	Color32 scalar_color = { 200, 200, 200, 187};
 
 	LensFlares_DebugOverlay(LensFlareHandler* handler);
@@ -156,7 +151,7 @@ class LensFlareHandler
 
 public:
 	
-	CLensFlares*			gCLensFlares = nullptr;
+	CLensFlares*			pCLensFlares = nullptr;
 	LensFlares_DebugOverlay	m_DebugOverlay;
 	
 	LensFlareHandler();
@@ -164,10 +159,10 @@ public:
 
 	void ChangeSettings(u8 index)
 	{
-		if (gCLensFlares)
+		if (pCLensFlares)
 		{
-			gCLensFlares->m_ActiveSettingsIndex = index;
-			gCLensFlares->m_DestinationSettingsIndex = index;
+			pCLensFlares->m_ActiveSettingsIndex = index;
+			pCLensFlares->m_DestinationSettingsIndex = index;
 		}
 	}
 

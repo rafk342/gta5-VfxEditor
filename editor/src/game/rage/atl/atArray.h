@@ -21,43 +21,48 @@
 #define alloc_fn(sz) malloc(sz)
 #define dealloc_fn(ptr) free(ptr)
 #endif
+#undef max
 
-template<class TValue>
+template<class TValue, typename TSize = u16> 
 class atArray
 {
+	static_assert(std::is_unsigned_v<TSize>, "SizeType must be unsigned");
+
 	TValue* m_offset = nullptr;
-	u16 m_size = 0;
-	u16 m_capacity = 0;
+	TSize m_size = 0;
+	TSize m_capacity = 0;
 
-	void manage_capacity(u32 requested_sz)
+	void VerifyBufferCanFitOrGrow(size_t requested_sz)
 	{
-		if (m_capacity == 0)
+		if (m_capacity == 0) {
 			reserve(16);
-
-		else if (requested_sz >= m_capacity)
+		} else if (requested_sz >= m_capacity) {
 			reserve(NEXT_POWER_OF_TWO_32(requested_sz));
+		}
 	}
+
+	size_t get_alloc_sz(size_t count) {return count * sizeof(TValue); }
 
 public:
 
 	atArray() = default;
 
-	atArray(u16 count, const TValue& v)
+	atArray(TSize count, const TValue& v)
 	{
-		manage_capacity(count);
+		VerifyBufferCanFitOrGrow(count);
 		for (size_t i = 0; i < count; i++) {
 			push_back(v);
 		}
 	}
 
-	atArray(u16 cap)
+	atArray(TSize cap)
 	{
-		manage_capacity(cap);
+		VerifyBufferCanFitOrGrow(cap);
 	}
 
 	atArray(std::initializer_list<TValue> il)
 	{
-		manage_capacity(il.size());
+		VerifyBufferCanFitOrGrow(il.size());
 		for (auto it = il.begin(); it != il.end(); ++it) {
 			push_back(std::move(*it));
 		}
@@ -67,7 +72,7 @@ public:
 	atArray(Iter start, Iter end)
 	{
 		size_t sz = std::distance(start, end);
-		manage_capacity(sz);
+		VerifyBufferCanFitOrGrow(sz);
 		for (; start != end; start++) {
 			push_back(*start);
 		}
@@ -78,7 +83,7 @@ public:
 	atArray(const atArray& other)
 	{
 		clear();
-		manage_capacity(other.m_capacity);
+		VerifyBufferCanFitOrGrow(other.m_capacity);
 		for (size_t i = 0; i < other.size(); i++) {
 			push_back(other.m_offset[i]);
 		}
@@ -90,7 +95,7 @@ public:
 			return *this;
 
 		clear();
-		manage_capacity(other.size());
+		VerifyBufferCanFitOrGrow(other.size());
 		for (size_t i = 0; i < other.size(); ++i) {
 			push_back(other.m_offset[i]);
 		}
@@ -125,19 +130,28 @@ public:
 	u16             size() const	        { return m_size; }
 	bool            empty() const           { return (m_size == 0); }
 	bool            contains(const TValue& v) const { return index_of(v).has_value(); }
+	size_t          max_size() const        {return std::numeric_limits<TSize>::max();}
 
-	TValue&			at(u16 offset)				{ return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
-	TValue&			operator[](u16 idx)			{ return at(idx); }
-	const TValue&	operator[](u16 idx) const	{ return at(idx); }
+	TValue&         at(u16 offset)              { return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
+	TValue&         operator[](u16 idx)	        { return at(idx); }
+	const TValue&   operator[](u16 idx) const   { return at(idx); }
 
 	void reserve(size_t new_cap)
 	{
 		if (new_cap <= m_capacity)
 			return;
 
-		size_t alloc_sz = new_cap * sizeof(TValue);
-		TValue* newOffset = reinterpret_cast<TValue*>(alloc_fn(alloc_sz));
-		memset(newOffset, 0, alloc_sz);
+		if (new_cap > max_size())
+		{
+			if (m_capacity < max_size()) {
+				new_cap = max_size();
+			} else {
+				LogInfo("AtArray ::reserve({}) -> Capacity limit was reached; max_size : {}", new_cap, u64(max_size()));
+				throw "";
+			}
+		}
+
+		TValue* newOffset = reinterpret_cast<TValue*>(alloc_fn(get_alloc_sz(new_cap)));
 
 		if (!m_offset)
 		{
@@ -158,7 +172,7 @@ public:
 
 	TValue& push_back(const TValue& value)
 	{
-		manage_capacity(m_size);
+		VerifyBufferCanFitOrGrow(m_size);
 		new (&m_offset[m_size]) TValue(value);
 		m_size++;
 		return back();
@@ -166,7 +180,7 @@ public:
 	
 	TValue& push_back(TValue&& value)
 	{
-		manage_capacity(m_size);
+		VerifyBufferCanFitOrGrow(m_size);
 		new (&m_offset[m_size]) TValue(std::move(value));
 		m_size++;
 		return back();
@@ -194,14 +208,14 @@ public:
 	void insert(size_t _where, const TValue& value)
 	{
 		if (_where > m_size)
-			throw std::out_of_range(vfmt("::insert()\nIdx : {} is out of range", _where));;
+			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));;
 
 		if (_where == m_size)
 		{
 			push_back(value);
 			return;
 		}
-		manage_capacity(m_size + 1);
+		VerifyBufferCanFitOrGrow(m_size + 1);
 		size_t move_sz = (m_size - _where) * sizeof(TValue);
 		memmove(
 			m_offset + _where + 1, //dst 
@@ -215,9 +229,9 @@ public:
 	void insert(size_t _where, std::initializer_list<TValue> il)
 	{
 		if (_where > m_size)
-			throw std::out_of_range(vfmt("::insert()\nIdx : {} is out of range", _where));
+			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));
 		
-		manage_capacity(m_size + il.size());
+		VerifyBufferCanFitOrGrow(m_size + il.size());
 		auto it_begin = il.begin();
 		auto it_end = il.end();
 		if (_where == m_size)
@@ -244,10 +258,10 @@ public:
 	void insert(size_t _where, Iter first, Iter last)
 	{
 		if (_where > m_size)
-			throw std::out_of_range(vfmt("::insert()\nIdx : {} is out of range", _where));
+			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));
 
 		size_t count = std::distance(first, last);
-		manage_capacity(m_size + count);
+		VerifyBufferCanFitOrGrow(m_size + count);
 		if (_where == m_size)
 		{
 			for (; first != last; first++) {
@@ -282,7 +296,6 @@ public:
 			move_sz ); //sz
 
 		m_size -= 1;
-		memset(end(), 0, sizeof(TValue));
 	}
 
 	void remove_range(size_t left, size_t right)
@@ -327,11 +340,11 @@ public:
 		clear();
 		if (m_offset)
 		{
-			std::memset(m_offset, 0, m_capacity * sizeof(TValue));
 			dealloc_fn(m_offset);
 			m_offset = nullptr;
 			m_capacity = 0;
 		}
 	}
 };
+
 

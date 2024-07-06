@@ -142,9 +142,7 @@ LRESULT Renderer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //void (*g_PerformSafeModeOperations)(void*);
 //void Renderer::hk_PerformSafeModeOperations(void* instance)
 //{
-//
 //	g_PerformSafeModeOperations(instance);
-//
 //}
 // 
 void(*g_GpuEndFrame)();
@@ -269,7 +267,7 @@ void Renderer::Shutdown()
 		return;	
 
 	sm_IsWindowVisible = false;
-	while (sm_RenderState) { LogInfo("sm_RenderState "); };
+	while (sm_RenderState) {};
 	
 	BaseUiWindow::Destroy();
 
@@ -282,9 +280,6 @@ void Renderer::Shutdown()
 	Hook::Remove(s_EndFrameAddr);
 	Hook::Remove(s_WndProcAddr);
 	Hook::Remove(s_SafeModeOperationsAddr);
-	//#if Using_DrawList
-	//sm_DrawLists = nullptr;
-//#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -67,7 +67,7 @@ public:
 		return *this;
 	}
 
-	operator u32()
+	operator u32() const
 	{
 		return color;
 	}
