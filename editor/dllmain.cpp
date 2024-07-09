@@ -28,13 +28,11 @@ AM_EXPORT void Init()
 	Console();
 #endif
 #if !test_ver
-
 	Preload::Create().Init();
 	Hook::Init();
 	ScriptHook::Init();
 	std::thread th(Renderer::Init);
 	th.detach();
-	
 #else
 
 #endif
@@ -47,20 +45,13 @@ AM_EXPORT void Shutdown()
 	FreeConsole();
 #endif
 #if !test_ver
-	LogInfo("Renderer::Shutdown()");
-
 	Renderer::Shutdown();
-	LogInfo("Preload::Destroy()");
 	Preload::Destroy();
-	LogInfo("ScriptHook::Shutdown()");
-
 #if am_version
 	ScriptHook::Shutdown();
 #endif
-	LogInfo("Hook::Shutdown()");
 	Hook::Shutdown();
 	std::this_thread::sleep_for(std::chrono::milliseconds(300));
-	LogInfo("Shutdown Done()");
 #else
 
 #endif

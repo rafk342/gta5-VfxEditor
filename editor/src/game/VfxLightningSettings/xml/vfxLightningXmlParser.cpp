@@ -188,7 +188,6 @@ void VfxLightningsXmlParser::LoadKeyframeData(const pugi::xml_node& keyData, ptx
             continue;
 
         std::array temp = ConvertStrToArray<float, 5>(line.c_str());
-        //temp = convert_str_to_float_arr(line, 5);
         keyframe.data.push_back(ptxKeyframeEntry(temp[0], { temp[1],temp[2],temp[3],temp[4] }));
     }
 }
@@ -242,7 +241,7 @@ void VfxLightningsXmlParser::mExportLightningData(const std::filesystem::path& p
         CloudBurstSettingsNode.append_child("LightDeltaPos").append_attribute("value").set_value(settings->m_CloudBurstSettings.LightDeltaPos);
         CloudBurstSettingsNode.append_child("LightDistance").append_attribute("value").set_value(settings->m_CloudBurstSettings.LightDistance);
 
-        CloudBurstSettingsNode.append_child("LightColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_CloudBurstSettings.LightColor.GetRawU32Data()).c_str());
+        CloudBurstSettingsNode.append_child("LightColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_CloudBurstSettings.LightColor.GetRawInt()).c_str());
 
         AppendCloudBurstCommonSettingsXmlNodes(CloudBurstSettingsNode, settings->m_CloudBurstSettings.m_CloudBurstCommonSettings);
     }
@@ -276,8 +275,8 @@ void VfxLightningsXmlParser::mExportLightningData(const std::filesystem::path& p
         StrikeSettingsNode.append_child("CoronaIntensityMult").append_attribute("value").set_value(settings->m_StrikeSettings.CoronaIntensityMult);
         StrikeSettingsNode.append_child("BaseCoronaSize").append_attribute("value").set_value(settings->m_StrikeSettings.BaseCoronaSize);
 
-        StrikeSettingsNode.append_child("BaseColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_StrikeSettings.BaseColor.GetRawU32Data()).c_str());
-        StrikeSettingsNode.append_child("FogColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_StrikeSettings.FogColor.GetRawU32Data()).c_str());
+        StrikeSettingsNode.append_child("BaseColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_StrikeSettings.BaseColor.GetRawInt()).c_str());
+        StrikeSettingsNode.append_child("FogColor").append_attribute("value").set_value(std::format("0x{:08X}", settings->m_StrikeSettings.FogColor.GetRawInt()).c_str());
 
         StrikeSettingsNode.append_child("CloudLightIntensityMult").append_attribute("value").set_value(settings->m_StrikeSettings.CloudLightIntensityMult);
         StrikeSettingsNode.append_child("CloudLightDeltaPos").append_attribute("value").set_value(settings->m_StrikeSettings.CloudLightDeltaPos);

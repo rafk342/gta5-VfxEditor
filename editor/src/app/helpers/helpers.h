@@ -59,7 +59,7 @@ template<typename Type, size_t Size>
 auto ConvertStrToArray(const char* str)
 {
 	std::array<Type, Size> arr{{}};
-	std::basic_stringstream<char, std::char_traits<char>, hmcgr::StackFirstFitAllocator<char, 10000>> iss(str);
+	std::basic_stringstream<char, std::char_traits<char>, hmcgr::StaticFirstFitAllocator<char, 10'000>> iss(str);
 	Type value{};
 	for (size_t i = 0; iss >> value && i < arr.size(); i++)
 	{
@@ -68,6 +68,13 @@ auto ConvertStrToArray(const char* str)
 	return arr;
 }
 
+constexpr size_t constexpr_strlen(const char* str)
+{
+	size_t len = 0;
+	while (*str++) 
+		++len;
+	return len;
+}
 
 
 

@@ -11,7 +11,7 @@
 #define AM_NOINLINE		__declspec(noinline)
 #define AM_FORCEINLINE	__forceinline
 
-#define am_version		1
+#define am_version		0
 #define with_console	0
 #define test_ver		0
 #define Using_DrawList	0

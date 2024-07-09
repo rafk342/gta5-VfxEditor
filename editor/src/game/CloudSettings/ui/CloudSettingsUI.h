@@ -22,6 +22,7 @@ class CloudSettingsUI : public App
 	TimeSamplesArray_t		m_TimeSamples;
 	u8						m_CurrentTimeSampleIndex = 0;
 	bool					m_ShowOnlyTheCurrentSample = false;
+	size_t					m_MaxCloudHatNameLenIdx = -1;
 
 	void GetCurrentTimeSample(int current_hour);
 
@@ -35,6 +36,8 @@ class CloudSettingsUI : public App
 
 	void CloudSettingsVariablesTable(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
 	void CloudSettingsVariablesSingleParam(atArray<ptxKeyframeEntry>& arr, int table_id, const char* param_name);
+
+	void CloudHatList();
 
 	void ParamsWindow();
 

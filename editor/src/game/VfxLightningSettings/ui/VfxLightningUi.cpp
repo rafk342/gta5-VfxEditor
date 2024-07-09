@@ -36,36 +36,37 @@ void VfxLightningUi::window()
 		ImGui::TreePop();
 	}
 	
-	static float offset = 148.0f;
 	if (ImGui::TreeNode("Requests"))
 	{
 		PushStyleCompact();
+		float offset = /*148.0f*/ImGui::CalcTextSize("Clear Update Type").x * 1.2;
+		float cursor_pos = ImGui::GetCursorPosX();
 
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
+
 		ImGui::Text("Clear Update Type");
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(offset);
+		ImGui::SetCursorPosX(cursor_pos + offset);
 		if (ImGui::Button("Request##Force Clear")) {
 			mVfxLightingHandler.setCurrentUpdateType(0);
 		}
 		
 		ImGui::Text("Directional Burst");
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(offset);
+		ImGui::SetCursorPosX(cursor_pos + offset);
 		if (ImGui::Button("Request##Directional Burst")) {
 			mVfxLightingHandler.DirBurstSeqRequest();
 		}
 		
 		ImGui::Text("Cloud Burst");
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(offset);
+		ImGui::SetCursorPosX(cursor_pos + offset);
 		if (ImGui::Button("Request##Cloud Lightning ")) {
 			mVfxLightingHandler.CloudLightningSeqRequest();
 		}
 		
 		ImGui::Text("Lightning Strike");
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(offset);
+		ImGui::SetCursorPosX(cursor_pos + offset);
 		if (ImGui::Button("Request##Lightning")) {
 			mVfxLightingHandler.LightningRequest();
 		}

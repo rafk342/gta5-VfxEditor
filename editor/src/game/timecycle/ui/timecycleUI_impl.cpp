@@ -97,53 +97,67 @@ void TimecycleUI::WeatherAndRegions()
 		init = true;
 	}
 
-	static float regionWidth;
-	static float buttonWidth = 100;
-	static float result;
+	const char* AppSettingsText = "AppSettings";
+	const char* WeatherText =	" Weather ";
+	const char* RegionText =	" Region ";
 
-	regionWidth = ImGui::GetContentRegionAvail().x;
+	float ButtonWidth = ImGui::CalcTextSize(AppSettingsText).x * 1.3;
+	float WeatherTextWidth = ImGui::CalcTextSize(WeatherText).x;
 
-	if (ImGui::BeginTable("##VStctable", 2, ImGuiTableFlags_NoSavedSettings, { regionWidth, 0 }))
+
+	if (ImGui::BeginTable("##VStctable", 3, ImGuiTableFlags_NoSavedSettings, { 0.0f, 0.0f }, 0.0f))
 	{
-		ImGui::TableSetupColumn("_Tcfirst", ImGuiTableColumnFlags_WidthFixed, regionWidth - buttonWidth);
-		ImGui::TableSetupColumn("_Tcsecond", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("_Tcfirst", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("_Tcsecond", ImGuiTableColumnFlags_WidthFixed, WeatherTextWidth);
+		ImGui::TableSetupColumn("_Tcthird", ImGuiTableColumnFlags_WidthFixed, ButtonWidth);
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/*	1 Row	*/
 
 		ImGui::TableNextColumn();
 
-		result = ImGui::GetContentRegionAvail().x - 70;
-		if (!(result < 50)) {
-			ImGui::SetNextItemWidth(result);
-		}
-
-		if (ImGui::Combo("Weather", (int*)&m_CurrentWeatherIndex, weather_names.data(), weather_names.size()))
+		float RegionWidth = ImGui::GetContentRegionAvail().x;
+		ImGui::SetNextItemWidth(RegionWidth);
+		if (ImGui::Combo("##TcWeather", &m_CurrentWeatherIndex, weather_names.data(), weather_names.size()))
 		{
 			m_CurrentCycle = m_tcHandler.GetCycle(m_CurrentWeatherIndex);
-			GAMEPLAY::SET_OVERRIDE_WEATHER((char*)m_tcHandler.GetCycleName(m_CurrentWeatherIndex).c_str());
+			scrInvoke([this]()
+				{
+					GAMEPLAY::SET_OVERRIDE_WEATHER((char*)m_tcHandler.GetCycleName(m_CurrentWeatherIndex).c_str());
+				});
 		}
 
 		ImGui::TableNextColumn();
+		ImGui::Text(WeatherText);
 
-		if (ImGui::Button("AppSettings"))
-			ImGui::OpenPopup("settingsToggle");
-
-		if (ImGui::BeginPopup("settingsToggle"))
+		ImGui::TableNextColumn();
+		if (ImGui::Button(AppSettingsText, { ButtonWidth,0.0f }))
 		{
-			ImGui::MenuItem("Edit both regions", "", &m_EditBothRegions);
-			ImGui::MenuItem("Show only the current sample", "", &m_ShowOnlyTheCurrentSample);
-			ImGui::MenuItem("Edit all time samples", "", &m_EditAllTimeSamples);
-
-			ImGui::EndPopup();
+			ImGui::OpenPopup("SettingsToggle");
 		}
+		{
+			if (ImGui::BeginPopup("SettingsToggle"))
+			{
+				ImGui::MenuItem("Edit both regions", "", &m_EditBothRegions);
+				ImGui::MenuItem("Show only the current sample", "", &m_ShowOnlyTheCurrentSample);
+				ImGui::MenuItem("Edit all time samples", "", &m_EditAllTimeSamples);
 
+				ImGui::EndPopup();
+			}
+		}
+		
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/*	2 Row	*/
 
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
 
-		if (!(result < 50)) {
-			ImGui::SetNextItemWidth(result);
-		}
+		ImGui::SetNextItemWidth(RegionWidth);
+		ImGui::Combo("##TcRegion", (int*)&m_CurrentRegion, regions.data(), regions.size());
+		
+		ImGui::TableNextColumn();
+		ImGui::Text(RegionText);
 
-		ImGui::Combo("Regions", (int*)&m_CurrentRegion, regions.data(), regions.size());
 
 		ImGui::EndTable();
 	}
@@ -419,7 +433,7 @@ void TimecycleUI::window()
 
 void TimecycleUI::importData(std::filesystem::path path)
 {
-	m_XmlParser.load_tcData(path, this->m_CurrentCycle);
+	m_XmlParser.load_tcData(path, this->m_CurrentCycle,this->m_tcHandler);
 }
 
 void TimecycleUI::exportData(std::filesystem::path path)

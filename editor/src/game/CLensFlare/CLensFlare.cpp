@@ -3,50 +3,6 @@
 #define PI	(3.14159265358979323846264338327950288l)
 
 
-CFlareFX::CFlareFX(FlareFxTextureType_e type)
-{
-	switch (type)
-	{
-	case AnimorphicFx:
-
-		m_fDistFromLight = 0.2f;
-		m_fSize = 0.2f;
-		m_fWidthRotate = 0.0f;
-		m_fScrollSpeed = 0.0f;
-		m_fCurrentScroll = 0.0f;
-		m_fDistanceInnerOffset = 0.0f;
-		m_fIntensityScale = 100.f;
-		m_fIntensityFade = 0.0f;
-		m_fAnimorphicScaleFactorU = 0.0f;
-		m_fAnimorphicScaleFactorV = 0.0f;
-		m_color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_fTextureColorDesaturate = 0.0f;
-		m_fGradientMultiplier = 0.0f;
-		m_nTexture = 0;
-		m_nSubGroup = 0;
-		m_bAnimorphicBehavesLikeArtefact = false;
-		m_bAlignRotationToSun = false;
-		m_fPositionOffsetU = 0.0f;
-
-		break;
-	case ArtefactFx:
-
-
-		break;
-	case ChromaticFx:
-
-
-		break;
-	case CoronaFx:
-
-
-		break;
-	default:
-		break;
-	}
-}
-
-
 rage::ScalarV LengthVec2(rage::Vec3V V)
 {
 	return std::sqrt(V.X() * V.X() + V.Y() * V.Y());
@@ -64,16 +20,9 @@ u32 ConvertToImguiCol32(Color32 color)
 
 ImVec2 ConvertToPixelCoordinates(const ImVec2& normalizedPoint)
 {
-	auto windowSize = ImGui::GetMainViewport()->Size;
+	ImVec2 windowSize = ImGui::GetMainViewport()->Size;
 	return { normalizedPoint.x * windowSize.x, normalizedPoint.y * windowSize.y };
 }
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//								DebugOverlay
-//
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 float GetMainViewportAspectRatio()
 {
@@ -87,47 +36,47 @@ float GetMainViewportAspectRatio()
 	return 1.0f;
 }
 
+static gmAddress s_RenderFlareFxAddr;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//								DebugOverlay
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 LensFlares_DebugOverlay::self_t* LensFlares_DebugOverlay::self = nullptr;
 
-static gmAddress s_RenderFlareFxAddr;
-//animorphic + 
-//artefact size+ / scale - 
-//corona scale + / scale +
-
-
-void(*RenderFlareFxfn)(u64, u64, u64, float, float*);
-void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, float fIntensity, float* SunPos)
+void(*RenderFlareFxfn)(u64, u64, u64, u64, float*);
+void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, float* SunPos)
 {
 	using namespace rage;
-	RenderFlareFxfn(arg1, arg2, arg3, fIntensity, SunPos);
+	RenderFlareFxfn(arg1, arg2, arg3, arg4, SunPos);
 
 	if (!self)
 		return;
 
-	if (self->m_Handler->pCLensFlares->m_SunVisibility < 0.01f)
+	if (self->p_Handler->pCLensFlares->m_SunVisibility < 0.01f)
 		return;
 
 
-	self->m_StartPoint = { SunPos[0], SunPos[1] };
+	self->m_LightVecStartPoint = { SunPos[0], SunPos[1] };
+	self->m_ScalarColor.setAlphaU8(self->m_OverlayAlpha);
 
-	Vec3V vFlareDirNorm = Vec3V(0.5f) - self->m_StartPoint;
+	Vec3V vFlareDirNorm = Vec3V(0.5f) - self->m_LightVecStartPoint;
 	ScalarV fLen = LengthVec2(vFlareDirNorm);
-
 	Vec3V vDist = vFlareDirNorm.Abs() + Vec3V(0.5f);
 	vFlareDirNorm /= fLen;
 
 	ScalarV fDistToEdge = LengthVec2(vDist);
-
 	Vec3V vFlareDir = vFlareDirNorm * fDistToEdge;
-	self->m_EndPoint = self->m_StartPoint + vFlareDir;
+	self->m_LightVecEndPoint = self->m_LightVecStartPoint + vFlareDir;
 
 	ScalarV fDistScale = std::min(1.0f, (fLen * 2).Get());
 	fDistScale *= fDistScale;
 
-	Vec3V vAspectRatio = { 1,GetMainViewportAspectRatio() };
+	float fAspectRatio = GetMainViewportAspectRatio();
 
-	auto* lensflares = self->m_Handler->pCLensFlares;
+	auto* lensflares = self->p_Handler->pCLensFlares;
 	auto& settings = lensflares->m_Settings[lensflares->m_ActiveSettingsIndex];
 	auto& arr = settings.m_arrFlareFX;
 
@@ -137,10 +86,8 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, flo
 		*	Position
 		*
 		*/
-
 		ScalarV fDistFromLightFactor;
-		bool bCurAnamorphicLikeArtefact = flare.m_nTexture == AnimorphicFx && flare.m_bAnimorphicBehavesLikeArtefact;
-		if (flare.m_nTexture == ArtefactFx || bCurAnamorphicLikeArtefact)
+		if (flare.m_nTexture == ArtefactFx || (flare.m_nTexture == AnimorphicFx && flare.m_bAnimorphicBehavesLikeArtefact))
 		{
 			float fDistFromCenterNorm = 2.0f * fLen.Get();
 			fDistFromLightFactor = ScalarV(2.0f * fDistFromCenterNorm + flare.m_fDistFromLight * fDistFromCenterNorm);
@@ -150,18 +97,16 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, flo
 			fDistFromLightFactor = ScalarV(flare.m_fDistFromLight) * fDistScale;
 		}
 
-		Vec3V vFlarePos = (self->m_StartPoint + (vFlareDir * fDistFromLightFactor));
+		Vec3V vFlarePos = (self->m_LightVecStartPoint + (vFlareDir * fDistFromLightFactor));
 		if (flare.m_nTexture == ArtefactFx)
 		{
 			vFlarePos.SetX(vFlarePos.X() + flare.m_fPositionOffsetU);
 		}
-		Vec3V vDirFromLight = (self->m_StartPoint - vFlarePos).Normalized();
 
 		/*
 		*	Scale
 		*
 		*/
-		
 		//	size
 		float fHalfSize;
 		if (flare.m_nTexture == ChromaticFx)
@@ -182,36 +127,41 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, flo
 		}
 
 		//	scale
-		float scale_factor_x = fHalfSize;
-		float scale_factor_y = fHalfSize;
+		float fScaleU = fHalfSize;
+		float fScaleV = fHalfSize;
 
-		if (flare.m_nTexture != ArtefactFx)
+
+		if (flare.m_nTexture != ArtefactFx && flare.m_nTexture != ChromaticFx)
 		{
-			scale_factor_x = fHalfSize + fLen.Get() * flare.m_fAnimorphicScaleFactorU;
-			scale_factor_y = fHalfSize + fLen.Get() * flare.m_fAnimorphicScaleFactorV;
+			fScaleU = fHalfSize + fLen.Get() * flare.m_fAnimorphicScaleFactorU;
+			fScaleV = fHalfSize + fLen.Get() * flare.m_fAnimorphicScaleFactorV;
+		}
+		else if (flare.m_nTexture == ChromaticFx)
+		{
+			float fOuterRad = fHalfSize + flare.m_fWidthRotate / 2;
+			fScaleU = fOuterRad * 1.0f + fLen.Get() * flare.m_fAnimorphicScaleFactorU;
+			fScaleV = (fOuterRad * fAspectRatio + fLen.Get() * flare.m_fAnimorphicScaleFactorV) / 2;
 		}
 		else
 		{
-			Vec3V finalAspect = vAspectRatio;
-			finalAspect.SetX(finalAspect.X() + fLen.Get() * flare.m_fAnimorphicScaleFactorU);
-			finalAspect.SetY(finalAspect.Y() + fLen.Get() * flare.m_fAnimorphicScaleFactorV);
-
-			scale_factor_x *= finalAspect.X();
-			scale_factor_y *= finalAspect.Y() / 2;
-
+			fScaleU *= 1 + fLen.Get() * flare.m_fAnimorphicScaleFactorU;
+			fScaleV *= (fAspectRatio + fLen.Get() * flare.m_fAnimorphicScaleFactorV) / 2;
 		}
 		
 		if (flare.m_nTexture == CoronaFx)
 		{
-			scale_factor_x /= 2;
-			scale_factor_y /= 2;
+			fScaleU /= 2;
+			fScaleV /= 2;
 		}
+
+		fScaleU *= 1000;
+		fScaleV *= 1000;
+
 
 		/*
 		*	Rotate
 		* 
 		*/
-
 		float rotate = (-flare.m_fWidthRotate) * PI;
 		if (flare.m_nTexture == ChromaticFx || flare.m_nTexture == ArtefactFx)
 		{
@@ -221,12 +171,14 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, flo
 		{
 			rotate = (*self->p_msTime) * 0.001f * (-flare.m_fWidthRotate);
 		}
+		
 
 		self->m_CirclesDrawData.push_back(CircleDrawData(
 		/*pos	*/	ConvertToPixelCoordinates({vFlarePos[0], vFlarePos[1]}),
 		/*rotate*/	rotate,
-		/*color	*/	flare.m_color * self->scalar_color,
-		/*scale	*/	{ scale_factor_x * 1000, scale_factor_y * 1000 } 
+		/*color	*/	flare.m_color * self->m_ScalarColor,
+		/*scale	*/	{ fScaleU, fScaleV },
+		/*thickness*/ self->m_DefaultThickness
 			));
 
 	}
@@ -238,7 +190,7 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, flo
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-LensFlares_DebugOverlay::LensFlares_DebugOverlay(LensFlareHandler* handler) : m_Handler(handler)
+LensFlares_DebugOverlay::LensFlares_DebugOverlay(LensFlareHandler* handler) : p_Handler(handler)
 {
 	self = this;
 	s_RenderFlareFxAddr = gmAddress::Scan("48 8B C4 F3 0F 11 58 ?? 4C 89 40 ?? 55");
@@ -249,27 +201,47 @@ LensFlares_DebugOverlay::LensFlares_DebugOverlay(LensFlareHandler* handler) : m_
 LensFlares_DebugOverlay::~LensFlares_DebugOverlay()
 {
 	Hook::Remove(s_RenderFlareFxAddr, "RenderFlareFx");
-	m_Handler = nullptr;
+	p_Handler = nullptr;
 	self = nullptr;
 }
 
-void LensFlares_DebugOverlay::EndFrame()
+void LensFlares_DebugOverlay::SetThicknessForFlareCircleByIndex(size_t index, float thickness)
 {
-	if (m_Handler->pCLensFlares->m_SunVisibility < 0.01f) 
+	if (m_CirclesDrawData.empty() || index >= m_CirclesDrawData.size())
 		return;
 
-	ImVec2 start_p = ConvertToPixelCoordinates({ m_StartPoint.X(), m_StartPoint.Y() });
-	ImVec2 end_p = ConvertToPixelCoordinates({ m_EndPoint.X(), m_EndPoint.Y() });
+	auto* lensflares = p_Handler->pCLensFlares;
+	m_CirclesDrawData[index].thickness = thickness;
+}
 
-	line_color.setAlphaf(scalar_color.getAlphaf());
+void LensFlares_DebugOverlay::SetOverlayAlpha(u8 value)
+{
+	m_OverlayAlpha = value;
+}
+
+void LensFlares_DebugOverlay::DrawOverlay()
+{
+	if (p_Handler->pCLensFlares->m_SunVisibility < 0.01f)
+		return;
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
-	dl->AddLine(start_p, end_p, ConvertToImguiCol32(line_color), thickness);
-
 	for (auto& data : m_CirclesDrawData)
 	{
-		dl->AddEllipse(data.pos, data.scale.x, data.scale.y , ConvertToImguiCol32(data.col), data.rotate, 32, thickness);
+		dl->AddEllipse(data.pos, data.scale.x, data.scale.y , ConvertToImguiCol32(data.col), data.rotate, 32, data.thickness);
 	}
+}
+
+void LensFlares_DebugOverlay::DrawLightVec()
+{
+	if (p_Handler->pCLensFlares->m_SunVisibility < 0.01f)
+		return;
+
+	ImDrawList* dl = ImGui::GetBackgroundDrawList();
+
+	ImVec2 start_p = ConvertToPixelCoordinates({ m_LightVecStartPoint.X(), m_LightVecStartPoint.Y() });
+	ImVec2 end_p = ConvertToPixelCoordinates({ m_LightVecEndPoint.X(), m_LightVecEndPoint.Y() });
+	m_LightVecColor.setAlphaf(m_ScalarColor.getAlphaf());
+	dl->AddLine(start_p, end_p, ConvertToImguiCol32(m_LightVecColor), m_DefaultThickness);
 }
 
 
@@ -292,6 +264,15 @@ LensFlareHandler::LensFlareHandler()
 LensFlareHandler::~LensFlareHandler()
 {
 	self = nullptr;
+}
+
+void LensFlareHandler::ChangeSettings(u8 index)
+{
+	if (pCLensFlares)
+	{
+		pCLensFlares->m_ActiveSettingsIndex = index;
+		pCLensFlares->m_DestinationSettingsIndex = index;
+	}
 }
 
 const char* LensFlareHandler::GetFileNameAtIndex(size_t idx)
@@ -336,11 +317,15 @@ void LensFlareHandler::EndFrame()
 
 	if (self->m_ShowDebugOverlay)
 	{		
-		self->m_DebugOverlay.EndFrame();
+		self->m_DebugOverlay.DrawOverlay();
+	}
+	if (self->m_ShowLightVec)
+	{
+		self->m_DebugOverlay.DrawLightVec();
 	}
 	self->m_DebugOverlay.m_CirclesDrawData.clear();
-	self->m_DebugOverlay.m_StartPoint = 0;
-	self->m_DebugOverlay.m_EndPoint = 0;
+	self->m_DebugOverlay.m_LightVecStartPoint = 0;
+	self->m_DebugOverlay.m_LightVecEndPoint = 0;
 }
 
 
@@ -349,11 +334,158 @@ void LensFlareHandler::SetDebugOverlayVisibility(bool show)
 	m_ShowDebugOverlay = show;
 }
 
-void LensFlareHandler::SortFlaresByDistance(atArray<CFlareFX>& arr)
+void LensFlareHandler::SetLightVecVisibility(bool show)
 {
-	std::sort(arr.begin(), arr.end(), [](CFlareFX& left, CFlareFX& right) -> bool
-		{
-			return left.m_fDistFromLight < right.m_fDistFromLight;
-		});
+	m_ShowLightVec = show;
 }
 
+void LensFlareHandler::SortFlaresByDistance(atArray<CFlareFX>& arr)
+{
+	using namespace rage;
+
+	ScalarV fLen = LengthVec2(Vec3V(0.5f) - Vec3V(0.2f, 0.2f));
+	ScalarV fDistScale = std::min(1.0f, (fLen * 2).Get());
+	fDistScale *= fDistScale;
+
+	atArray<std::pair<float, CFlareFX*>> TempSortDataArray;
+	for (auto& flare : arr)
+	{
+		ScalarV fDistFromLightFactor;
+		if (flare.m_nTexture == ArtefactFx || (flare.m_nTexture == AnimorphicFx && flare.m_bAnimorphicBehavesLikeArtefact))
+		{
+			float fDistFromCenterNorm = 2.0f * fLen.Get();
+			fDistFromLightFactor = ScalarV(2.0f * fDistFromCenterNorm + flare.m_fDistFromLight * fDistFromCenterNorm);
+		}
+		else
+		{
+			fDistFromLightFactor = ScalarV(flare.m_fDistFromLight) * fDistScale;
+		}
+		TempSortDataArray.push_back({ fDistFromLightFactor.Get(), &flare });
+	}
+	
+	std::sort(TempSortDataArray.begin(), TempSortDataArray.end(), [](std::pair<float, CFlareFX*>& sd1, std::pair<float, CFlareFX*>& sd2) 
+		{ 
+			return sd1.first < sd2.first;
+		});
+	
+	atArray<CFlareFX> SortedFlaresArray(TempSortDataArray.size());
+	for (size_t i = 0; i < TempSortDataArray.size(); i++)
+	{
+		SortedFlaresArray[i] = (*TempSortDataArray[i].second);
+	}
+
+	arr = std::move(SortedFlaresArray);
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////			
+//							
+//							
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CFlareFX::CFlareFX()
+{
+	ResetToDefaultByType(AnimorphicFx);
+}
+
+void CFlareFX::ResetToDefaultByType(FlareFxTextureType_e type)
+{
+	m_nTexture = type;
+
+	switch (type)
+	{
+	case AnimorphicFx:
+
+		m_bAnimorphicBehavesLikeArtefact = false;
+		//m_fDistFromLight;
+		//m_fSize = 0.1000;
+		//m_fAnimorphicScaleFactorU = 0.0000;
+		//m_fAnimorphicScaleFactorV = 0.0000;
+		m_fWidthRotate = 0.0000;
+		m_fIntensityScale = 25.0000;
+		//m_color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		m_fScrollSpeed = 0.0f;
+		m_fCurrentScroll = 0.0f;
+		m_fDistanceInnerOffset = 0.0f;
+		m_fIntensityFade = 0.0f;
+		m_fTextureColorDesaturate = 0.0f;
+		m_fGradientMultiplier = 0.0f;
+		m_nSubGroup = 0;
+		m_bAlignRotationToSun = false;
+		m_fPositionOffsetU = 0.0f;
+
+		break;
+	case ArtefactFx:
+		
+		//m_fDistFromLight = -1.7395;
+		//m_fSize = 0.05;
+		//m_fAnimorphicScaleFactorU = 0.0000;
+		//m_fAnimorphicScaleFactorV = 0.0000;
+		m_fIntensityScale = 180.0000;
+		m_bAlignRotationToSun = false;
+		//m_color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		m_fGradientMultiplier = 0.5000;
+		m_nSubGroup = 1;
+		m_fPositionOffsetU = 0.0000;
+
+		m_fWidthRotate = 0.0f;
+		m_fScrollSpeed = 0.0f;
+		m_fCurrentScroll = 0.0f;
+		m_fDistanceInnerOffset = 0.0f;
+		m_fIntensityFade = 0.0f;
+		m_fTextureColorDesaturate = 0.0f;
+		m_bAnimorphicBehavesLikeArtefact = false;
+
+
+		break;
+	case ChromaticFx:
+		
+		//m_fDistFromLight = 0.3000;
+		//m_fSize = 0.0500;
+		m_fWidthRotate = 0.0500;
+		//m_fAnimorphicScaleFactorU = 0.0000;
+		//m_fAnimorphicScaleFactorV = 0.0000;
+		m_fScrollSpeed = 0.0800;
+		m_fDistanceInnerOffset = 0.0000;
+		m_fIntensityScale = 10.0000;
+		m_fIntensityFade = 0.0000;
+		//m_color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		m_fTextureColorDesaturate = 0.0000;
+
+		m_fCurrentScroll = 0.0f;
+		m_fGradientMultiplier = 0.0f;
+		m_nSubGroup = 0.0f;
+		m_bAnimorphicBehavesLikeArtefact = false;
+		m_bAlignRotationToSun = false;
+		m_fPositionOffsetU = 0.0f;
+
+		break;
+	case CoronaFx:
+		
+		//m_fDistFromLight = 0.4000;
+		//m_fSize = -0.6000;
+		//m_fAnimorphicScaleFactorU = 0.0000;
+		//m_fAnimorphicScaleFactorV = 0.0000;
+		m_fWidthRotate = 0.0000;
+		m_fIntensityScale = 20.0000;
+		//m_color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		m_fScrollSpeed = 0.0f;
+		m_fCurrentScroll = 0.0f;
+		m_fDistanceInnerOffset = 0.0f;
+		m_fIntensityFade = 0.0f;
+		m_fTextureColorDesaturate = 0.0f;
+		m_fGradientMultiplier = 0.0f;
+		m_nSubGroup = 0.0f;
+		m_bAnimorphicBehavesLikeArtefact = 0.0f;
+		m_bAlignRotationToSun = 0.0f;
+		m_fPositionOffsetU = 0.0f;
+
+		break;
+	default:
+		break;
+	}
+}

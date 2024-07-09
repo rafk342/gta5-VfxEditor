@@ -33,10 +33,10 @@ class CloudSettingsXmlParser
 	void LoadKeyFrameDataToMem(ptxKeyframe& keyframe, std::map<float, rage::Vec4V>& preMap);
 
 	//export
-	std::string&	GetTimeStr();
-	std::string&	GetProbabilityText(atArray<int>& arr);
-	void			AppendKeyframeData(pugi::xml_node& settings_node,const char* param_name ,atArray<ptxKeyframeEntry>& keyframesData);
-	std::string&	GetKeyframesTextParams(atArray<ptxKeyframeEntry>& keyframesData);
+	std::string& GetTimeStr();
+	std::string& GetProbabilityText(atArray<int>& arr);
+	std::string& GetKeyframesTextParams(atArray<ptxKeyframeEntry>& keyframesData);
+	void AppendKeyframeData(pugi::xml_node& settings_node, const char* param_name, atArray<ptxKeyframeEntry>& keyframesData);
 
 public:
 

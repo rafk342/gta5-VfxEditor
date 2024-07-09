@@ -19,6 +19,7 @@
 #include "rage/math/vec.h"
 #include "rage/math/vecv.h"
 
+#include "CLensFlareXmlParser.h"
 
 enum LensFlareFile_e
 {
@@ -28,36 +29,36 @@ enum LensFlareFile_e
 };
 
 enum FlareFxTextureType_e : u8
-{						 // SubGroups :
+{					// SubGroups :
 	AnimorphicFx = 0, // 0
-	ArtefactFx	 = 1, // 1-8 here
+	ArtefactFx	 = 1, // 1-8 
 	ChromaticFx	 = 2, // 0
 	CoronaFx	 = 3, // 0
 };
 
 struct CFlareFX
 {
-	float	m_fDistFromLight = 0.2f;
-	float	m_fSize = 0.2f;
-	float	m_fWidthRotate = 0.0f;
-	float	m_fScrollSpeed = 0.0f;
-	float	m_fCurrentScroll = 0.0f;
-	float	m_fDistanceInnerOffset = 0.0f;
-	float	m_fIntensityScale = 100.f;
-	float	m_fIntensityFade = 0.0f;
-	float	m_fAnimorphicScaleFactorU = 0.0f;
-	float	m_fAnimorphicScaleFactorV = 0.0f;
+	float	m_fDistFromLight = 0.3000;
+	float	m_fSize = 0.0500;
+	float	m_fWidthRotate;
+	float	m_fScrollSpeed;
+	float	m_fCurrentScroll;
+	float	m_fDistanceInnerOffset;
+	float	m_fIntensityScale;
+	float	m_fIntensityFade;
+	float	m_fAnimorphicScaleFactorU = 0.0000;
+	float	m_fAnimorphicScaleFactorV = 0.0000;
 	Color32 m_color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float	m_fTextureColorDesaturate = 0.0f;
-	float	m_fGradientMultiplier = 0.0f;
-	u8		m_nTexture = 0;
-	u8		m_nSubGroup = 0;
-	bool	m_bAnimorphicBehavesLikeArtefact = false;
-	bool	m_bAlignRotationToSun = false;
-	float	m_fPositionOffsetU = 0.0f;
+	float	m_fTextureColorDesaturate;
+	float	m_fGradientMultiplier;
+	u8		m_nTexture;
+	u8		m_nSubGroup;
+	bool	m_bAnimorphicBehavesLikeArtefact;
+	bool	m_bAlignRotationToSun;
+	float	m_fPositionOffsetU;
 
-	CFlareFX() = default;
-	CFlareFX(FlareFxTextureType_e type);
+	CFlareFX();
+	void ResetToDefaultByType(FlareFxTextureType_e type);
 };
 
 
@@ -100,27 +101,32 @@ class LensFlares_DebugOverlay
 		float	rotate;
 		Color32 col;
 		ImVec2	scale;
+		float	thickness;
 	};
 
-	LensFlareHandler*	m_Handler = nullptr;
-	rage::Vec3V			m_StartPoint;
-	rage::Vec3V			m_EndPoint;
-	Color32				line_color = { 255, 0, 0, 187 };
-	float				thickness = 1;
+	LensFlareHandler*	p_Handler = nullptr;
 	u32*				p_msTime = nullptr;
+	rage::Vec3V			m_LightVecStartPoint;
+	rage::Vec3V			m_LightVecEndPoint;
+	Color32				m_LightVecColor = { 255, 0, 0, 180 };
+	float				m_DefaultThickness = 1.0f;
+	u8					m_OverlayAlpha = 180;
+	Color32				m_ScalarColor = { 200, 200, 200, 180 };
+
+	std::vector<CircleDrawData> m_CirclesDrawData;
 	
-	std::vector<CircleDrawData, hmcgr::StaticBestFitAllocator<CircleDrawData, 1000>> m_CirclesDrawData;
-	
-	static void hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, float fIntensity, float* vPos);
+	static void hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, float* vPos);
 	
 public:
-	
-	Color32 scalar_color = { 200, 200, 200, 187};
 
 	LensFlares_DebugOverlay(LensFlareHandler* handler);
 	~LensFlares_DebugOverlay();
 	
-	void EndFrame();
+	void SetThicknessForFlareCircleByIndex(size_t index, float thickness);
+	void SetOverlayAlpha(u8 value);
+	void DrawOverlay();
+	void DrawLightVec();
+
 };
 
 
@@ -129,7 +135,6 @@ class LensFlareHandler
 	friend class LensFlares_DebugOverlay;
 	using self_t = LensFlareHandler;
 	static self_t* self;
-
 
 	class CLensFlares
 	{
@@ -147,28 +152,27 @@ class LensFlareHandler
 		u8 m_DestinationSettingsIndex;
 	};
 
-	bool m_ShowDebugOverlay = false;
-
 public:
 	
-	CLensFlares*			pCLensFlares = nullptr;
+	CLensFlares* pCLensFlares = nullptr;
 	LensFlares_DebugOverlay	m_DebugOverlay;
+	[[msvc::no_unique_address]] CLensFlareXmlParser m_XmlParser;
+
+private:
+
+	bool m_ShowDebugOverlay = false;
+	bool m_ShowLightVec = false;
+
+public:
 	
 	LensFlareHandler();
 	~LensFlareHandler();
 
-	void ChangeSettings(u8 index)
-	{
-		if (pCLensFlares)
-		{
-			pCLensFlares->m_ActiveSettingsIndex = index;
-			pCLensFlares->m_DestinationSettingsIndex = index;
-		}
-	}
-
+	void ChangeSettings(u8 index);
 	const char* GetFileNameAtIndex(size_t idx);
 	const char* GetTextureTypeName(u8 NumTexture);
 	void SetDebugOverlayVisibility(bool show);
+	void SetLightVecVisibility(bool show);
 	void SortFlaresByDistance(atArray<CFlareFX>& arr);
 	static void EndFrame();
 };

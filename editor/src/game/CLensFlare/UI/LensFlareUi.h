@@ -2,8 +2,9 @@
 #include <iostream>
 
 #include "../CLensFlare.h"
-
 #include "ImGui/imgui.h"
+
+#include "helpers/helpers.h"
 #include "uiBase/uiBaseWindow.h"
 #include "uiBase/ImguiHelpers.h"
 #include "scripthookTh.h"
@@ -13,8 +14,7 @@ class LensFlareUi : public App
 {
 	LensFlareHandler m_Handler;
 
-	bool m_ShowDebugOverlay = false;
-
+private:
 
 	void TreeNodeForAnimorphicType	(CFlareFX& CurrFlareFx, size_t fileIndex, size_t FlareFxIndex);
 	void TreeNodeForArtefactType	(CFlareFX& CurrFlareFx, size_t fileIndex, size_t FlareFxIndex);

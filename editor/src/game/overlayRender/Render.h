@@ -35,14 +35,14 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 
 class Renderer
 {
-
 	static int		sm_OpenWindowButton;
 	static bool		sm_IsWindowVisible;
 	static bool		sm_Initialized;
 	static bool		sm_ImGuiCursorUsage;
 	static bool		sm_RenderState;
-	static float	font_size;
+	static int		font_size;
 	static bool		font_scale_expected_to_be_changed;
+	static bool		sm_ShowFontSzSelWnd;
 
 	static HWND	window;
 	static ComPtr<ID3D11Device> p_device;

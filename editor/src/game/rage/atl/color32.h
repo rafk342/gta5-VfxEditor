@@ -125,6 +125,6 @@ public:
 		Setf(colorf[0], colorf[1], colorf[2]);
 	}
 
-	inline void SetRawU32Data(u32 v) { color = v; }
-	inline u32  GetRawU32Data() const { return color; }
+	inline void SetRawInt(u32 v) { color = v; }
+	inline u32  GetRawInt() const { return color; }
 };

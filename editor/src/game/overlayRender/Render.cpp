@@ -31,7 +31,8 @@ bool	Renderer::sm_IsWindowVisible = false;
 bool	Renderer::sm_Initialized = false;
 bool    Renderer::sm_ImGuiCursorUsage = false;
 bool	Renderer::sm_RenderState = false;
-float	Renderer::font_size = 15.0f;
+bool	Renderer::sm_ShowFontSzSelWnd = false;
+int		Renderer::font_size = 15;
 bool	Renderer::font_scale_expected_to_be_changed = false;
 
 ID3D11Device*			Renderer::GetDevice()	{ return p_device.Get(); }
@@ -135,8 +136,6 @@ LRESULT Renderer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return g_WndProc(hWnd, uMsg, wParam, lParam);
 }
 
-
-
 // Called from CApp::RunGame() -> fwRenderThreadInterface::Synchronise()
 // Render thread is guaranteed to be blocked here
 //void (*g_PerformSafeModeOperations)(void*);
@@ -144,7 +143,6 @@ LRESULT Renderer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //{
 //	g_PerformSafeModeOperations(instance);
 //}
-// 
 void(*g_GpuEndFrame)();
 void Renderer::hk_GpuEndFrame()
 {
@@ -203,10 +201,13 @@ void Renderer::loadConfigParams()
 	auto* cfg = Preload::Get()->getConfigParser();
 
 	font_scale_expected_to_be_changed = true;
-
-	font_size				= cfg->GetInteger("Settings", "Font_size", 15);
+	font_size				= unsigned(cfg->GetInteger("Settings", "Font_size", 15));
 	sm_ImGuiCursorUsage		= cfg->GetBoolean("Settings", "CursorImgui_Impl", false);
 	sm_OpenWindowButton		= cfg->GetInteger("Settings", "OpenClose_window_button", 0x2D);
+	sm_ShowFontSzSelWnd		= cfg->GetBoolean("Settings", "Show_font_size_selection_window", false);
+
+	if (font_size > 50)
+		font_size = 50;
 }
 
 
@@ -254,6 +255,19 @@ void Renderer::ImDrawUI()
 {
 	GameInput::DisableAllControlsThisFrame();
 	BaseUiWindow::GetInstance()->OnRender();
+
+	if (sm_ShowFontSzSelWnd)
+	{
+		if (ImGui::Begin("FontWnd"))
+		{
+			if (ImGui::SliderInt("font size", &font_size, 5, 50))
+			{
+				font_scale_expected_to_be_changed = true;
+			}
+			ImGui::Text("Value should be written in the config");
+			ImGui::End();
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -385,11 +399,4 @@ static void WaitWhileGameIsStarting()
 
 
 
-	//if (ImGui::Begin("tmp window"))
-	//{
-	//	if (ImGui::DragFloat("font sz", &font_size, 0.1f, 1, 100))
-	//	{
-	//		font_scale_expected_to_be_changed = true;
-	//	}
-	//	ImGui::End();
-	//}
+

@@ -1,4 +1,5 @@
 #include "CloudSettingsUI.h"
+#include <algorithm>
 #include <thread>
 
 #include "scripthook/inc/natives.h"
@@ -73,6 +74,12 @@ CloudSettingsUI::CloudSettingsUI(const char* title) : App(title)
 		"18:00" , "19:00" , "20:00" ,
 		"21:00" , "22:00" , "24:00" 
 	};
+	auto& CloudHatNames = m_CloudsHandler.GetCloudHatNamesArray();
+	auto it = std::max_element(CloudHatNames.begin(), CloudHatNames.end(), [](const char* left, const char* right) 
+		{
+			return strlen(left) < strlen(right);
+		});
+	m_MaxCloudHatNameLenIdx = std::distance(CloudHatNames.begin(), it);
 }
 
 
@@ -100,59 +107,14 @@ void CloudSettingsUI::GetCurrentTimeSample(int current_hour)
 
 void CloudSettingsUI::ParamsWindow()
 {
-	auto& CloudHatNames = m_CloudsHandler.GetCloudHatNamesArray();
 	auto& CloudsVec = m_CloudsHandler.GetCloudSettingsVec();
-	int CloudsComboIndex;
-	
 	GetCurrentTimeSample(CClock::GetCurrentHour());
-
-	int CurrentHat = m_CloudsHandler.GetActiveCloudhatIndex();
-	if (CurrentHat == -1) {
-		CloudsComboIndex = CloudHatNames.size() - 1;
-	} else {
-		CloudsComboIndex = CurrentHat;
-	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	PushStyleCompact();
-
-	float regionWidth;
-	float buttonWidth = 100;
-
-	regionWidth = ImGui::GetContentRegionAvail().x;
-
-	if (ImGui::BeginTable("##VScltable", 2, ImGuiTableFlags_NoSavedSettings, { regionWidth, 0 }))
-	{
-		ImGui::TableSetupColumn("_Clfirst", ImGuiTableColumnFlags_WidthFixed, regionWidth - buttonWidth);
-		ImGui::TableSetupColumn("_Clsecond", ImGuiTableColumnFlags_WidthStretch);
-
-		ImGui::TableNextColumn();
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 110);
-
-		if (ImGui::Combo("Active CloudHat", &CloudsComboIndex, CloudHatNames.data(), CloudHatNames.size()))
-		{
-			if (CloudsComboIndex != CurrentHat) {
-				m_CloudsHandler.RequestCloudHat(CloudHatNames[CloudsComboIndex], 0.1f);
-			}
-		}
-
-		ImGui::TableNextColumn();
-
-		if (ImGui::Button("AppSettings"))
-			ImGui::OpenPopup("settingsToggle");
-		
-		if (ImGui::BeginPopup("settingsToggle"))
-		{
-			ImGui::MenuItem("Show only the current sample", "", &m_ShowOnlyTheCurrentSample);
-			ImGui::EndPopup();
-		}
-
-		ImGui::EndTable();
-	}
-
+	CloudHatList();
 	PopStyleCompact();
-	
 	ImGui::Separator();
 
 	for (int i = 0; i < CloudsVec.size(); i++)
@@ -171,6 +133,62 @@ void CloudSettingsUI::ParamsWindow()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void CloudSettingsUI::CloudHatList()
+{
+	auto& CloudHatNames = m_CloudsHandler.GetCloudHatNamesArray();
+	auto& CloudsVec = m_CloudsHandler.GetCloudSettingsVec();
+
+	static int CloudsComboIndex;
+	int CurrentHat = m_CloudsHandler.GetActiveCloudhatIndex();
+	if (CurrentHat == -1) {
+		CloudsComboIndex = CloudHatNames.size() - 1;
+	} else {
+		CloudsComboIndex = CurrentHat;
+	}
+
+	const char* ButtonText = "AppSettings";
+	const char* ActiveCloudHatText = " Active CloudHat ";
+
+	float TextWidth = ImGui::CalcTextSize(ActiveCloudHatText).x;
+	float buttonWidth = ImGui::CalcTextSize(ButtonText).x * 1.3;
+
+	if (ImGui::BeginTable("##VScltable", 3))
+	{
+		ImGui::TableSetupColumn("cl_first", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("cl_second", ImGuiTableColumnFlags_WidthFixed, TextWidth);
+		ImGui::TableSetupColumn("cl_third", ImGuiTableColumnFlags_WidthFixed, buttonWidth);
+
+		ImGui::TableNextColumn();
+
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::Combo("##CloudHat", &CloudsComboIndex, CloudHatNames.data(), CloudHatNames.size()))
+		{
+			if (CloudsComboIndex != CurrentHat) {
+				m_CloudsHandler.RequestCloudHat(CloudHatNames[CloudsComboIndex], 0.0f);
+			}
+		}
+
+		ImGui::TableNextColumn();
+		ImGui::Text(ActiveCloudHatText);
+
+		ImGui::TableNextColumn();
+		if (ImGui::Button("AppSettings"))
+		{
+			ImGui::OpenPopup("settingsToggle");
+		}
+		{
+			if (ImGui::BeginPopup("settingsToggle"))
+			{
+				ImGui::MenuItem("Show only the current sample", "", &m_ShowOnlyTheCurrentSample);
+				ImGui::EndPopup();
+			}
+		}
+
+		ImGui::EndTable();
+	}
+
+}
+
 
 void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 {
@@ -179,17 +197,20 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 
 	bool bitFlag;
 	const int cols_count = 3;
-	float width_arr[cols_count] = { 128.5, 150, 0 };
+
+
+
+	//float width_arr[cols_count] = { 128.5, 150, 0 };
 
 
 	if (ImGui::TreeNode(vfmt("Probabilities ##TrPr{}", clIdx)))
 	{
-		u32 CurrentBits = *CloudsVec[clIdx].CloudSettings->m_Bits.data();
-
-		ImGui::Text(vfmt("Binary bitset view : {:032b}", CurrentBits));
-		ImGui::Text(vfmt("Hex bitset view : 0x{:08X}", CurrentBits));
+		ImGui::Text(vfmt("Binary bitset view : {}", CloudsVec[clIdx].CloudSettings->m_Bits.to_string()));
+		ImGui::Text(vfmt("Hex bitset view : 0x{:08X}", (*CloudsVec[clIdx].CloudSettings->m_Bits.data())));
 
 		PushStyleCompact(0.7);
+		
+		float width_arr[cols_count] = { ImGui::CalcTextSize(vfmt("{:<2} {}",11,CloudHatNames[m_MaxCloudHatNameLenIdx])).x * 1.2, ImGui::GetFontSize() * 10, 0};
 
 		if (ImGui::BeginTable(vfmt("##prob_t_{}", clIdx), cols_count, CloudsImguiFlags::table_flags2 | ImGuiTableFlags_NoHostExtendX))
 		{
@@ -212,10 +233,7 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 3);
 
-						ImGui::Text("%i", row);
-						ImGui::SameLine();
-						ImGui::SetCursorPosX(56);
-						ImGui::Text(CloudHatNames[row]);
+						ImGui::Text(vfmt("{:<2} {}",row, CloudHatNames[row]));
 
 						break;
 					case (1):
@@ -252,11 +270,11 @@ void CloudSettingsUI::ProbabilityWidgets(int clIdx)
 		PopStyleCompact();
 		
 		static int nextIdx = 0;
-		
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
-		ImGui::Text("Request new random CloudHat");
 
-		if (ImGui::Button("PressMe"))
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetFontSize() / 2);
+		ImGui::Text("Select random CloudHat");
+		//ImGui::SameLine();
+		if (ImGui::Button("Request"))
 		{
 			nextIdx = m_CloudsHandler.GetNewRandomCloudhatIndex();
 			m_CloudsHandler.RequestCloudHat(CloudHatNames[nextIdx], 0.1f);

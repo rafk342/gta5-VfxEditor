@@ -100,11 +100,10 @@ public:
 
 	auto& GetCloudSettingsVec() { return this->NamedCloudsSettingsVec; }
 	auto& GetCloudHatNamesArray() { return this->gCloudHatNames; }
-	
-	void  RequestClearCloudHat();
-	void  RequestCloudHat(const char* name, float time);
-	u16	  GetNewRandomCloudhatIndex();
-	int	  GetActiveCloudhatIndex();
+	void RequestClearCloudHat();
+	void RequestCloudHat(const char* name, float time);
+	u16	GetNewRandomCloudhatIndex();
+	int	GetActiveCloudhatIndex();
 
 	void fillCloudSettingsNamedVec(const auto& NamesContainer)
 	{

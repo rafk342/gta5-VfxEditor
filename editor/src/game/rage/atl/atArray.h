@@ -9,7 +9,6 @@
 #include "rage/base/tlsContext.h"
 #include "logger.h"
 #include "helpers/align.h"
-#include "helpers/helpers.h"
 
 
 #define rage_alloc true
@@ -41,7 +40,7 @@ class atArray
 		}
 	}
 
-	size_t get_alloc_sz(size_t count) {return count * sizeof(TValue); }
+	size_t get_alloc_sz(size_t count) { return count * sizeof(TValue); }
 
 public:
 
@@ -55,9 +54,13 @@ public:
 		}
 	}
 
-	atArray(TSize cap)
+	atArray(TSize count)
 	{
-		VerifyBufferCanFitOrGrow(cap);
+		VerifyBufferCanFitOrGrow(count);
+		for (size_t i = 0; i < count; i++)
+		{
+			push_back({});
+		}
 	}
 
 	atArray(std::initializer_list<TValue> il)
@@ -130,7 +133,7 @@ public:
 	u16             size() const	        { return m_size; }
 	bool            empty() const           { return (m_size == 0); }
 	bool            contains(const TValue& v) const { return index_of(v).has_value(); }
-	size_t          max_size() const        {return std::numeric_limits<TSize>::max();}
+	size_t          max_size() const        { return std::numeric_limits<TSize>::max();}
 
 	TValue&         at(u16 offset)              { return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
 	TValue&         operator[](u16 idx)	        { return at(idx); }

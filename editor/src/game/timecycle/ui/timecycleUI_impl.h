@@ -11,6 +11,7 @@
 #include "scripthook/inc/types.h"
 #include "scripthook/inc/enums.h"
 #include "scripthook/inc/scripthookMain.h"
+#include "scripthookTh.h"
 
 #include "game/timecycle/tñHandler.h"
 #include "game/timecycle/tcData.h"
@@ -25,7 +26,7 @@
 
 class TimecycleUI : public App
 {
-	 timeñycleHandler	m_tcHandler;
+	 TimeñycleHandler	m_tcHandler;
 	 [[msvc::no_unique_address]] tcXmlParser m_XmlParser;
 	 
 	 std::vector<std::pair<int, const char*>> time_samples;

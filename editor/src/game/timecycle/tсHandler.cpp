@@ -4,7 +4,7 @@
 
 
 
-timeñycleHandler::timeñycleHandler()
+TimeñycleHandler::TimeñycleHandler()
 {
 	m_WeatherNames.reserve(15);
 
@@ -18,24 +18,12 @@ timeñycleHandler::timeñycleHandler()
 		m_WeatherNames.push_back(GetCycleName(i));
 	}
 
-	//auto addr = gmAddress::Scan("39 1D ?? ?? ?? ?? 7E ?? 45 33 F6");
-	//m_TcConfig.NumVars = *addr.GetRef(2).To<u32*>();
-	//m_TcConfig.gVarInfosArray = *addr.GetRef(14).To<decltype(m_TcConfig.gVarInfosArray)*>();
-
-	//for (size_t i = 0; i < m_TcConfig.NumVars; i++)
-	//{
-	//	auto& data = m_TcConfig.gVarInfosArray[i];
-	//	auto& data2 = g_varInfos[i];
-
-	//	if ((data.VarId != data2.varId) || (strcmp(data.name, data2.name) != 0))
-	//	{
-	//		std::cout << data.VarId << "\t" << data.name << '\n';
-	//		std::cout << data2.varId << "\t" << data2.name << '\n';
-	//	}
-	//}
+	auto addr = gmAddress::Scan("39 1D ?? ?? ?? ?? 7E ?? 45 33 F6");
+	m_TcConfig.NumVars = *addr.GetRef(2).To<u32*>();
+	m_TcConfig.gVarInfosArray = *addr.GetRef(14).To<decltype(m_TcConfig.gVarInfosArray)*>();
 }
 
-std::string timeñycleHandler::GetCycleName(int index)
+std::string TimeñycleHandler::GetCycleName(int index)
 {		
 	static std::map<u32, std::string> NamesMap =
 	{

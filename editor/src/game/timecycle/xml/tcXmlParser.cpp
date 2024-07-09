@@ -32,7 +32,7 @@ namespace
 }
 
 
-void tcXmlParser::load_tcData(const std::filesystem::path& path, tcCycle* cycle_to_load)
+void tcXmlParser::load_tcData(const std::filesystem::path& path, tcCycle* cycle_to_load, TimeñycleHandler& handler)
 {
 	if (!cycle_to_load) 
 		return;
@@ -53,22 +53,22 @@ void tcXmlParser::load_tcData(const std::filesystem::path& path, tcCycle* cycle_
 			continue;
 		Regions RegionIndex = RegionNamesMap.at(region_name_string);
 
-		for (size_t v_idx = 0; v_idx < TCVAR_NUM; v_idx++)
+		for (size_t VarIdx = 0; VarIdx < TCVAR_NUM; VarIdx++)
 		{
-			pugi::xml_node params_node = region_node.find_child([&v_idx](pugi::xml_node node) { return std::string_view(node.name()) == g_varInfos[v_idx].name; });
+			pugi::xml_node params_node = region_node.find_child([&VarIdx](pugi::xml_node node) { return std::string_view(node.name()) == g_varInfos[VarIdx].name; });
 			if (params_node)
 			{
 				std::array temp = ConvertStrToArray<float, TC_TIME_SAMPLES>(params_node.text().as_string());
 				for (size_t time = 0; time < TC_TIME_SAMPLES; time++)
 				{
-					cycle_to_load->SetKeyframeValue(RegionIndex, v_idx, time, temp[time]);
+					cycle_to_load->SetKeyframeValue(RegionIndex, VarIdx, time, temp[time]);
 				}
 			}
 			else
 			{
 				for (size_t time = 0; time < TC_TIME_SAMPLES; time++)
 				{
-					cycle_to_load->SetKeyframeValue(RegionIndex, v_idx, time, 0.0f);
+					cycle_to_load->SetKeyframeValue(RegionIndex, VarIdx, time, handler.GetTcConfig().gVarInfosArray[VarIdx].DefaultValue);
 				}
 			}
 		}

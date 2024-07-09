@@ -202,18 +202,17 @@ void ConfigWrapper::writeCfg(const char* filename)
     if (!cfg.is_open())
         return;
 
-    cfg << "// All key codes can be found here: https://msdn.microsoft.com/library/windows/desktop/dd375731.aspx\n\n";
+    cfg << "// All buttons key codes can be found here: https://msdn.microsoft.com/library/windows/desktop/dd375731.aspx\n\n";
     cfg << "[Settings]" << "\n\n";
 
-    cfg << "Default_path             " << " = " << "E:\\GTAV\\timecycles"                       << '\n';
-    cfg << "Categories               " << " = " << "1"                                          << '\n';
-    cfg << "Names_replacement        " << " = " << "1"                                          << '\n';
-    cfg << "OpenClose_window_button  " << " = " << "0x2D"                                       << "\n";
-    cfg << "Font_size                " << " = " << "15"                                         << '\n';
-    cfg << "Bloodfx_reload_path      " << " = " << "E:\\bloodfx.dat"                            << '\n';
-
-    cfg << "\n// In case if there's something wrong with the system cursor - set this to 1 "    << '\n';
-    cfg << "CursorImgui_Impl         " << " = " << "0"                                          << '\n';
+    cfg << "Default_path             " << " = " << "E:\\GTAV\\timecycles"   << '\n';
+    cfg << "Categories               " << " = " << "true"                   << '\n';
+    cfg << "Names_replacement        " << " = " << "true"                   << '\n';
+    cfg << "OpenClose_window_button  " << " = " << "0x2D"                   << "\n";
+    cfg << "Bloodfx_reload_path      " << " = " << "E:\\bloodfx.dat"        << '\n';
+    cfg << "CursorImgui_Impl         " << " = " << "false"                  << '\n';
+    cfg << "Show_font_size_selection_window" << " = " << "false"            << '\n';
+    cfg << "Font_size                " << " = " << "15"                     << '\n';
 
     cfg.close();
 }
