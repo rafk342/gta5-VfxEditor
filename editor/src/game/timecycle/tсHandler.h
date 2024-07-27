@@ -54,7 +54,7 @@ class TimeñycleHandler
 		};
 		static_assert(sizeof(VarInfo) == 32);
 		u32 NumVars;
-		VarInfo* gVarInfosArray;
+		VarInfo* gImpl_VarInfosArray;
 	} m_TcConfig;
 
 public:

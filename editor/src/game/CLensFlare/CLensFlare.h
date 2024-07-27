@@ -91,9 +91,10 @@ public:
 class LensFlareHandler;
 class LensFlares_DebugOverlay 
 {
+private:
 	friend class LensFlareHandler;
 	using self_t = LensFlares_DebugOverlay;
-	static self_t* self;
+	static inline self_t* self = nullptr;
 
 	struct CircleDrawData
 	{
@@ -110,13 +111,14 @@ class LensFlares_DebugOverlay
 	rage::Vec3V			m_LightVecEndPoint;
 	Color32				m_LightVecColor = { 255, 0, 0, 180 };
 	float				m_DefaultThickness = 1.0f;
-	u8					m_OverlayAlpha = 180;
 	Color32				m_ScalarColor = { 200, 200, 200, 180 };
+	u8					m_OverlayAlpha = 180;
 
-	std::vector<CircleDrawData> m_CirclesDrawData;
+	std::vector<CircleDrawData> m_DrawData;
 	
+private:
 	static void hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, float* vPos);
-	
+
 public:
 
 	LensFlares_DebugOverlay(LensFlareHandler* handler);
@@ -126,7 +128,7 @@ public:
 	void SetOverlayAlpha(u8 value);
 	void DrawOverlay();
 	void DrawLightVec();
-
+	void Reset();
 };
 
 
@@ -134,7 +136,7 @@ class LensFlareHandler
 {
 	friend class LensFlares_DebugOverlay;
 	using self_t = LensFlareHandler;
-	static self_t* self;
+	static inline self_t* self = nullptr;
 
 	class CLensFlares
 	{
@@ -154,8 +156,8 @@ class LensFlareHandler
 
 public:
 	
-	CLensFlares* pCLensFlares = nullptr;
 	LensFlares_DebugOverlay	m_DebugOverlay;
+	CLensFlares* pCLensFlares = nullptr;
 	[[msvc::no_unique_address]] CLensFlareXmlParser m_XmlParser;
 
 private:

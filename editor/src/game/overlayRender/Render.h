@@ -20,34 +20,31 @@
 #include "scripthookTh.h"
 #include "Preload/Preload.h";
 
+#include "CamCinematicContext/CamContext.h"
 #include "rage/atl/atHashMap.h"
 
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 
 
-
-#define SAFE_RELEASE(obj) if(obj) { (obj)->Release(); (obj) = nullptr; }
-#define AM_ASSERT_STATUS(expr) if ((expr) != S_OK) LogInfo("Line : {} | File : {} | Something went wrong", __LINE__, __FILE__);
-
 using Microsoft::WRL::ComPtr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class Renderer
 {
-	static int		sm_OpenWindowButton;
-	static bool		sm_IsWindowVisible;
-	static bool		sm_Initialized;
-	static bool		sm_ImGuiCursorUsage;
-	static bool		sm_RenderState;
-	static int		font_size;
-	static bool		font_scale_expected_to_be_changed;
-	static bool		sm_ShowFontSzSelWnd;
+	static inline int  sm_OpenWindowButton = 0x2D;
+	static inline bool sm_IsWindowVisible = false;
+	static inline bool sm_Initialized = false;
+	static inline bool sm_ImGuiCursorUsage = false;
+	static inline bool sm_RenderState = false;
+	static inline int  font_size = 15;
+	static inline bool font_scale_expected_to_be_changed = false;
+	static inline bool sm_ShowFontSzSelWnd = false;
 
-	static HWND	window;
-	static ComPtr<ID3D11Device> p_device;
-	static ComPtr<ID3D11DeviceContext> p_context;
-	static ComPtr<IDXGISwapChain> p_SwapChain;
+	static inline HWND	window = nullptr;
+	static inline ComPtr<ID3D11Device> p_device = nullptr;
+	static inline ComPtr<ID3D11DeviceContext> p_context = nullptr;
+	static inline ComPtr<IDXGISwapChain> p_SwapChain = nullptr;
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void Search_for_gDevice();

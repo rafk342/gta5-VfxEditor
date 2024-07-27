@@ -7,7 +7,7 @@
 #include <map>
 
 
-class FileHandler
+class FileList
 {
 	//vec filename -> path
 	std::vector<std::pair<std::string, std::filesystem::path>> files_vec;

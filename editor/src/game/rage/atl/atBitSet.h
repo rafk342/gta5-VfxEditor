@@ -23,10 +23,10 @@ public:
 			return;
 
 		m_BitsCount = bits_count;
-		m_BitWordsCount = ALIGN_32(bits_count) / (sizeof(u32) * 8); // 64 / 32 = 2 (u32 nums)
+		m_BitWordsCount = ALIGN_32(bits_count) / (sizeof(u32) * 8); // 64 / 32 = 2 (u32)
 		
 		u16 alloc_sz = m_BitWordsCount * sizeof(u32); // 2 * 4 = 8 bytes
-		m_bits = static_cast<u32*>(alloc_fn(alloc_sz));
+		m_bits = static_cast<u32*>(rage_malloc(alloc_sz));
 		memset(m_bits, 0, alloc_sz);
 	}
 
@@ -34,7 +34,7 @@ public:
 	{
 		if (m_bits)
 		{
-			dealloc_fn(m_bits);
+			rage_free(m_bits);
 			m_bits = nullptr;
 			m_BitWordsCount = 0;
 			m_BitsCount = 0;
@@ -45,7 +45,7 @@ public:
 			m_BitsCount = other.m_BitsCount;
 
 			u16 sz = other.m_BitWordsCount * sizeof(u32);
-			m_bits = static_cast<u32*>(alloc_fn(sz));
+			m_bits = static_cast<u32*>(rage_malloc(sz));
 			memcpy(m_bits, other.m_bits, sz);
 		}
 	}
@@ -57,7 +57,7 @@ public:
 		std::swap(m_bits, other.m_bits);
 	}
 
-	atBitSet& operator=(atBitSet&& other) noexcept
+	atBitSet& operator= (atBitSet&& other) noexcept
 	{
 		if (this == &other)
 			return *this;
@@ -69,14 +69,14 @@ public:
 		return *this;
 	}
 
-	atBitSet& operator=(const atBitSet& other)
+	atBitSet& operator= (const atBitSet& other)
 	{
 		if (this == &other)
 			return *this;
 
 		if (m_bits)
 		{
-			dealloc_fn(m_bits);
+			rage_free(m_bits);
 			m_bits = nullptr;
 			m_BitWordsCount = 0;
 			m_BitsCount = 0;
@@ -87,7 +87,7 @@ public:
 			m_BitsCount = other.m_BitsCount;
 
 			u16 sz = other.m_BitWordsCount * sizeof(u32);
-			m_bits = static_cast<u32*>(alloc_fn(sz));
+			m_bits = static_cast<u32*>(rage_malloc(sz));
 			memcpy(m_bits, other.m_bits, sz);
 		}
 		return *this;
@@ -137,7 +137,7 @@ public:
 		{
 			if (m_bits)
 			{
-				dealloc_fn(m_bits);
+				rage_free(m_bits);
 				m_bits = nullptr;
 			}
 			m_BitWordsCount = 0;
@@ -147,14 +147,14 @@ public:
 		{
 			u16 NewBitWordsCount = ALIGN_32(NewBitsCount) / (sizeof(u32) * 8);
 			size_t alloc_sz = NewBitWordsCount * sizeof(u32);
-			u32* new_bits = static_cast<u32*>(alloc_fn(alloc_sz));
+			u32* new_bits = static_cast<u32*>(rage_malloc(alloc_sz));
 			memset(new_bits, 0, alloc_sz);
 
 			if (m_bits)
 			{
 				size_t cpy_sz = std::min(m_BitWordsCount, NewBitWordsCount) * sizeof(u32);
 				memcpy(new_bits, m_bits, cpy_sz);
-				dealloc_fn(m_bits);
+				rage_free(m_bits);
 			}
 
 			m_bits = new_bits;
@@ -166,7 +166,7 @@ public:
 	const char* to_string()
 	{
 		static char buff[0x400];
-		memset(buff, 0, std::size(buff));
+		//memset(buff, 0, m_BitsCount);
 		for (u16 i = 0; i < m_BitsCount; i++)
 		{
 			buff[m_BitsCount - i - 1] = test(i) ? '1' : '0';
@@ -179,10 +179,70 @@ public:
 	{
 		if (m_bits)
 		{
-			dealloc_fn(m_bits);
+			rage_free(m_bits);
 			m_bits = nullptr;
 			m_BitWordsCount = 0;
 			m_BitsCount = 0;
 		}
+	}
+};
+
+
+template<int MaxBits, typename T>
+class atFixedBitSet
+{
+	static_assert(MaxBits <= sizeof(T) * 8);
+	T m_Value = 0;
+
+public:
+
+	atFixedBitSet() = default;
+	atFixedBitSet(T value) : m_Value(value) {}
+
+	atFixedBitSet& operator= (T value)
+	{
+		m_Value = value;
+		return *this;
+	}
+
+	atFixedBitSet& operator= (const atFixedBitSet& other)
+	{
+		m_Value = other.m_Value;
+		return *this;
+	}
+
+	size_t size() const
+	{
+		return MaxBits;
+	}
+
+	void set(T bit, bool on = true)
+	{
+		if (bit > MaxBits)
+			return;
+
+		T mask = 1 << bit;
+		m_Value &= ~mask;
+		if (on) 
+			m_Value |= mask;
+	}
+
+	bool test(T bit)
+	{
+		if (bit > MaxBits)
+			return false;
+
+		T mask = 1 << bit;
+		return m_Value & mask;
+	}
+
+	operator T() const
+	{
+		return m_Value;
+	}
+
+	T* data()
+	{
+		return &m_Value;
 	}
 };

@@ -11,7 +11,7 @@
 #include "rage/atl/atArray.h"
 #include "crypto/joaat.h"
 #include "logger.h"
-#include "helpers/SimpleTimer.h"
+#include <helpers/Timer.h>
 #include "helpers/helpers.h"
 
 enum Vs_VarType_e

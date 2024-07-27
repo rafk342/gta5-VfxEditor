@@ -5,6 +5,8 @@
 #include <fstream>
 #include <mutex>
 
+#include "stringzilla/include.h"
+
 #include "Preload/Preload.h"
 #include "game/overlayRender/Render.h"
 #include "app/logger.h"
@@ -12,20 +14,17 @@
 #include "scripthookTh.h"
 
 
-FILE* f;
+static FILE* f;
 
-void Console() {
+void ShowConsole() {
 	AllocConsole();
 	freopen_s(&f, "CONOUT$", "w", stdout);
 }
 
-//48 8B 0D ?? ?? ?? ?? 8B D3 E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 8B D6
-// ptxMngr -> ref(3) 7FF71C5DC800
-
 AM_EXPORT void Init()
 {
 #if with_console
-	Console();
+	ShowConsole();
 #endif
 #if !test_ver
 	Preload::Create().Init();

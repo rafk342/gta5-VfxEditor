@@ -22,7 +22,7 @@ class CloudSettingsUI : public App
 	TimeSamplesArray_t		m_TimeSamples;
 	u8						m_CurrentTimeSampleIndex = 0;
 	bool					m_ShowOnlyTheCurrentSample = false;
-	size_t					m_MaxCloudHatNameLenIdx = -1;
+	u32						m_MaxCloudHatNameLenIdx = -1;
 
 	void GetCurrentTimeSample(int current_hour);
 

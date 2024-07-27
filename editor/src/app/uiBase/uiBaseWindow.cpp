@@ -7,6 +7,7 @@
 #include "VisualSettings/ui/visualSettingsUi.h"
 #include "bloodfx/gBloodFxReloader.h"
 #include "CLensFlare/UI/LensFlareUi.h"
+#include "Particles/ParticlesUi.h"
 
 
 BaseUiWindow* BaseUiWindow::self = nullptr;
@@ -21,6 +22,8 @@ BaseUiWindow::BaseUiWindow()
     appsVec.emplace_back(new VfxLightningUi("Lightnings"));
     appsVec.emplace_back(new gBloodfxUi("Bloodfx"));
     appsVec.emplace_back(new LensFlareUi("LensFlares"));
+    appsVec.emplace_back(new ParticlesUi("Particles"));
+
 }
 
 const char* App::get_title()

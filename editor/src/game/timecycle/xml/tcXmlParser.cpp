@@ -55,7 +55,7 @@ void tcXmlParser::load_tcData(const std::filesystem::path& path, tcCycle* cycle_
 
 		for (size_t VarIdx = 0; VarIdx < TCVAR_NUM; VarIdx++)
 		{
-			pugi::xml_node params_node = region_node.find_child([&VarIdx](pugi::xml_node node) { return std::string_view(node.name()) == g_varInfos[VarIdx].name; });
+			pugi::xml_node params_node = region_node.find_child([VarIdx](pugi::xml_node node) { return std::string_view(node.name()) == g_varInfos[VarIdx].name; });
 			if (params_node)
 			{
 				std::array temp = ConvertStrToArray<float, TC_TIME_SAMPLES>(params_node.text().as_string());
@@ -68,7 +68,7 @@ void tcXmlParser::load_tcData(const std::filesystem::path& path, tcCycle* cycle_
 			{
 				for (size_t time = 0; time < TC_TIME_SAMPLES; time++)
 				{
-					cycle_to_load->SetKeyframeValue(RegionIndex, VarIdx, time, handler.GetTcConfig().gVarInfosArray[VarIdx].DefaultValue);
+					cycle_to_load->SetKeyframeValue(RegionIndex, VarIdx, time, handler.GetTcConfig().gImpl_VarInfosArray[VarIdx].DefaultValue);
 				}
 			}
 		}

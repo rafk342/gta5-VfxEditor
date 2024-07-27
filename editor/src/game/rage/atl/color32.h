@@ -1,7 +1,8 @@
 #pragma once
 #include <format>
-#include "common/types.h"
 
+#include "imgui/imgui.h"
+#include "common/types.h"
 #include "rage/math/vec.h"
 
 class Color32
@@ -15,13 +16,17 @@ public:
 
 	Color32() = default;
 	
-	Color32(u32 value) : color(value) { }
-	Color32(float _r, float _g, float _b, float _a = 1.0f) { Setf(_r,_g,_b,_a); }
-	Color32(int _r, int _g, int _b, int _a = 255) { SetU8(u8(_r), u8(_g), u8(_b), u8(_a)); }
-	Color32(float* p)	{ Setf (p[0], p[1], p[2], p[3]); }
-	Color32(u8* p)		{ SetU8(p[0], p[1], p[2], p[3]); }
+	Color32(u32 value) : color(value) {}
 
-	Color32(const Color32& other) : color(other.color) { }
+	Color32(float _r,float _g,float _b,float _a = 1.0f)	{ Setf(_r,_g,_b,_a); }
+	Color32(int   _r,int   _g,int   _b,int   _a = 255)	{ SetU8(u8(_r), u8(_g), u8(_b), u8(_a)); }
+	
+	Color32(rage::Vector4 vec)	{ Setf(vec.X, vec.Y, vec.Z, vec.W); }
+	Color32(rage::Vector3 vec)	{ Setf(vec.X, vec.Y, vec.Z); }
+	Color32(float* p)			{ Setf (p[0], p[1], p[2], p[3]); }
+	Color32(u8* p)				{ SetU8(p[0], p[1], p[2], p[3]); }
+
+	Color32(const Color32& other) : color(other.color) {}
 
 	Color32& operator= (Color32& other)
 	{
@@ -29,35 +34,27 @@ public:
 		return *this;
 	}
 
-	Color32& operator= (std::initializer_list<float> il)
+	Color32& operator= (float* arr)
 	{
-		auto it = il.begin();
-		if (il.size() >= 1) setRedf(*it++);
-		if (il.size() >= 2) setGreenf(*it++);
-		if (il.size() >= 3) setBluef(*it++);
-		if (il.size() >= 4) setAlphaf(*it);
+		Setf(arr[0], arr[1], arr[2], arr[3]);
 		return *this;
 	}
 	
-	Color32& operator= (std::initializer_list<int> il)
+	Color32& operator= (u8* arr)
 	{
-		auto it = il.begin();
-		if (il.size() >= 1) setRedU8(*it++);
-		if (il.size() >= 2) setGreenU8(*it++);
-		if (il.size() >= 3) setBlueU8(*it++);
-		if (il.size() >= 4) setAlphaU8(*it);
+		SetU8(arr[0], arr[1], arr[2], arr[3]);
 		return *this;
 	}
 	
-	Color32& operator= (float* p)
+	Color32& operator= (const rage::Vector4& vec)
 	{
-		Setf(p[0], p[1], p[2], p[3]);
+		Setf(vec.X, vec.Y, vec.Z, vec.W);
 		return *this;
 	}
 	
-	Color32& operator= (u8* p)
+	Color32& operator= (const rage::Vector3& vec)
 	{
-		SetU8(p[0], p[1], p[2], p[3]);
+		Setf(vec.X, vec.Y, vec.Z);
 		return *this;
 	}
 
@@ -109,7 +106,7 @@ public:
 		color = 0 | (_a << a_shift) | (_r << r_shift) | (_g << g_shift) | (_b << b_shift);
 	}
 
-	inline void Setf(float _r, float _g, float _b, float _a = 1)
+	inline void Setf(float _r, float _g, float _b, float _a = 1.0f)
 	{
 		SetU8((static_cast<u8>(_r * 255.0f)),
 			  (static_cast<u8>(_g * 255.0f)),
@@ -117,14 +114,36 @@ public:
 			  (static_cast<u8>(_a * 255.0f)));
 	}
 
-	inline void Setf_col4(float* colorf) {
-		Setf(colorf[0], colorf[1], colorf[2], colorf[3]);
-	}
+	inline void Setf_col4(float* colorf) { Setf(colorf[0], colorf[1], colorf[2], colorf[3]); }
+	inline void Setf_col3(float* colorf) { Setf(colorf[0], colorf[1], colorf[2]); }
 
-	inline void Setf_col3(float* colorf) {
-		Setf(colorf[0], colorf[1], colorf[2]);
-	}
+	inline const char* to_hex() const { return vfmt("0x{:08X}", color); }
 
 	inline void SetRawInt(u32 v) { color = v; }
 	inline u32  GetRawInt() const { return color; }
 };
+
+namespace ImGui
+{
+	inline bool vColor32Edit4(const char* label, Color32& col, ImGuiColorEditFlags flags)
+	{
+		rage::Vector4 v = col.Getf_col4();
+		if (ImGui::ColorEdit4(label, (float*)&v, flags))
+		{
+			col = v;
+			return true;
+		}
+		return false;
+	}
+
+	inline bool vColor32Edit3(const char* label, Color32& col, ImGuiColorEditFlags flags)
+	{
+		rage::Vector3 v = col.Getf_col3();
+		if (ImGui::ColorEdit3(label, (float*)&v, flags))
+		{
+			col = v;
+			return true;
+		}
+		return false;
+	}
+}

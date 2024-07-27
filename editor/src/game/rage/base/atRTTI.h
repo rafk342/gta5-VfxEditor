@@ -1,15 +1,15 @@
 #pragma once
 #include <iostream>
+#include "common/types.h"
+#include "crypto/joaat.h"
 
-
-#define DEFINE_RAGE_RTTI(className)\
+#define DEFINE_RAGE_RTTI(type)\
 private:\
-	virtual void* _0x00() = 0;\
-	virtual void* _0x08() = 0;\
-	virtual uint32_t _0x10() = 0;\
-	virtual className* _0x18(void*) = 0;\
-	virtual bool _0x20(void*) = 0;\
-	virtual bool _0x28(void**) = 0;\
-	virtual void destructor() = 0;\
+	virtual void*	TypeInfo_Fn1() { return nullptr; }\
+	virtual void*	TypeInfo_Fn2() { return nullptr; }\
+	virtual u32		TypeInfo_GetBaseNameHash() { return rage::joaat(#type); }\
+	virtual type*	TypeInfo_Fn4(void*) { return nullptr; }\
+	virtual bool	TypeInfo_Fn5(void*) { return false; }\
+	virtual bool	TypeInfo_Fn6(void**) { return false; }\
 public:
 

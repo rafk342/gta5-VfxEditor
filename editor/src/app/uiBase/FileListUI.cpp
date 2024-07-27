@@ -34,7 +34,7 @@ void FileListUI::file_section()
 
     if (ImGui::Button("Load selected"))
     {
-        if (!m_fhandler.get_files_vec().empty())
+        if (!m_fList.get_files_vec().empty())
         {
             LoadSelectedBtn();
         }
@@ -44,7 +44,7 @@ void FileListUI::file_section()
 
     if (ImGui::Button("Save to selected"))
     {
-        if (!m_fhandler.get_files_vec().empty())
+        if (!m_fList.get_files_vec().empty())
         {
             SaveBtn();
         }
@@ -67,27 +67,27 @@ void FileListUI::file_section()
 void FileListUI::check_files_btn_foo(char* buff)
 {
     m_path.assign(buff);
-    m_fhandler.fill_files_vec(m_path);
+    m_fList.fill_files_vec(m_path);
     m_check_if_check_files_btn_was_pressed = true;
 }
 
 
 void FileListUI::fill_file_sel_window()
 {
-    if (m_fhandler.invalid_path_check())
+    if (m_fList.invalid_path_check())
     {
         ImGui::Text("Invalid directory path");
         return;
     }
 
-    if (m_fhandler.get_files_vec().empty())
+    if (m_fList.get_files_vec().empty())
     {
         ImGui::Text("No files found");
         return;
     }
 
     static size_t i;
-    auto& char_files_vec = m_fhandler.get_files_vec();
+    auto& char_files_vec = m_fList.get_files_vec();
 
     for (i = 0; i < char_files_vec.size(); i++)
     {
@@ -98,12 +98,12 @@ void FileListUI::fill_file_sel_window()
 
 std::filesystem::path FileListUI::getPathOfSelectedFile()
 {
-    return m_fhandler.get_files_vec().empty() ? std::filesystem::path() : m_fhandler.get_files_vec()[m_selected_radio_btn].second;
+    return m_fList.get_files_vec().empty() ? std::filesystem::path() : m_fList.get_files_vec()[m_selected_radio_btn].second;
 }
 
 std::filesystem::path FileListUI::GetCurrentSelectedFileName()
 {
-    return m_fhandler.get_files_vec().empty() ? std::filesystem::path() : m_fhandler.get_files_vec()[m_selected_radio_btn].first;
+    return m_fList.get_files_vec().empty() ? std::filesystem::path() : m_fList.get_files_vec()[m_selected_radio_btn].first;
 }
 
 

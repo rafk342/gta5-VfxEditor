@@ -11,14 +11,18 @@
 #include "helpers/align.h"
 
 
-#define rage_alloc true
-
-#if rage_alloc
-#define alloc_fn(sz) 	rage::tlsContext::get()->m_allocator->Allocate(sz, 16, 0)
-#define dealloc_fn(ptr) rage::tlsContext::get()->m_allocator->Free(ptr);
+#define RageAllocUsage true
+namespace rage
+{
+	inline void* _RageMalloc(size_t size) { return rage::tlsContext::get()->m_allocator->Allocate(size, 16, 0); }
+	inline void _RageFree(void* block){ sysMemAllocator* _allocator = rage::tlsContext::get()->m_allocator; if (_allocator) { _allocator->Free(block); } }
+}
+#if RageAllocUsage
+#define rage_malloc(size) rage::_RageMalloc(size)
+#define rage_free(block) rage::_RageFree(block)
 #else
-#define alloc_fn(sz) malloc(sz)
-#define dealloc_fn(ptr) free(ptr)
+#define rage_malloc(size) malloc(size)
+#define rage_free(block) free(block)
 #endif
 #undef max
 
@@ -46,6 +50,14 @@ public:
 
 	atArray() = default;
 
+	atArray(TSize count)
+	{
+		VerifyBufferCanFitOrGrow(count);
+		for (size_t i = 0; i < count; i++) {
+			push_back(TValue());
+		}
+	}
+
 	atArray(TSize count, const TValue& v)
 	{
 		VerifyBufferCanFitOrGrow(count);
@@ -54,35 +66,24 @@ public:
 		}
 	}
 
-	atArray(TSize count)
-	{
-		VerifyBufferCanFitOrGrow(count);
-		for (size_t i = 0; i < count; i++)
-		{
-			push_back({});
-		}
-	}
-
 	atArray(std::initializer_list<TValue> il)
 	{
 		VerifyBufferCanFitOrGrow(il.size());
-		for (auto it = il.begin(); it != il.end(); ++it) {
-			push_back(std::move(*it));
-		}
+		std::uninitialized_copy(il.begin(), il.end(), begin());
+		m_size = il.size();
 	}
 
-	template <class Iter, std::enable_if_t<std::_Is_iterator_v<Iter>,int> = 0>
+	template <class Iter, std::enable_if_t<std::_Is_iterator_v<Iter>, int> = 0>
 	atArray(Iter start, Iter end)
 	{
 		size_t sz = std::distance(start, end);
 		VerifyBufferCanFitOrGrow(sz);
-		for (; start != end; start++) {
-			push_back(*start);
-		}
+		std::uninitialized_copy(start, end, begin());
+		m_size = sz;
 	}
-	
+
 	atArray(std::vector<TValue>& vec) : atArray(vec.begin(), vec.end()) {}
-	
+
 	atArray(const atArray& other)
 	{
 		clear();
@@ -124,20 +125,20 @@ public:
 		return *this;
 	}
 
-	TValue*         begin()                 { return m_offset; }
-	TValue*         end()                   { return m_offset + m_size; }
-	TValue&         front()                 { return *(begin); }
-	TValue&         back()                  { return *(end() - 1); }
-	TValue*         data()                  { return m_offset; }
-	u16             capacity() const        { return m_capacity; }
-	u16             size() const	        { return m_size; }
-	bool            empty() const           { return (m_size == 0); }
-	bool            contains(const TValue& v) const { return index_of(v).has_value(); }
-	size_t          max_size() const        { return std::numeric_limits<TSize>::max();}
+	TValue*				begin()					    { return m_offset; }
+	TValue*				end()                       { return m_offset + m_size; }
+	TValue&				front()                     { return *(begin); }
+	TValue&				back()                      { return *(end() - 1); }
+	TValue*				data()                      { return m_offset; }
+	u16					capacity() const            { return m_capacity; }
+	u16					size() const	            { return m_size; }
+	bool				empty() const               { return (m_size == 0); }
+	bool				contains(const TValue& v) const { return index_of(v).has_value(); }
+	size_t				max_size() const            { return std::numeric_limits<TSize>::max();}
 
-	TValue&         at(u16 offset)              { return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
-	TValue&         operator[](u16 idx)	        { return at(idx); }
-	const TValue&   operator[](u16 idx) const   { return at(idx); }
+	TValue&				at(u16 offset)              { return (offset < m_size) ? m_offset[offset] : m_offset[0]; }
+	TValue&				operator[](u16 idx)	        { return at(idx); }
+	const TValue&		operator[](u16 idx) const   { return at(idx); }
 
 	void reserve(size_t new_cap)
 	{
@@ -149,12 +150,12 @@ public:
 			if (m_capacity < max_size()) {
 				new_cap = max_size();
 			} else {
-				LogInfo("AtArray ::reserve({}) -> Capacity limit was reached; max_size : {}", new_cap, u64(max_size()));
+				LogInfo("atArray ::reserve({}) -> Capacity limit was reached; max_size : {}", new_cap, u64(max_size()));
 				throw "";
 			}
 		}
 
-		TValue* newOffset = reinterpret_cast<TValue*>(alloc_fn(get_alloc_sz(new_cap)));
+		TValue* newOffset = reinterpret_cast<TValue*>(rage_malloc(get_alloc_sz(new_cap)));
 
 		if (!m_offset)
 		{
@@ -168,32 +169,206 @@ public:
 			std::uninitialized_copy(begin(), end(), newOffset);
 		}
 		std::destroy(begin(), end());
-		dealloc_fn(m_offset);
+		rage_free(m_offset);
 		m_offset = newOffset;
 		m_capacity = new_cap;
 	}
 
-	TValue& push_back(const TValue& value)
+	template <typename... Args>
+	TValue& emplace_back(Args&&... args)
 	{
 		VerifyBufferCanFitOrGrow(m_size);
-		new (&m_offset[m_size]) TValue(value);
+		new (&m_offset[m_size]) TValue(std::forward<Args>(args)...);
 		m_size++;
 		return back();
 	}
-	
+
+	TValue& push_back(const TValue& value)
+	{
+		return emplace_back(value);
+	}
+
 	TValue& push_back(TValue&& value)
 	{
-		VerifyBufferCanFitOrGrow(m_size);
-		new (&m_offset[m_size]) TValue(std::move(value));
-		m_size++;
-		return back();
+		return emplace_back(std::move(value));
 	}
 
 	void pop_back()
 	{
 		if (!empty()) {
 			m_size -= 1;
-			end()->~TValue();
+			std::destroy_at(end());
+		}
+	}
+
+	void resize(TSize new_sz)
+	{
+		if (m_size == new_sz)
+			return;
+
+		if (new_sz < m_size)
+		{
+			std::destroy(m_offset + new_sz, end());
+		}
+		else
+		{
+			VerifyBufferCanFitOrGrow(new_sz);
+			std::uninitialized_fill(m_offset + m_size, m_offset + new_sz, TValue());
+		}
+		m_size = new_sz;
+	}
+
+	void insert(size_t _where, const TValue& value)
+	{
+		if (_where > m_size)
+			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));
+
+		VerifyBufferCanFitOrGrow(m_size + 1);
+
+		auto* pos = m_offset + _where;
+		auto* _end = end();
+		if (_where == m_size)
+		{
+			emplace_back(value);
+			return;
+		}
+		
+		std::construct_at(_end, TValue());
+		if constexpr (std::is_nothrow_move_constructible_v<TValue>) {
+			std::move_backward(pos, _end, _end + 1);
+		} else {
+			std::copy_backward(pos, _end, _end + 1);
+		}
+		std::destroy_at(pos);
+		std::construct_at(pos, value);
+		//(*pos) = value;
+		m_size++;
+	}
+
+	void insert(size_t _where, std::initializer_list<TValue> il)
+	{
+		if (_where > m_size)
+			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));
+
+		VerifyBufferCanFitOrGrow(m_size + il.size());
+		auto it_begin = il.begin();
+		auto it_end = il.end();
+		if (_where == m_size)
+		{
+			for (; it_begin != it_end; it_begin++) {
+				push_back(*it_begin);
+			}
+			return;
+		}
+
+		auto* pos = m_offset + _where;
+		auto* _end = end();
+		auto* next_end = _end + il.size();
+		
+		std::uninitialized_fill(_end, next_end, TValue());
+		if constexpr (std::is_nothrow_move_constructible_v<TValue>) {
+			std::move_backward(pos, _end, next_end);
+		} else {
+			std::copy_backward(pos, _end, next_end);
+		}
+		
+		std::destroy(pos, pos + il.size());
+		for (; it_begin != it_end; it_begin++)
+		{
+			std::construct_at(pos, *it_begin);
+		}
+		m_size += il.size();
+	}
+
+	template <class Iter, std::enable_if_t<std::_Is_iterator_v<Iter>, int> = 0>
+	void insert(size_t _where, Iter first, Iter last)
+	{
+		if (_where > m_size)
+			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));
+
+		size_t count = std::distance(first, last);
+		VerifyBufferCanFitOrGrow(m_size + count);
+
+		if (_where == m_size)
+		{
+			for (auto it = first; it != last; ++it) 
+			{
+				push_back(*it);
+			}
+			return;
+		}
+
+		auto* pos = m_offset + _where;
+		auto* curr_end = end();
+		auto* new_end = end() + count;
+		
+		std::uninitialized_fill(curr_end, new_end, TValue());
+		
+		if constexpr (std::is_nothrow_move_constructible_v<TValue>) {
+			std::move_backward(pos, curr_end, new_end);
+		} else {
+			std::copy_backward(pos, curr_end, new_end);
+		}
+		
+		std::destroy(pos, pos + count);
+		for (auto it = first; it != last; ++it, ++pos) 
+		{
+			std::construct_at(pos, *it);
+		}
+		m_size += count;
+	}
+
+	void remove_at(size_t idx)
+	{
+		if (idx >= m_size)
+			return;
+		
+		auto* _where = m_offset + idx;
+		
+		if (_where == &back())
+		{
+			pop_back();
+			return;
+		}
+
+		std::destroy_at(_where);
+		if constexpr (std::is_nothrow_move_assignable_v<TValue>) {
+			std::move(_where + 1, end(), _where);
+		} else {
+			std::copy(_where + 1, end(), _where);
+		}
+	
+		m_size -= 1;
+		std::destroy_at(end());	// object here is still valid, destroying tail...
+	}
+	
+	//void remove_range(size_t left, size_t right)
+	//{
+	//	bool RangeCanBeRemoved = right < m_size && left < right;
+	//	if (!RangeCanBeRemoved)
+	//		return;
+
+	//	auto* first = &m_offset[left];
+	//	auto* last = &m_offset[right];
+	//	size_t count = std::distance(first, last + 1);
+	//	std::destroy(first, last);
+	//	size_t move_sz = (m_size - right - 1) * sizeof(TValue);
+	//	memmove(
+	//		first, // dst
+	//		last + 1, //src
+	//		move_sz); //sz
+	//	m_size -= count;
+	//}
+
+	void erase_v(const TValue& v)
+	{
+		if (empty())
+			return;
+
+		for (size_t i = m_size - 1; i >= 0; --i) {
+			if (v == m_offset[i]) {
+				remove_at(i);
+			}
 		}
 	}
 
@@ -207,135 +382,13 @@ public:
 		return std::nullopt;
 	}
 
-
-	void insert(size_t _where, const TValue& value)
-	{
-		if (_where > m_size)
-			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));;
-
-		if (_where == m_size)
-		{
-			push_back(value);
-			return;
-		}
-		VerifyBufferCanFitOrGrow(m_size + 1);
-		size_t move_sz = (m_size - _where) * sizeof(TValue);
-		memmove(
-			m_offset + _where + 1, //dst 
-			m_offset + _where, //src
-			move_sz ); //sz
-		
-		new (&m_offset[_where]) TValue(value);
-		m_size++;
-	}
-
-	void insert(size_t _where, std::initializer_list<TValue> il)
-	{
-		if (_where > m_size)
-			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));
-		
-		VerifyBufferCanFitOrGrow(m_size + il.size());
-		auto it_begin = il.begin();
-		auto it_end = il.end();
-		if (_where == m_size)
-		{
-			for (; it_begin != it_end; it_begin++) {
-				push_back(*it_begin);
-			}
-			return;
-		}
-		size_t move_sz = (m_size - _where) * sizeof(TValue);	
-		memmove(
-			m_offset + _where + il.size(), //dst 
-			m_offset + _where, //src
-			move_sz ); //sz
-
-		for (; it_begin != it_end; it_begin++)
-		{
-			new (&m_offset[_where++]) TValue(std::move(*it_begin));
-		}
-		m_size += il.size();
-	}
-	
-	template <class Iter, std::enable_if_t<std::_Is_iterator_v<Iter>, int> = 0>
-	void insert(size_t _where, Iter first, Iter last)
-	{
-		if (_where > m_size)
-			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));
-
-		size_t count = std::distance(first, last);
-		VerifyBufferCanFitOrGrow(m_size + count);
-		if (_where == m_size)
-		{
-			for (; first != last; first++) {
-				push_back(*first);
-			}
-			return;
-		}
-		size_t move_sz = (m_size - _where) * sizeof(TValue);
-		memmove(
-			m_offset + _where + count, // dst
-			m_offset + _where,         // src
-			move_sz);                  // size
-
-		for (; first != last; first++) 
-		{
-			new (&m_offset[_where++]) TValue(*first);
-		}
-		m_size += count;
-	}
-
-
-	void remove_at(size_t idx)
-	{
-		if (idx >= m_size) 
-			return;
-		
-		m_offset[idx].~TValue();
-		size_t move_sz = (m_size - idx - 1) * sizeof(TValue);
-		memmove(
-			&m_offset[idx], // dst
-			&m_offset[idx + 1], //src
-			move_sz ); //sz
-
-		m_size -= 1;
-	}
-
-	void remove_range(size_t left, size_t right)
-	{
-		bool RangeCanBeRemoved = right < m_size && left < right;
-		if (!RangeCanBeRemoved)
-			return;
-
-		auto* first = &m_offset[left];
-		auto* last = &m_offset[right];
-		size_t count = std::distance(first, last + 1);
-		std::destroy(first, last);
-		size_t move_sz = (m_size - right - 1) * sizeof(TValue);
-		memmove(
-			first, // dst
-			last + 1, //src
-			move_sz); //sz
-		m_size -= count;
-	}
-
-	void erase_v(const TValue& v)
-	{
-		if (!empty()) 
-		{
-			for (size_t i = m_size - 1; i >= 0; --i)
-				if (v == m_offset[i])
-					remove_at(i);
-		}
-	}
-
 	void clear()
 	{
-		if (!empty())
-		{
-			std::destroy(begin(), end());
-			m_size = 0;
-		}
+		if (empty())
+			return;
+
+		std::destroy(begin(), end());
+		m_size = 0;
 	}
 
 	~atArray()
@@ -343,7 +396,7 @@ public:
 		clear();
 		if (m_offset)
 		{
-			dealloc_fn(m_offset);
+			rage_free(m_offset);
 			m_offset = nullptr;
 			m_capacity = 0;
 		}

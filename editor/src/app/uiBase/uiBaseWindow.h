@@ -15,8 +15,8 @@ public:
     const char* get_title();
    
     virtual void window() = 0;
-    virtual void importData(std::filesystem::path path) = 0;
-    virtual void exportData(std::filesystem::path path) = 0;
+    virtual void importData(std::filesystem::path path) {};
+    virtual void exportData(std::filesystem::path path) {};
 };
 
 class BaseUiWindow : private FileListUI

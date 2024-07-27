@@ -34,7 +34,8 @@ void LensFlareUi::window()
 	};
 
 	static int F_Index = m_Handler.pCLensFlares->m_ActiveSettingsIndex;
-	if (F_Index != m_Handler.pCLensFlares->m_ActiveSettingsIndex) {
+	int curr_settings = m_Handler.pCLensFlares->m_ActiveSettingsIndex;
+	if (F_Index != curr_settings) {
 		m_Handler.ChangeSettings(F_Index);
 	}
 

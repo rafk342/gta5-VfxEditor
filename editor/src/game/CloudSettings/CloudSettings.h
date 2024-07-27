@@ -15,31 +15,10 @@
 #include "helpers/helpers.h"
 #include "rage/math/vecv.h"
 
-struct ptxKeyframeEntry
-{
-	float vTime[4]{};
-	float vValue[4]{};
+#include "atHashString.h"
+#include "ptxKeyframe.h"
 
-	ptxKeyframeEntry(float time, rage::Vec4V values)
-	{
-		vTime[0] = time;
-		for (int i = 0; i < 4; ++i) {
-			vValue[i] = values[i];
-		}
-	}
-};
-
-
-class ptxKeyframe
-{
-public:
-	atArray<ptxKeyframeEntry> data;
-private:
-	u8 pad[16];
-};
-
-
-struct CloudHatSettings				
+struct CloudHatSettings
 {
 private:
 	u8 pad[16]{};

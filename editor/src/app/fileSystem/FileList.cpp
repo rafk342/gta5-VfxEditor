@@ -1,7 +1,7 @@
-#include "FileHandler.h"
+#include "FileList.h"
 
 
-void FileHandler::fill_files_vec(std::filesystem::path path)
+void FileList::fill_files_vec(std::filesystem::path path)
 {
     files_vec.clear();
 
@@ -23,12 +23,12 @@ void FileHandler::fill_files_vec(std::filesystem::path path)
     invalid_path = false;
 }
 
-bool FileHandler::invalid_path_check()
+bool FileList::invalid_path_check()
 {
     return invalid_path;
 }
 
-std::vector<std::pair<std::string, std::filesystem::path>>& FileHandler::get_files_vec()
+std::vector<std::pair<std::string, std::filesystem::path>>& FileList::get_files_vec()
 {
     return files_vec;
 }

@@ -136,7 +136,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir);src;vendor;src\app;src\game;vendor\ImGui</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -147,6 +147,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
+      <DisableSpecificWarnings>4068;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -169,7 +170,7 @@
     <ClCompile Include="src\game\CloudSettings\ui\CloudSettingsUI.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="src\app\amString\string.cpp" />
-    <ClCompile Include="src\app\fileSystem\FileHandler.cpp" />
+    <ClCompile Include="src\app\fileSystem\FileList.cpp" />
     <ClCompile Include="src\app\helpers\helpers.cpp" />
     <ClCompile Include="src\app\helpers\win32.cpp" />
     <ClCompile Include="src\app\memory\address.cpp" />
@@ -177,8 +178,14 @@
     <ClCompile Include="src\game\CloudSettings\CloudSettings.cpp" />
     <ClCompile Include="src\game\gameClock\CClock.cpp" />
     <ClCompile Include="src\game\overlayRender\Render.cpp" />
+    <ClCompile Include="src\game\Particles\ParticlesUi.cpp" />
+    <ClCompile Include="src\game\Particles\ptxBehaviour.cpp" />
     <ClCompile Include="src\game\rage\math\vec.cpp" />
     <ClCompile Include="src\game\rage\math\vecv.cpp" />
+    <ClCompile Include="src\game\rage\paging\base.cpp" />
+    <ClCompile Include="src\game\rage\paging\resource.cpp" />
+    <ClCompile Include="src\game\rage\paging\resourcechunk.cpp" />
+    <ClCompile Include="src\game\rage\paging\resourceinfo.cpp" />
     <ClCompile Include="src\game\timecycle\tcData.cpp" />
     <ClCompile Include="src\game\timecycle\tсHandler.cpp" />
     <ClCompile Include="src\game\timecycle\ui\timecycleUI_impl.cpp" />
@@ -203,19 +210,54 @@
     <ClCompile Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.cpp" />
     <ClCompile Include="src\game\VisualSettings\visualSettingsHandler.cpp" />
     <ClCompile Include="src\game\VisualSettings\ui\visualSettingsUi.cpp" />
+    <ClCompile Include="vendor\zlib-1.2.3\adler32.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\compress.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\crc32.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\deflate.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\gzio.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\infback.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\inffast.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\inflate.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\inftrees.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\trees.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\uncompr.c" />
+    <ClCompile Include="vendor\zlib-1.2.3\zutil.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\helpers\ranges.h" />
+    <ClInclude Include="src\game\CamCinematicContext\CamContext.h" />
     <ClInclude Include="src\game\CLensFlare\CLensFlareXmlParser.h" />
     <ClInclude Include="src\game\CLensFlare\UI\LensFlareUi.h" />
     <ClInclude Include="src\game\CLensFlare\CLensFlare.h" />
     <ClInclude Include="src\game\bloodfx\gBloodFxReloader.h" />
+    <ClInclude Include="src\game\atHashString.h" />
+    <ClInclude Include="src\game\Particles\ptxUiUniqueNums.h" />
+    <ClInclude Include="src\game\Particles\ptxDrawable.h" />
+    <ClInclude Include="src\game\Particles\ptxShader.h" />
+    <ClInclude Include="src\game\Particles\ptxBiasLink.h" />
+    <ClInclude Include="src\game\Particles\ptxBehaviour.h" />
+    <ClInclude Include="src\game\Particles\ptxRenderState.h" />
+    <ClInclude Include="src\game\Particles\ptxEffectSpawner.h" />
+    <ClInclude Include="src\game\Particles\ptxParticleRule.h" />
+    <ClInclude Include="src\game\Particles\ptxDomain.h" />
+    <ClInclude Include="src\game\Particles\ptxEmitterRule.h" />
+    <ClInclude Include="src\game\ptxKeyframe.h" />
+    <ClInclude Include="src\game\Particles\ptxKeyframeProp.h" />
+    <ClInclude Include="src\game\Particles\ptxEvolution.h" />
+    <ClInclude Include="src\game\Particles\ptxTimeline.h" />
+    <ClInclude Include="src\game\Particles\ptxEffectRule.h" />
+    <ClInclude Include="src\game\Particles\ptxList.h" />
+    <ClInclude Include="src\game\Particles\ParticlesUi.h" />
+    <ClInclude Include="src\game\Particles\particles.h" />
     <ClInclude Include="src\game\rage\atl\color32.h" />
+    <ClInclude Include="src\game\rage\atl\atBinaryMap.h" />
+    <ClInclude Include="src\game\rage\paging\Dictionary.h" />
     <ClInclude Include="src\game\rage\base\atRTTI.h" />
     <ClInclude Include="src\game\rage\base\tlsContext.h" />
     <ClInclude Include="src\game\rage\base\sysMemAllocator.h" />
     <ClInclude Include="src\app\helpers\align.h" />
     <ClInclude Include="src\app\helpers\bits.h" />
+    <ClInclude Include="src\game\rage\dat\datBase.h" />
     <ClInclude Include="src\game\rage\math\constants.h" />
     <ClInclude Include="src\game\rage\math\math.h" />
     <ClInclude Include="src\game\rage\math\mathv.h" />
@@ -223,9 +265,17 @@
     <ClInclude Include="src\game\rage\math\quatv.h" />
     <ClInclude Include="src\game\rage\math\vec.h" />
     <ClInclude Include="src\game\rage\math\vecv.h" />
+    <ClInclude Include="src\game\rage\paging\base.h" />
+    <ClInclude Include="src\game\rage\paging\ref.h" />
+    <ClInclude Include="src\game\rage\paging\resource.h" />
+    <ClInclude Include="src\game\rage\paging\paging.h" />
+    <ClInclude Include="src\game\rage\paging\resourceinfo.h" />
+    <ClInclude Include="src\game\rage\paging\resourcechunk.h" />
+    <ClInclude Include="src\game\rage\paging\resourcemap.h" />
+    <ClInclude Include="src\game\rage\zlib\stream.h" />
     <ClInclude Include="src\game\scripthookTh.h" />
     <ClInclude Include="src\game\gameClock\Ui\ClockUi.h" />
-    <ClInclude Include="src\app\helpers\SimpleTimer.h" />
+    <ClInclude Include="src\app\helpers\Timer.h" />
     <ClInclude Include="src\app\uiBase\ImguiHelpers.h" />
     <ClInclude Include="src\game\CloudSettings\xml\CloudSettingsXmlParser.h" />
     <ClInclude Include="src\game\rage\atl\atBitSet.h" />
@@ -241,7 +291,7 @@
     <ClInclude Include="src\app\compiler\compiler.h" />
     <ClInclude Include="src\app\crypto\float16.h" />
     <ClInclude Include="src\app\crypto\joaat.h" />
-    <ClInclude Include="src\app\fileSystem\FileHandler.h" />
+    <ClInclude Include="src\app\fileSystem\FileList.h" />
     <ClInclude Include="src\app\helpers\cstr.h" />
     <ClInclude Include="src\app\helpers\helpers.h" />
     <ClInclude Include="src\app\helpers\resharper.h" />
@@ -390,10 +440,29 @@
     <ClInclude Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.h" />
     <ClInclude Include="src\game\VisualSettings\visualSettingsHandler.h" />
     <ClInclude Include="src\game\VisualSettings\ui\visualSettingsUi.h" />
+    <ClInclude Include="vendor\stringzilla\experimental.h" />
+    <ClInclude Include="vendor\stringzilla\include.h" />
+    <ClInclude Include="vendor\stringzilla\stringzilla.h" />
+    <ClInclude Include="vendor\stringzilla\stringzilla.hpp" />
+    <ClInclude Include="vendor\zlib-1.2.3\crc32.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\deflate.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\inffast.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\inffixed.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\inflate.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\inftrees.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\trees.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\zconf.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\zconf.in.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\zlib.h" />
+    <ClInclude Include="vendor\zlib-1.2.3\zutil.h" />
+    <ClInclude Include="vendor\zlib-ng\zconf-ng.h" />
+    <ClInclude Include="vendor\zlib-ng\zlib-ng.h" />
+    <ClInclude Include="vendor\zlib-ng\zlib_name_mangling-ng.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\MinHook\libMinHook.x64.lib" />
     <Library Include="vendor\scripthook\lib\ScriptHookV.lib" />
+    <Library Include="vendor\zlib-ng\zlibstatic-ng.lib" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="src\game\rage\math\vmath.natvis" />

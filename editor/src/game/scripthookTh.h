@@ -40,9 +40,8 @@ public:
 	{
 		std::unique_lock lock(m_Mutex);
 		
-		if (m_FrameTasks.empty() && m_Subscribers.empty()) {
+		if (m_FrameTasks.empty() && m_Subscribers.empty()) 
 			return;
-		}
 
 		for (const ScriptHookDelegate& delegate : m_Subscribers)
 			delegate();
@@ -165,6 +164,8 @@ public:
 		
 		if (sm_ScriptID == 0) {
 			LogInfo("Failed to start script thread");
+			sm_Running = false;
+			return;
 		}
 		
 		sm_Running = true;

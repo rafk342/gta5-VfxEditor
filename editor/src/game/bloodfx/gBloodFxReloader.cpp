@@ -67,11 +67,3 @@ void gBloodfxUi::window()
 		ImGui::Text("Failed to load bloodfx from the given path");
 }
 
-
-void gBloodfxUi::importData(std::filesystem::path path)
-{ }
-
-void gBloodfxUi::exportData(std::filesystem::path path)
-{ }
-
-

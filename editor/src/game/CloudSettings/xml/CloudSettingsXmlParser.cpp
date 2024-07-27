@@ -2,7 +2,7 @@
 
 #include "app/logger.h"
 #include <chrono>
-#include <helpers/SimpleTimer.h>
+#include <helpers/Timer.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -12,8 +12,8 @@ void CloudSettingsXmlParser::ImportCloudKfData(const std::filesystem::path& path
 {	
 	pugi::xml_document doc;
 	pugi::xml_parse_result res = doc.load_file(path.c_str());
-	if (!res) 
-		return; 
+	if (!res)
+		return;
 
 	pugi::xml_node root = doc.first_child();
 	if (std::string_view(root.name()) != "CloudSettingsMap")
@@ -133,18 +133,6 @@ void CloudSettingsXmlParser::fillProbabilitiesArray(CloudHatSettings& settings, 
 		arr.push_back(num);
 	}
 }
-//
-//std::vector<int> CloudSettingsXmlParser::GetProbabilitiesVecFromStr(const char* text, u32 bits_count)
-//{
-//	std::vector<int> vec(bits_count, 0);
-//	std::istringstream iss(text);
-//	int num = 0;
-//	for (size_t i = 0; iss >> num && i < bits_count; i++)
-//	{
-//		vec[i] = num;
-//	}
-//	return vec;
-//}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////

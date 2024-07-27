@@ -23,11 +23,7 @@ class gBloodfxUi : public App, private gBloodfxReloader
 {
 	char buff[256];
 public:
-
 	gBloodfxUi(const char* title);
-
 	virtual void window() override;
-	virtual void importData(std::filesystem::path path) override;
-	virtual void exportData(std::filesystem::path path) override;
 };
 

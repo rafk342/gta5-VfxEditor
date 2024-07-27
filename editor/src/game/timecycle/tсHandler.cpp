@@ -20,7 +20,7 @@ TimeñycleHandler::TimeñycleHandler()
 
 	auto addr = gmAddress::Scan("39 1D ?? ?? ?? ?? 7E ?? 45 33 F6");
 	m_TcConfig.NumVars = *addr.GetRef(2).To<u32*>();
-	m_TcConfig.gVarInfosArray = *addr.GetRef(14).To<decltype(m_TcConfig.gVarInfosArray)*>();
+	m_TcConfig.gImpl_VarInfosArray = *addr.GetRef(14).To<decltype(m_TcConfig.gImpl_VarInfosArray)*>();
 }
 
 std::string TimeñycleHandler::GetCycleName(int index)

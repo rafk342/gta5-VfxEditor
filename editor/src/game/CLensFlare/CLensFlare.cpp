@@ -1,6 +1,9 @@
 #include "CLensFlare.h"
 
 #define PI	(3.14159265358979323846264338327950288l)
+static gmAddress s_RenderFlareFxAddr;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 rage::ScalarV LengthVec2(rage::Vec3V V)
@@ -18,10 +21,10 @@ u32 ConvertToImguiCol32(Color32 color)
 	return IM_COL32(color.getRedU8(), color.getGreenU8(), color.getBlueU8(), color.getAlphaU8());
 }
 
-ImVec2 ConvertToPixelCoordinates(const ImVec2& normalizedPoint)
+ImVec2 ConvertToPixelCoordinates(const ImVec2& NormalizedPoint)
 {
-	ImVec2 windowSize = ImGui::GetMainViewport()->Size;
-	return { normalizedPoint.x * windowSize.x, normalizedPoint.y * windowSize.y };
+	ImVec2 WndSz = ImGui::GetMainViewport()->Size;
+	return { NormalizedPoint.x * WndSz.x, NormalizedPoint.y * WndSz.y };
 }
 
 float GetMainViewportAspectRatio()
@@ -36,15 +39,12 @@ float GetMainViewportAspectRatio()
 	return 1.0f;
 }
 
-static gmAddress s_RenderFlareFxAddr;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //								DebugOverlay
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-LensFlares_DebugOverlay::self_t* LensFlares_DebugOverlay::self = nullptr;
 
 void(*RenderFlareFxfn)(u64, u64, u64, u64, float*);
 void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64 arg4, float* SunPos)
@@ -58,7 +58,6 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64
 	if (self->p_Handler->pCLensFlares->m_SunVisibility < 0.01f)
 		return;
 
-
 	self->m_LightVecStartPoint = { SunPos[0], SunPos[1] };
 	self->m_ScalarColor.setAlphaU8(self->m_OverlayAlpha);
 
@@ -67,8 +66,7 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64
 	Vec3V vDist = vFlareDirNorm.Abs() + Vec3V(0.5f);
 	vFlareDirNorm /= fLen;
 
-	ScalarV fDistToEdge = LengthVec2(vDist);
-	Vec3V vFlareDir = vFlareDirNorm * fDistToEdge;
+	Vec3V vFlareDir = vFlareDirNorm * LengthVec2(vDist);
 	self->m_LightVecEndPoint = self->m_LightVecStartPoint + vFlareDir;
 
 	ScalarV fDistScale = std::min(1.0f, (fLen * 2).Get());
@@ -84,7 +82,6 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64
 	{
 		/*
 		*	Position
-		*
 		*/
 		ScalarV fDistFromLightFactor;
 		if (flare.m_nTexture == ArtefactFx || (flare.m_nTexture == AnimorphicFx && flare.m_bAnimorphicBehavesLikeArtefact))
@@ -104,10 +101,8 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64
 		}
 
 		/*
-		*	Scale
-		*
+		*	Size
 		*/
-		//	size
 		float fHalfSize;
 		if (flare.m_nTexture == ChromaticFx)
 		{
@@ -126,32 +121,38 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64
 			}
 		}
 
-		//	scale
+		/*
+		*	Scale 
+		*/
 		float fScaleU = fHalfSize;
 		float fScaleV = fHalfSize;
+		float fOuterRad;
 
-
-		if (flare.m_nTexture != ArtefactFx && flare.m_nTexture != ChromaticFx)
+		switch (static_cast<FlareFxTextureType_e>(flare.m_nTexture))
 		{
+		case AnimorphicFx:
 			fScaleU = fHalfSize + fLen.Get() * flare.m_fAnimorphicScaleFactorU;
 			fScaleV = fHalfSize + fLen.Get() * flare.m_fAnimorphicScaleFactorV;
-		}
-		else if (flare.m_nTexture == ChromaticFx)
-		{
-			float fOuterRad = fHalfSize + flare.m_fWidthRotate / 2;
-			fScaleU = fOuterRad * 1.0f + fLen.Get() * flare.m_fAnimorphicScaleFactorU;
-			fScaleV = (fOuterRad * fAspectRatio + fLen.Get() * flare.m_fAnimorphicScaleFactorV) / 2;
-		}
-		else
-		{
+			break;
+
+		case ArtefactFx:
 			fScaleU *= 1 + fLen.Get() * flare.m_fAnimorphicScaleFactorU;
 			fScaleV *= (fAspectRatio + fLen.Get() * flare.m_fAnimorphicScaleFactorV) / 2;
-		}
-		
-		if (flare.m_nTexture == CoronaFx)
-		{
-			fScaleU /= 2;
-			fScaleV /= 2;
+			break;
+
+		case ChromaticFx:
+			fOuterRad = fHalfSize + flare.m_fWidthRotate / 2;
+			fScaleU = fOuterRad * 1.0f + fLen.Get() * flare.m_fAnimorphicScaleFactorU;
+			fScaleV = (fOuterRad * fAspectRatio + fLen.Get() * flare.m_fAnimorphicScaleFactorV) / 2;
+			break;
+
+		case CoronaFx:
+			fScaleU = (fHalfSize + fLen.Get() * flare.m_fAnimorphicScaleFactorU) / 2;
+			fScaleV = (fHalfSize + fLen.Get() * flare.m_fAnimorphicScaleFactorV) / 2;
+			break;
+
+		default:
+			break;
 		}
 
 		fScaleU *= 1000;
@@ -160,7 +161,6 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64
 
 		/*
 		*	Rotate
-		* 
 		*/
 		float rotate = (-flare.m_fWidthRotate) * PI;
 		if (flare.m_nTexture == ChromaticFx || flare.m_nTexture == ArtefactFx)
@@ -173,7 +173,7 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64
 		}
 		
 
-		self->m_CirclesDrawData.push_back(CircleDrawData(
+		self->m_DrawData.push_back(CircleDrawData(
 		/*pos	*/	ConvertToPixelCoordinates({vFlarePos[0], vFlarePos[1]}),
 		/*rotate*/	rotate,
 		/*color	*/	flare.m_color * self->m_ScalarColor,
@@ -183,7 +183,6 @@ void LensFlares_DebugOverlay::hk_RenderFlareFx(u64 arg1, u64 arg2, u64 arg3, u64
 
 	}
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -207,11 +206,10 @@ LensFlares_DebugOverlay::~LensFlares_DebugOverlay()
 
 void LensFlares_DebugOverlay::SetThicknessForFlareCircleByIndex(size_t index, float thickness)
 {
-	if (m_CirclesDrawData.empty() || index >= m_CirclesDrawData.size())
+	if (m_DrawData.empty() || index >= m_DrawData.size())
 		return;
 
-	auto* lensflares = p_Handler->pCLensFlares;
-	m_CirclesDrawData[index].thickness = thickness;
+	m_DrawData[index].thickness = thickness;
 }
 
 void LensFlares_DebugOverlay::SetOverlayAlpha(u8 value)
@@ -224,10 +222,9 @@ void LensFlares_DebugOverlay::DrawOverlay()
 	if (p_Handler->pCLensFlares->m_SunVisibility < 0.01f)
 		return;
 
-	ImDrawList* dl = ImGui::GetBackgroundDrawList();
-	for (auto& data : m_CirclesDrawData)
+	for (auto& data : m_DrawData)
 	{
-		dl->AddEllipse(data.pos, data.scale.x, data.scale.y , ConvertToImguiCol32(data.col), data.rotate, 32, data.thickness);
+		ImGui::GetBackgroundDrawList()->AddEllipse(data.pos, data.scale.x, data.scale.y , ConvertToImguiCol32(data.col), data.rotate, 32, data.thickness);
 	}
 }
 
@@ -236,15 +233,18 @@ void LensFlares_DebugOverlay::DrawLightVec()
 	if (p_Handler->pCLensFlares->m_SunVisibility < 0.01f)
 		return;
 
-	ImDrawList* dl = ImGui::GetBackgroundDrawList();
-
 	ImVec2 start_p = ConvertToPixelCoordinates({ m_LightVecStartPoint.X(), m_LightVecStartPoint.Y() });
 	ImVec2 end_p = ConvertToPixelCoordinates({ m_LightVecEndPoint.X(), m_LightVecEndPoint.Y() });
 	m_LightVecColor.setAlphaf(m_ScalarColor.getAlphaf());
-	dl->AddLine(start_p, end_p, ConvertToImguiCol32(m_LightVecColor), m_DefaultThickness);
+	ImGui::GetBackgroundDrawList()->AddLine(start_p, end_p, ConvertToImguiCol32(m_LightVecColor), m_DefaultThickness);
 }
 
-
+void LensFlares_DebugOverlay::Reset()
+{
+	m_DrawData.clear();
+	m_LightVecStartPoint = 0;
+	m_LightVecEndPoint = 0;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////			
@@ -252,7 +252,6 @@ void LensFlares_DebugOverlay::DrawLightVec()
 //							
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LensFlareHandler::self_t* LensFlareHandler::self = nullptr;
 
 LensFlareHandler::LensFlareHandler()
 	: m_DebugOverlay(this)
@@ -316,16 +315,14 @@ void LensFlareHandler::EndFrame()
 		return;
 
 	if (self->m_ShowDebugOverlay)
-	{		
+	{
 		self->m_DebugOverlay.DrawOverlay();
 	}
 	if (self->m_ShowLightVec)
 	{
 		self->m_DebugOverlay.DrawLightVec();
 	}
-	self->m_DebugOverlay.m_CirclesDrawData.clear();
-	self->m_DebugOverlay.m_LightVecStartPoint = 0;
-	self->m_DebugOverlay.m_LightVecEndPoint = 0;
+	self->m_DebugOverlay.Reset();
 }
 
 
@@ -342,12 +339,12 @@ void LensFlareHandler::SetLightVecVisibility(bool show)
 void LensFlareHandler::SortFlaresByDistance(atArray<CFlareFX>& arr)
 {
 	using namespace rage;
+	atArray<std::pair<float, CFlareFX*>> TempSortDataArray;
 
-	ScalarV fLen = LengthVec2(Vec3V(0.5f) - Vec3V(0.2f, 0.2f));
+	ScalarV fLen = LengthVec2(Vec3V(0.5f) - Vec3V(0.2f));
 	ScalarV fDistScale = std::min(1.0f, (fLen * 2).Get());
 	fDistScale *= fDistScale;
 
-	atArray<std::pair<float, CFlareFX*>> TempSortDataArray;
 	for (auto& flare : arr)
 	{
 		ScalarV fDistFromLightFactor;
@@ -362,10 +359,10 @@ void LensFlareHandler::SortFlaresByDistance(atArray<CFlareFX>& arr)
 		}
 		TempSortDataArray.push_back({ fDistFromLightFactor.Get(), &flare });
 	}
-	
-	std::sort(TempSortDataArray.begin(), TempSortDataArray.end(), [](std::pair<float, CFlareFX*>& sd1, std::pair<float, CFlareFX*>& sd2) 
+
+	std::sort(TempSortDataArray.begin(), TempSortDataArray.end(), [](std::pair<float, CFlareFX*>& left, std::pair<float, CFlareFX*>& right) 
 		{ 
-			return sd1.first < sd2.first;
+			return left.first < right.first;
 		});
 	
 	atArray<CFlareFX> SortedFlaresArray(TempSortDataArray.size());
@@ -378,10 +375,8 @@ void LensFlareHandler::SortFlaresByDistance(atArray<CFlareFX>& arr)
 }
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////			
-//							
+//					CFlareFX		
 //							
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

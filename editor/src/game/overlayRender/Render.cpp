@@ -18,22 +18,8 @@ namespace
 	gmAddress	s_WndProcAddr;
 	gmAddress	s_SafeModeOperationsAddr;
 	
-	bool shutdown_request = false;
+	std::atomic<bool> shutdown_request = false;
 }
-
-HWND							Renderer::window = nullptr;
-ComPtr<ID3D11Device>			Renderer::p_device = nullptr;
-ComPtr<ID3D11DeviceContext>		Renderer::p_context = nullptr;
-ComPtr<IDXGISwapChain>			Renderer::p_SwapChain = nullptr;
-
-int		Renderer::sm_OpenWindowButton = 0;
-bool	Renderer::sm_IsWindowVisible = false;
-bool	Renderer::sm_Initialized = false;
-bool    Renderer::sm_ImGuiCursorUsage = false;
-bool	Renderer::sm_RenderState = false;
-bool	Renderer::sm_ShowFontSzSelWnd = false;
-int		Renderer::font_size = 15;
-bool	Renderer::font_scale_expected_to_be_changed = false;
 
 ID3D11Device*			Renderer::GetDevice()	{ return p_device.Get(); }
 ID3D11DeviceContext*	Renderer::GetContext()	{ return p_context.Get(); }
@@ -149,10 +135,11 @@ void Renderer::hk_GpuEndFrame()
 	sm_RenderState = true;
 	if (!sm_Initialized)
 	{
-		InitBackend();
-		BaseUiWindow::Create();
+		InitBackend();		
 		ScriptHook::Start();
+		BaseUiWindow::Create();
 		CClock::Init();
+		CamCinematicContext::Init();
 
 		sm_Initialized = true;
 	}
@@ -161,7 +148,13 @@ void Renderer::hk_GpuEndFrame()
 		ImStartFrame();
 		if (sm_IsWindowVisible) 
 		{
+			CamCinematicContext::DISABLE_IDLE_CAM = true;
+			GameInput::DisableAllControlsThisFrame();
 			ImDrawUI();
+		}
+		else
+		{
+			CamCinematicContext::DISABLE_IDLE_CAM = false;
 		}
 		LensFlareHandler::EndFrame();
 		ImEndFrame();
@@ -183,7 +176,7 @@ void Renderer::Init()
 		return;
 
 	Search_for_gDevice();
-	Hook::Create(s_EndFrameAddr,	Renderer::hk_GpuEndFrame,	&g_GpuEndFrame,	"EndFrame");
+	Hook::Create(s_EndFrameAddr,	Renderer::hk_GpuEndFrame,	&g_GpuEndFrame,	"GpuEndFrame");
 	Hook::Create(s_WndProcAddr,		Renderer::WndProc,			&g_WndProc,		"WndProc");
 
 	if (!sm_ImGuiCursorUsage)
@@ -253,7 +246,6 @@ void Renderer::ImEndFrame()
 
 void Renderer::ImDrawUI()
 {
-	GameInput::DisableAllControlsThisFrame();
 	BaseUiWindow::GetInstance()->OnRender();
 
 	if (sm_ShowFontSzSelWnd)
@@ -368,11 +360,8 @@ static void WaitWhileGameIsStarting()
 		.GetRef(2)
 		.To<bool*>();
 
-	while (*is_game_rendering == 0)
+	while (!(*is_game_rendering) && !shutdown_request)
 	{
-		if (shutdown_request)	// gets true in render::shutdown
-			break;
-
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 #endif

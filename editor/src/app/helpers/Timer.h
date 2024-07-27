@@ -4,7 +4,7 @@
 #include "common/types.h"
 
 
-class SimpleTimer
+class Timer
 {
 	using TClock = std::chrono::high_resolution_clock;
 	using TTime = std::chrono::time_point<std::chrono::high_resolution_clock>;
@@ -14,14 +14,14 @@ class SimpleTimer
 
 	bool m_IsRunning = false;
 public:
-	SimpleTimer()
+	Timer()
 	{
 		Reset();
 	}
 
-	static SimpleTimer StartNew()
+	static Timer StartNew()
 	{
-		SimpleTimer result;
+		Timer result;
 		result.Start();
 		return result;
 	}

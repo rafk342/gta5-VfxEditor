@@ -25,6 +25,7 @@ void CLensFlareXmlParser::ImportData(std::filesystem::path path, CLensFlareSetti
 	for (auto Item_node : arrFlareFX_node.children())
 	{
 		CFlareFX& item = arr.push_back(CFlareFX());
+
 		item.m_fDistFromLight		= Item_node.child("fDistFromLight").attribute("value").as_float();
 		item.m_fSize				= Item_node.child("fSize").attribute("value").as_float();
 		item.m_fWidthRotate			= Item_node.child("fWidthRotate").attribute("value").as_float();
@@ -138,7 +139,6 @@ pugi::xml_node CLensFlareXmlParser::AppendItemNode(pugi::xml_node Array_node)
 	Item.append_child("fPositionOffsetU").append_attribute("value").set_value(0.0f);
 	Item.append_child("fTextureColorDesaturate").append_attribute("value").set_value(0.0f);
 	return Item;
-
 }
 
 void CLensFlareXmlParser::InitEmptyItemNode(pugi::xml_node Node, CFlareFX& item)
@@ -151,19 +151,15 @@ void CLensFlareXmlParser::InitEmptyItemNode(pugi::xml_node Node, CFlareFX& item)
 	case AnimorphicFx:
 		InitAnimorphicFxNode(Node, item);
 		break;
-
 	case ArtefactFx:
 		InitArtefactFxNode(Node, item);
 		break;
-
 	case ChromaticFx:
 		InitChromaticFxNode(Node, item);
 		break;
-
 	case CoronaFx:
 		InitCoronaFxNode(Node, item);
 		break;
-
 	default:
 		break;
 	}
@@ -178,7 +174,7 @@ void CLensFlareXmlParser::InitAnimorphicFxNode(pugi::xml_node Item_node, CFlareF
 	Item_node.child("fAnimorphicScaleFactorV").attribute("value").set_value(item.m_fAnimorphicScaleFactorV);
 	Item_node.child("fWidthRotate").attribute("value").set_value(item.m_fWidthRotate);
 	Item_node.child("fIntensityScale").attribute("value").set_value(item.m_fIntensityScale);
-	Item_node.child("color").attribute("value").set_value(vfmt("0x{:08X}", item.m_color.GetRawInt()));
+	Item_node.child("color").attribute("value").set_value(item.m_color.to_hex());
 }
 
 void CLensFlareXmlParser::InitArtefactFxNode(pugi::xml_node Item_node, CFlareFX& item)
@@ -189,7 +185,7 @@ void CLensFlareXmlParser::InitArtefactFxNode(pugi::xml_node Item_node, CFlareFX&
 	Item_node.child("fAnimorphicScaleFactorV").attribute("value").set_value(item.m_fAnimorphicScaleFactorV);
 	Item_node.child("fIntensityScale").attribute("value").set_value(item.m_fIntensityScale);
 	Item_node.child("bAlignRotationToSun").attribute("value").set_value(item.m_bAlignRotationToSun);
-	Item_node.child("color").attribute("value").set_value(vfmt("0x{:08X}", item.m_color.GetRawInt()));
+	Item_node.child("color").attribute("value").set_value(item.m_color.to_hex());
 	Item_node.child("fGradientMultiplier").attribute("value").set_value(item.m_fGradientMultiplier);
 	Item_node.child("nSubGroup").attribute("value").set_value(item.m_nSubGroup);
 	Item_node.child("fPositionOffsetU").attribute("value").set_value(item.m_fPositionOffsetU);
@@ -207,7 +203,7 @@ void CLensFlareXmlParser::InitChromaticFxNode(pugi::xml_node Item_node, CFlareFX
 	Item_node.child("fDistanceInnerOffset").attribute("value").set_value(item.m_fDistanceInnerOffset);
 	Item_node.child("fIntensityScale").attribute("value").set_value(item.m_fIntensityScale);
 	Item_node.child("fIntensityFade").attribute("value").set_value(item.m_fIntensityFade);
-	Item_node.child("color").attribute("value").set_value(vfmt("0x{:08X}", item.m_color.GetRawInt()));
+	Item_node.child("color").attribute("value").set_value(item.m_color.to_hex());
 	Item_node.child("fTextureColorDesaturate").attribute("value").set_value(item.m_fTextureColorDesaturate);
 }
 
@@ -219,5 +215,5 @@ void CLensFlareXmlParser::InitCoronaFxNode(pugi::xml_node Item_node, CFlareFX& i
 	Item_node.child("fAnimorphicScaleFactorV").attribute("value").set_value(item.m_fAnimorphicScaleFactorV);
 	Item_node.child("fWidthRotate").attribute("value").set_value(item.m_fWidthRotate);
 	Item_node.child("fIntensityScale").attribute("value").set_value(item.m_fIntensityScale);
-	Item_node.child("color").attribute("value").set_value(vfmt("0x{:08X}", item.m_color.GetRawInt()));
+	Item_node.child("color").attribute("value").set_value(item.m_color.to_hex());
 }
