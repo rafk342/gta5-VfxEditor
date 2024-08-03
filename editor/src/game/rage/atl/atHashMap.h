@@ -193,6 +193,8 @@ public:
 		clear();
 	}
 
+private:
+
 	class iterator
 	{
 	private:
@@ -219,16 +221,16 @@ public:
 
 	public:
 		using iterator_category = std::forward_iterator_tag;
-		using value_type = std::pair<const TKey, TData>;
+		using value_type = TData;
 		using difference_type = std::ptrdiff_t;
 		using pointer = value_type*;
 		using reference = value_type&;
 
 		iterator(Node** buckets, u16 buckets_count, u16 start_bucket_index = 0, Node* current = nullptr)
 			: buckets(buckets)
-			, bucket_count(buckets_count)
-			, bucket_index(start_bucket_index)
 			, current(current)
+			, bucket_index(start_bucket_index)
+			, bucket_count(buckets_count)
 		{
 			if (current == nullptr && start_bucket_index < buckets_count)
 			{
@@ -253,10 +255,12 @@ public:
 			return *this;
 		}
 
-		bool operator!=(const iterator& other) const{ return current != other.current; }
+		bool operator!=(const iterator& other) const { return current != other.current; }
 		TData& operator*() const { return current->data; }
 		TData* operator->() const { return &current->data; }
 	};
+
+public:
 
 	iterator begin()
 	{

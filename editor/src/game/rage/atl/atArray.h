@@ -56,6 +56,7 @@ public:
 		for (size_t i = 0; i < count; i++) {
 			push_back(TValue());
 		}
+///		resize(count);
 	}
 
 	atArray(TSize count, const TValue& v)
@@ -241,7 +242,7 @@ public:
 		}
 		std::destroy_at(pos);
 		std::construct_at(pos, value);
-		//(*pos) = value;
+		//(*pos) = const_cast<TValue&>(value);
 		m_size++;
 	}
 
@@ -339,7 +340,7 @@ public:
 		}
 	
 		m_size -= 1;
-		std::destroy_at(end());	// object here is still valid, destroying tail...
+		std::destroy_at(end());	// object here is still valid
 	}
 	
 	//void remove_range(size_t left, size_t right)

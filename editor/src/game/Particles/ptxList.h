@@ -17,7 +17,6 @@ namespace rage
 
 		void* ptxModelDictionary;
 		datOwner<pgDictionary<ptxParticleRule>>	ptxParticleRuleDictionary;
-		//void* ptxParticleRuleDictionary;
 		u32 ptxTextureDictionaryPopper;
 
 		datOwner<pgDictionary<ptxEffectRule>>	ptxEffectRuleDictionary;

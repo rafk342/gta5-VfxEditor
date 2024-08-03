@@ -20,6 +20,9 @@
 #include "rage/math/vecv.h"
 
 #include "CLensFlareXmlParser.h"
+#include "rage/grcore/texture.h"
+#include "rage/grcore/texturepc.h"
+
 
 enum LensFlareFile_e
 {
@@ -141,7 +144,10 @@ class LensFlareHandler
 	class CLensFlares
 	{
 	public:
-		u8 pad001[0x40];
+		bool m_bEnabled;
+		u8 pad000[7];
+		rage::grcTexture* m_pTextures[4];
+		u8 pad001[24];
 		float m_fExposureScale;
 		float m_fExposureIntensity;
 		float m_fExposureRotation;

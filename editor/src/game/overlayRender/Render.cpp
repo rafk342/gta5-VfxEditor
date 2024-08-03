@@ -135,7 +135,7 @@ void Renderer::hk_GpuEndFrame()
 	sm_RenderState = true;
 	if (!sm_Initialized)
 	{
-		InitBackend();		
+		InitBackend();
 		ScriptHook::Start();
 		BaseUiWindow::Create();
 		CClock::Init();
@@ -384,8 +384,3 @@ static void WaitWhileGameIsStarting()
 ////	//p_SwapChain = *gAddr.GetRef(47).To<IDXGISwapChain**>();
 
 ////#endif
-
-
-
-
-

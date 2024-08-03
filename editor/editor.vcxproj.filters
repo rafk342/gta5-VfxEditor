@@ -201,6 +201,9 @@
     <ClCompile Include="src\game\Particles\ptxBehaviour.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\game\rage\grcore\texturepc.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\amString\char.h">
@@ -905,11 +908,36 @@
     <ClInclude Include="src\game\Particles\ptxUiUniqueNums.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\game\rage\grm\shader.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\grcore\effect.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\grcore\fvf.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\grcore\texture.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\grcore\texturepc.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stbi\stb_image.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\rage\atl\atConstString.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\DirectXTK\DDSTextureLoader.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\MinHook\libMinHook.x64.lib" />
     <Library Include="vendor\scripthook\lib\ScriptHookV.lib" />
     <Library Include="vendor\zlib-ng\zlibstatic-ng.lib" />
+    <Library Include="vendor\DirectXTK\DirectXTK.lib" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="src\game\rage\math\vmath.natvis" />

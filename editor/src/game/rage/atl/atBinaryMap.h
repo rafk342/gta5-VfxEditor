@@ -2,7 +2,7 @@
 #include "atArray.h"
 
 
-template<class TData,class TKey>
+template<class TKey, class TData>
 class atBinaryMap
 {
 	struct Pair
@@ -13,5 +13,6 @@ class atBinaryMap
 public:
 
 	bool sorted;
+	u8 pad[7];
 	atArray<Pair> Data;
 };

@@ -9,22 +9,17 @@ static float v_speed = 0.01f;
 
 
 
-template<size_t bits_count, class type>
-type BitsetWidgets(const char* name, atFixedBitSet<bits_count, type> bitset)
+template<size_t bits_count, class Type>
+Type BitsetWidgets(atFixedBitSet<bits_count, Type> bitset, std::array<const char*, bits_count> names)
 {
-	ImGui::SeparatorText(name);
-	bool flag;
 	for (size_t i = 0; i < bitset.size(); i++)
 	{
-		flag = bitset.test(i);
-		if (ImGui::Checkbox(vfmt("n : {}##{}", i, NextUniqueNum()), &flag))
+		bool flag = bitset.test(i);
+		if (ImGui::Checkbox(vfmt("{} ## {} {}", names[i], i, NextUniqueNum()), &flag))
 		{
 			bitset.set(i, flag);
 		}
 	}
-	ImGui::Separator();
-
-	
 	return (*bitset.data());
 }
 
@@ -49,10 +44,21 @@ ParticlesUi::ParticlesUi(const char* title) : App(title)
 		} \
 	} \
 
-#define SEARCH_DEF1(_InputTextName)\
+#define ImguiInputInt_FromDiffType(_label, _Value) \
+	{ \
+		int _TempVar = _Value; \
+		if (ImGui::InputInt(_label, &_TempVar)) \
+		{ \
+			_Value = _TempVar;\
+		}\
+	}\
+
+
+
+#define SEARCH_DEF1(_InputTextLabel)\
 \
-	static char search_name_buff[255]{};\
-	ImGui::InputText(_InputTextName, search_name_buff, std::size(search_name_buff));\
+	static char search_name_buff[0x100]{};\
+	ImGui::InputText(_InputTextLabel, search_name_buff, std::size(search_name_buff));\
 	size_t input_len = strlen(search_name_buff);\
 	static bool show_everything = true;\
 \
@@ -65,35 +71,23 @@ ParticlesUi::ParticlesUi(const char* title) : App(title)
 		show_everything = false;\
 	}\
 
-#define SEARCH_DEF2(entry_name)\
-	bool tree_node_should_be_shown = false;\
-\
-	if (show_everything)\
-	{\
-		tree_node_should_be_shown = true;\
-	}\
-	else\
-	{\
-		size_t entry_name_len = strlen(entry_name);\
-\
-		if (input_len > entry_name_len)\
-		{\
-			tree_node_should_be_shown = false;\
-		}\
-		else\
-		{\
-			tree_node_should_be_shown = true;\
-			for (size_t n = 0; n < input_len; n++)\
-			{\
-				if (search_name_buff[n] != entry_name[n])\
-				{\
-					tree_node_should_be_shown = false;\
-					break;\
-				}\
-			}\
-		}\
-	}\
 
+bool __SEARCH_DEF2_fn(const char* name, const char* search_name_buff, bool show_everything)
+{
+	bool tree_node_should_be_shown = false;
+	if (show_everything)
+	{
+		tree_node_should_be_shown = true;
+	}
+	else
+	{
+		std::string_view entry_name(name);
+		entry_name.find(search_name_buff) == -1 ? tree_node_should_be_shown = false : tree_node_should_be_shown = true;
+	}
+	return tree_node_should_be_shown;
+}
+
+#define SEARCH_DEF2(_name) (__SEARCH_DEF2_fn(_name,search_name_buff,show_everything))
 
 
 
@@ -110,8 +104,6 @@ void ParticlesUi::window()
 	static bool spawned = false;
 
 	NextUniqueNum(true);	//reset for this frame
-
-
 
 
 	ImGui::InputText("Buff", buff, std::size(buff));
@@ -149,10 +141,6 @@ void ParticlesUi::window()
 		);
 	}
 
-	std::vector<int> v;
-
-	v.insert(v.begin(), 10);
-
 	size_t index = 0;
 	for (auto& it : ptr->m_fxListMap)
 	{
@@ -169,9 +157,7 @@ void ParticlesUi::window()
 				{
 					ptxEffectRule& entry = (*entries[i]);
 
-					SEARCH_DEF2(entry.m_name);
-					
-					if (tree_node_should_be_shown)
+					if (SEARCH_DEF2(entry.m_name))
 					if (ImGui::TreeNode(vfmt("{}## EffectRule {}{}", entry.m_name, codes[i], i)))
 					{
 
@@ -384,9 +370,8 @@ void ParticlesUi::window()
 					auto& entry = entries[i].GetRef();
 					auto& e = entry;
 				
-					SEARCH_DEF2(e.m_name)
 
-					if (tree_node_should_be_shown) 
+					if (SEARCH_DEF2(e.m_name))
 					{
 						if (ImGui::TreeNode(vfmt("{}## EmitterRule {}", entry.m_name, i)))
 						{
@@ -425,31 +410,32 @@ void ParticlesUi::window()
 
 				SEARCH_DEF1(vfmt("Search## ParticleRule__{}", index))
 
+
 				for (size_t i = 0; i < entries.size(); i++)
 				{
 					auto& e = entries[i].GetRef();
 
-					SEARCH_DEF2(e.m_name);
-
-					if (tree_node_should_be_shown)
+					if (SEARCH_DEF2(e.m_name))
 					{
 						if (ImGui::TreeNode(vfmt("{}## ParticleRule {}", e.m_name, i)))
 						{
 							ImGui::Text("FileVersion : %f", e.m_fileVersion);
 
 
-							ImGui::SeparatorText("Render State");
+							if (ImGui::TreeNode(vfmt("Render State ##{}", i)))
+							{
 
-							ImGui::DragInt(vfmt("Cull Mode##{}", NextUniqueNum()), &e.m_renderState.m_cullMode,0.5f,0,1000);
-							ImGui::DragInt(vfmt("Blend Set##{}", NextUniqueNum()), &e.m_renderState.m_blendSet);
-							ImGui::DragInt(vfmt("Lighting Mode##{}", NextUniqueNum()), &e.m_renderState.m_lightingMode);
+								ImGui::InputInt(vfmt("Cull Mode##{}", NextUniqueNum()), &e.m_renderState.m_cullMode);
+								ImGui::InputInt(vfmt("Blend Set##{}", NextUniqueNum()), &e.m_renderState.m_blendSet);
+								ImGui::InputInt(vfmt("Lighting Mode##{}", NextUniqueNum()), &e.m_renderState.m_lightingMode);
 
-							ImGui::Checkbox(vfmt("Depth Write##{}", NextUniqueNum()), &e.m_renderState.m_depthWrite);
-							ImGui::Checkbox(vfmt("Depth Test##{}", NextUniqueNum()), &e.m_renderState.m_depthTest);
-							ImGui::Checkbox(vfmt("Alpha Blend##{}", NextUniqueNum()), &e.m_renderState.m_alphaBlend);
+								ImGui::Checkbox(vfmt("Depth Write##{}", NextUniqueNum()), &e.m_renderState.m_depthWrite);
+								ImGui::Checkbox(vfmt("Depth Test##{}", NextUniqueNum()), &e.m_renderState.m_depthTest);
+								ImGui::Checkbox(vfmt("Alpha Blend##{}", NextUniqueNum()), &e.m_renderState.m_alphaBlend);
 
-							ImGui::Separator();
-
+								ImGui::TreePop();
+							}
+							
 							ImGui::InputInt(vfmt("Tex Frame Id Min ##{}", NextUniqueNum()), &e.m_texFrameIdMin);
 							ImGui::InputInt(vfmt("Tex Frame Id Max ##{}", NextUniqueNum()), &e.m_texFrameIdMax);
 
@@ -458,41 +444,62 @@ void ParticlesUi::window()
 
 							
 							BehavioursTreeNode(e.m_allBehaviours, "All Behaviours", i);
-
-							ImGui::SeparatorText("ptxBiasLink");
 							
-							for (size_t bias_link_idx = 0; bias_link_idx < e.m_biasLinks.size(); bias_link_idx++)
+
+							if (ImGui::TreeNode(vfmt("PTX Bias Link##{}", i)))
 							{
-								auto& bias_link = e.m_biasLinks[bias_link_idx];
-
-								ImGui::Text(vfmt("Name : {}",bias_link.m_name));
-
-								if (ImGui::TreeNode(vfmt("KeyframePropsIds##{} {}",i,bias_link_idx)))
+								for (size_t bias_link_idx = 0; bias_link_idx < e.m_biasLinks.size(); bias_link_idx++)
 								{
-									for (auto& v : bias_link.m_keyframePropIds)
+									auto& bias_link = e.m_biasLinks[bias_link_idx];
+
+									ImGui::Text(vfmt("Name : {}", bias_link.m_name));
+
+									if (ImGui::TreeNode(vfmt("KeyframePropsIds##{} {}", i, bias_link_idx)))
 									{
-										ImGui::Text(vfmt("KeyframePropId : %i", v));
+										for (auto& v : bias_link.m_keyframePropIds)
+										{
+											ImGui::Text(vfmt("KeyframePropId : %i", v));
+										}
+										ImGui::TreePop();
 									}
-									ImGui::TreePop();
+
 								}
-
+								ImGui::TreePop();
 							}
+						
 
-							ImGui::SeparatorText("ptxTechniqueDesc");
-
-							ImGui::Text(vfmt("ShaderFile : {}", e.m_shaderInst.m_shaderTemplateName));
-							ImGui::Text(vfmt("ShaderTechnique : {} id : {}", e.m_shaderInst.m_shaderTemplateTechniqueName, e.m_shaderInst.m_shaderTemplateTechniqueId));
+							if (ImGui::TreeNode(vfmt("Shader Instance ##{}", i)))
 							{
-								ImGui::SeparatorText("ptxTechniqueDesc");
-								
-								ImGui::InputInt(vfmt("DiffuseMode##{}", NextUniqueNum()),	(int*)& e.m_shaderInst.m_techniqueDesc.m_diffuseMode);
-								ImGui::InputInt(vfmt("ProjectionMode##{}", NextUniqueNum()),(int*)&e.m_shaderInst.m_techniqueDesc.m_projMode);
+								ImGui::Text(vfmt("ShaderFile : {}", e.m_shaderInst.m_shaderTemplateName));
+								ImGui::Text(vfmt("ShaderTechnique : {} | id : {}", e.m_shaderInst.m_shaderTemplateTechniqueName, e.m_shaderInst.m_shaderTemplateTechniqueId));
 
-								ImGui::Checkbox(vfmt("Is Lit##{}", NextUniqueNum()),	&e.m_shaderInst.m_techniqueDesc.m_isLit);
-								ImGui::Checkbox(vfmt("Is Soft##{}", NextUniqueNum()),&e.m_shaderInst.m_techniqueDesc.m_isSoft);
-								ImGui::Checkbox(vfmt("Is Screen Space##{}", NextUniqueNum()),&e.m_shaderInst.m_techniqueDesc.m_isScreenSpace);
-								ImGui::Checkbox(vfmt("Is Refract##{}", NextUniqueNum()),&e.m_shaderInst.m_techniqueDesc.m_isRefract);
-								ImGui::Checkbox(vfmt("Is NormalSpec##{}", NextUniqueNum()),&e.m_shaderInst.m_techniqueDesc.m_isNormalSpec);
+								ImGui::SeparatorText("Technique Description");
+								
+								static std::array DiffuseModes = { 
+									"_",
+									"Tex1 RGBA",
+									"Tex1 RRRR",
+									"Tex1 GGGG",
+									"Tex1 BBBB",
+									"Tex1 RGB",
+									"Tex1 RG Blend"
+								};
+
+								static std::array ProjectionModes = {
+									"None",
+									"Water",
+									"Non Water",
+									"All"
+								};
+
+								ImGui::Combo(vfmt("Diffuse Mode##{}", NextUniqueNum()), (int*)&e.m_shaderInst.m_techniqueDesc.m_diffuseMode, DiffuseModes.data(), DiffuseModes.size());
+								ImGui::Combo(vfmt("Projection Mode##{}", NextUniqueNum()), (int*)&e.m_shaderInst.m_techniqueDesc.m_projMode, ProjectionModes.data(), ProjectionModes.size());
+
+								ImGui::Checkbox(vfmt("Is Lit##{}", NextUniqueNum()), &e.m_shaderInst.m_techniqueDesc.m_isLit);
+								ImGui::Checkbox(vfmt("Is Soft##{}", NextUniqueNum()), &e.m_shaderInst.m_techniqueDesc.m_isSoft);
+								ImGui::Checkbox(vfmt("Is Screen Space##{}", NextUniqueNum()), &e.m_shaderInst.m_techniqueDesc.m_isScreenSpace);
+								ImGui::Checkbox(vfmt("Is Refract##{}", NextUniqueNum()), &e.m_shaderInst.m_techniqueDesc.m_isRefract);
+								ImGui::Checkbox(vfmt("Is NormalSpec##{}", NextUniqueNum()), &e.m_shaderInst.m_techniqueDesc.m_isNormalSpec);
 
 								ImGui::Separator();
 
@@ -513,9 +520,9 @@ void ParticlesUi::window()
 									}
 									ImGui::TreePop();
 								}
-							}
-							ImGui::Separator();
 
+								ImGui::TreePop();
+							}
 
 							if (ImGui::TreeNode(vfmt("Drawables ## {}", i)))
 							{
@@ -529,14 +536,39 @@ void ParticlesUi::window()
 								ImGui::TreePop();
 							}
 
-							ImguiDragInt_FromDiffType(vfmt("SortType##{}", NextUniqueNum()), v, e.m_sortType);
-							ImguiDragInt_FromDiffType(vfmt("DrawType##{}", NextUniqueNum()), v, e.m_drawType);
+							ImguiInputInt_FromDiffType(vfmt("SortType##{}", NextUniqueNum()), e.m_sortType);
+							ImguiInputInt_FromDiffType(vfmt("DrawType##{}", NextUniqueNum()), e.m_drawType);
+				
+							if (ImGui::TreeNode(vfmt("Flags ##{}", i)))
+							{
+								e.m_flags = BitsetWidgets<5, u8>(e.m_flags,
+									{
+										"PTFX_CONTAINS_REFRACTION",
+										"PTFX_WATERSURFACE_RENDER_ABOVE_WATER",
+										"PTFX_WATERSURFACE_RENDER_BELOW_WATER",
+										"PTFX_DRAW_SHADOW_CULLED",
+										"PTFX_IS_VEHICLE_INTERIOR",
+									});
 
-							e.m_flags = BitsetWidgets<8,u8>("Flags", e.m_flags);
+								ImGui::Text(vfmt("bits : {:08b}", e.m_flags));
+								ImGui::TreePop();
+							}
 
-							ImGui::Text(vfmt("flags : {:08b}", e.m_flags));
-							ImGui::Text(vfmt("Runtime flags : {:08b}", e.m_runtimeFlags));
-
+							if (ImGui::TreeNode(vfmt("Runtime Flags ##{}", i)))
+							{
+								e.m_runtimeFlags = BitsetWidgets<8, u8>(e.m_runtimeFlags,
+									{
+										"UNKNOWN1",
+										"UNKNOWN2",
+										"UNKNOWN3",
+										"UNKNOWN4",
+										"UNKNOWN5",
+										"UNKNOWN6",
+										"UNKNOWN7",
+										"UNKNOWN8",
+									});
+								ImGui::Text(vfmt("Bits : {:08b}", e.m_runtimeFlags));
+							}
 							ImGui::TreePop();
 						}
 					}
@@ -552,78 +584,66 @@ void ParticlesUi::window()
 }
 
 
-//u32 BitsetWidgets(const char* name, atBitSet bitset)
-//{
-//	ImGui::SeparatorText(name);
-//	bool flag;
-//	for (size_t i = 0; i < bitset.size(); i++)
-//	{
-//		flag = bitset.test(i);
-//		if (ImGui::Checkbox(vfmt("##{}", i), &flag))
-//		{
-//			bitset.set(i, flag);
-//		}
-//	}
-//	ImGui::Separator();
-//	return *bitset.data();
-//}
-//
-
 void rage::BehavioursTreeNode(atArray<datRef<ptxBehaviour>>& behaviours, const char* name, size_t EntryIdx)
 {
 	if (ImGui::TreeNode(vfmt("{} ##{}", name, EntryIdx)))
 	{
-		for (size_t i = 0; i < behaviours.size(); i++)
+		for (auto& behaviour : behaviours)
 		{
-			auto& behaviour = behaviours[i].GetRef();	
-
-			behaviour.UiWidgets(EntryIdx);
-
-			//ImGui::Text("Name : %s", behaviour.GetName());	//ImGui::Text("hash : %i", behaviour.m_hashName);
-			//ImGui::Text("Order : %i", behaviour.GetOrder());
-
-			////ImGui::Text("CpuUpdateTicks : %i", behaviour.m_accumCPUUpdateTicks);
-
-			//if (ImGui::TreeNode(vfmt("KeyframesList {}##{}",i,EntryIdx)))
-			//{
-			//	auto& KeyframeProp_list = behaviour.m_keyframePropList.m_pKeyframeProps;
-
-			//	for (size_t j = 0; j < KeyframeProp_list.size(); j++)
-			//	{
-			//		auto& keyframeProp = KeyframeProp_list[j].GetRef();
-
-			//		//ImGui::Text("Property Id : %i", keyframeProp.m_propertyId);
-			//		ImGui::Text("Property Name : %s", keyframeProp.getPropertyName());
-			//		
-			//		ImGui::Checkbox(vfmt("Invert Bias Link##{}", NextUniqueNum()), &keyframeProp.m_invertBiasLink);
-			//		ptxKeyframePropTreeNode(keyframeProp, vfmt("KeyframeProp {} ## ptxBehaviour",j), EntryIdx, PTX_KF_FLOAT4);
-			//	}
-			//	ImGui::TreePop();
-			//}
-			//ImGui::Separator();
+			behaviour.GetRef().UiWidgets(EntryIdx);
 		}
 		ImGui::TreePop();
 	}
 }
 
 
-void ptxSpawnedEffectScalarsWidgets(ptxSpawnedEffectScalars& scalars, const char* name)
+void ptxSpawnedEffectScalarsWidgets(ptxSpawnedEffectScalars& scalars, const char* name, size_t entryIdx)
 {
-    ImGui::DragFloat(vfmt("Duration Scalar {}##{}",name,NextUniqueNum()), & scalars.m_durationScalar, 0.01f);
-    ImGui::DragFloat(vfmt("Playback Rate Scalar {}##{}", name, NextUniqueNum()), &scalars.m_playbackRateScalar, 0.01f);
-	ImGui::vColor32Edit4(vfmt("Colour Tint Scalar {}##{}", name, NextUniqueNum()), scalars.m_colourTintScalar, ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_AlphaBar );
-	ImGui::DragFloat(vfmt("Zoom Scalar {}##{}", name, NextUniqueNum()), &scalars.m_zoomScalar, 0.01f);
-	ImGui::Text(vfmt("Flags : {:08b}", u32(scalars.m_flags)));
+	if (ImGui::TreeNode(vfmt("Spawned effect scalars {}##{}", name, entryIdx)))
+	{
+		ImGui::DragFloat(vfmt("Duration Scalar ##{}",NextUniqueNum()), & scalars.m_durationScalar, 0.01f);
+		ImGui::DragFloat(vfmt("Playback Rate Scalar##{}", NextUniqueNum()), &scalars.m_playbackRateScalar, 0.01f);
+		ImGui::vColor32Edit4(vfmt("Colour Tint Scalar##{}", NextUniqueNum()), scalars.m_colourTintScalar, ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_AlphaBar );
+		ImGui::DragFloat(vfmt("Zoom Scalar ##{}", NextUniqueNum()), &scalars.m_zoomScalar, 0.01f);
+	
+		if (ImGui::TreeNode("Flags"))
+		{
+			scalars.m_flags = BitsetWidgets<5, u32>(scalars.m_flags,
+				{
+					"ACTIVE_DURATION",
+					"ACTIVE_PLAYBACK_RATE",
+					"ACTIVE_COLOUR_TINT",
+					"ACTIVE_ZOOM",
+					"ACTIVE_SIZE_SCALAR"
+				});
+			ImGui::Text(vfmt("Flags : {:08b}", u32(scalars.m_flags)));
+			
+			ImGui::TreePop();
+		}
+		ImGui::TreePop();
+	}
 }
 
 void rage::ptxEffectSpawnerTreeNode(ptxEffectSpawner& spawner, const char* name, size_t EntryIdx)
 {
 	if (ImGui::TreeNode(vfmt("{}##{}", name, EntryIdx)))
 	{
-		ptxSpawnedEffectScalarsWidgets(spawner.m_spawnedEffectScalarsMin, "Min");
-		ptxSpawnedEffectScalarsWidgets(spawner.m_spawnedEffectScalarsMax, "Max");	
+		if (spawner.m_pEffectRule)
+		{
+			ImGui::Text(vfmt("EffectRule : {}", spawner.m_pEffectRule->m_name));
+		}
+		else
+		{
+			ImGui::Text("EffectRule : NULL");
+		}
 
+		ptxSpawnedEffectScalarsWidgets(spawner.m_spawnedEffectScalarsMin, "Min", EntryIdx);
+		ptxSpawnedEffectScalarsWidgets(spawner.m_spawnedEffectScalarsMax, "Max", EntryIdx);
+
+		ImGui::Separator();
+		
 		ImGui::Text(spawner.m_name);
+
 
 		ImGui::DragFloat(vfmt("TriggerInfo##{}", NextUniqueNum()), &spawner.m_triggerInfo);
 
@@ -674,11 +694,11 @@ void rage::PtxDomainTreeNode(ptxDomainObj& DomainObj, const char* name, size_t E
 
 
 void rage::ptxKeyframePropTreeNode(
-	ptxKeyframeProp& ptxKfProp, 
-	const char* name, 
-	size_t EntryIdx, 
-	ptxKeyframeType type, 
-	const char* lb1 ,
+	ptxKeyframeProp& ptxKfProp,
+	const char* name,
+	size_t EntryIdx,
+	ptxKeyframeType type,
+	const char* lb1,
 	const char* lb2,
 	const char* lb3,
 	const char* lb4)
@@ -692,46 +712,75 @@ void rage::ptxKeyframePropTreeNode(
 		{
 			auto& keyframes = ptxKfProp.m_keyframe.data;
 
-			for (size_t j = 0; j < keyframes.size(); j++)
+			size_t num_columns =
+				type == PTX_KF_FLOAT ? 1 :
+				type == PTX_KF_FLOAT2 ? 2 :
+				type == PTX_KF_FLOAT3 ? 3 :
+				type == PTX_KF_FLOAT4 ? 4 :
+				type == PTX_KF_COL3 ? 1 : 
+				type == PTX_KF_COL4 ? 1 : 0;
+
+
+			if (ImGui::BeginTable(vfmt("KeyframeTable## kfProp {}", NextUniqueNum()), num_columns + 1, ImGuiTableFlags_Borders))
 			{
-				auto& CurrKf = keyframes[j];
-				ImGui::Separator();
-				ImGui::DragFloat4(vfmt("KeyframeTime ## kfProp {}", NextUniqueNum()), CurrKf.vTime, v_speed);
+				//==========================================================================
+				std::array labels = { lb1, lb2, lb3, lb4 };
 				
-				const char* vValue_Label = vfmt("KeyframeValue ## kfProp {}", NextUniqueNum());
-				switch (type)
+				for (size_t i = 0; i < num_columns; i++)
+					ImGui::TableSetupColumn(labels[i]);
+
+				ImGui::TableSetupColumn("##col_last", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize(" Value ").x * 1.2);
+
+				//==========================================================================
+				
+				if (!(type == PTX_KF_COL3 || type == PTX_KF_COL4))
+					ImGui::TableHeadersRow();
+				
+				//==========================================================================
+
+				for (size_t kf_idx = 0; kf_idx < keyframes.size(); kf_idx++)
 				{
-				case PTX_KF_FLOAT:
+					auto& CurrEntry = keyframes[kf_idx];
+
+					ImGui::TableNextRow();
+
+					for (size_t columnIdx = 0; columnIdx < num_columns; columnIdx++)
+					{
+						ImGui::TableNextColumn();
+						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+						ImGui::DragFloat(vfmt("##Time kfProp {}", NextUniqueNum()), &CurrEntry.vTime[columnIdx],v_speed);
+					}
+
+					ImGui::TableNextColumn();
+					ImGui::Text(" Time ");
+
+					for (size_t columnIdx = 0; columnIdx < num_columns; columnIdx++)
+					{
+						ImGui::TableNextColumn();
+						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+						
+						const char* vValue_Label = vfmt("##Value kfProp {}", NextUniqueNum());
+
+						if (type == PTX_KF_COL3)
+						{
+							ImGui::ColorEdit3(vValue_Label, CurrEntry.vValue, ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_HDR);
+						}
+						else if (type == PTX_KF_COL4)
+						{
+							ImGui::ColorEdit4(vValue_Label, CurrEntry.vValue, ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_HDR);
+						}
+						else
+						{
+							ImGui::DragFloat(vValue_Label, &CurrEntry.vValue[columnIdx], v_speed);
+						}
+					}
 					
-					ImGui::DragFloat(vValue_Label, CurrKf.vValue, v_speed);
-					break;
-
-				case PTX_KF_FLOAT2:
-					ImGui::DragFloat2(vValue_Label, CurrKf.vValue, v_speed);
-					break;
-
-				case PTX_KF_FLOAT3:
-					ImGui::DragFloat3(vValue_Label, CurrKf.vValue, v_speed);
-					break;
-
-				case PTX_KF_FLOAT4:
-					ImGui::DragFloat4(vValue_Label, CurrKf.vValue, v_speed);
-					break;
-
-				case PTX_KF_COL3:
-					ImGui::ColorEdit3(vValue_Label, CurrKf.vValue, ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_HDR);
-					break;
-
-				case PTX_KF_COL4:
-					ImGui::ColorEdit4(vValue_Label, CurrKf.vValue, ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_HDR);
-					break;
-
-				default:
-					break;
+					ImGui::TableNextColumn();
+					ImGui::Text(" Value ");
 				}
-			}
-			ImGui::Separator();
 
+				ImGui::EndTable();
+			}
 			if (ImGui::Button("Append Item")) 
 			{
 				keyframes.push_back(ptxKeyframeEntry());
@@ -742,6 +791,10 @@ void rage::ptxKeyframePropTreeNode(
 				keyframes.clear();
 			}
 
+			if (ImGui::Button("Pop back"))
+			{
+				keyframes.pop_back();
+			}
 
 
 			ImGui::TreePop();
@@ -752,8 +805,6 @@ void rage::ptxKeyframePropTreeNode(
 }
 
 
-
-
 ParticlesUi::~ParticlesUi()
 {
 	scrInvoke([]
@@ -761,11 +812,3 @@ ParticlesUi::~ParticlesUi()
 			STREAMING::_REMOVE_NAMED_PTFX_ASSET("core");
 		});
 }
-
-//// name						// type			// default				//			xmin    xmax  xdelta				// ymin	  ymax  ydelta			// labels
-//static ptxKeyframeDefn s_ColourTintMinKFP_Defn("Colour Tint Min KFP", PTX_KF_COL4, rage::Vector4(1.0f), rage::Vector3(0.0f, 1.0f, 0.01f));
-//static ptxKeyframeDefn s_ColourTintMaxKFP_Defn("Colour Tint Max KFP", PTX_KF_COL4, rage::Vector4(1.0f), rage::Vector3(0.0f, 1.0f, 0.01f));
-//static ptxKeyframeDefn s_ZoomScalarKFP_Defn("Zoom Scalar KFP", PTX_KF_FLOAT2, rage::Vector4(100.0f), rage::Vector3(0.0f, 1.0f, 0.01f), rage::Vector3(0.0f, 10000.0f, 0.01f), "Min", "Max");
-//static ptxKeyframeDefn s_DataSphereKFP_Defn("Data Sphere KFP", PTX_KF_FLOAT4, rage::Vector4(0.0f), rage::Vector3(0.0f, 1.0f, 0.01f), rage::Vector3(1000.0f, 1000.0f, 0.01f), "Pos X", "Pos Y", "Pos Z", "Radius");
-//static ptxKeyframeDefn s_DataSphereKFP_Defn("Data Sphere KFP", PTX_KF_FLOAT4, rage::Vector4(0.0f), rage::Vector3(0.0f, 1.0f, 0.01f), rage::Vector3(1000.0f, 1000.0f, 0.01f), "Rot X", "Rot Y", "Rot Z", "Length");
-

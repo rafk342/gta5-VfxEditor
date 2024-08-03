@@ -180,6 +180,7 @@
     <ClCompile Include="src\game\overlayRender\Render.cpp" />
     <ClCompile Include="src\game\Particles\ParticlesUi.cpp" />
     <ClCompile Include="src\game\Particles\ptxBehaviour.cpp" />
+    <ClCompile Include="src\game\rage\grcore\texturepc.cpp" />
     <ClCompile Include="src\game\rage\math\vec.cpp" />
     <ClCompile Include="src\game\rage\math\vecv.cpp" />
     <ClCompile Include="src\game\rage\paging\base.cpp" />
@@ -251,6 +252,12 @@
     <ClInclude Include="src\game\Particles\particles.h" />
     <ClInclude Include="src\game\rage\atl\color32.h" />
     <ClInclude Include="src\game\rage\atl\atBinaryMap.h" />
+    <ClInclude Include="src\game\rage\atl\atConstString.h" />
+    <ClInclude Include="src\game\rage\grcore\effect.h" />
+    <ClInclude Include="src\game\rage\grcore\fvf.h" />
+    <ClInclude Include="src\game\rage\grcore\texturepc.h" />
+    <ClInclude Include="src\game\rage\grcore\texture.h" />
+    <ClInclude Include="src\game\rage\grm\shader.h" />
     <ClInclude Include="src\game\rage\paging\Dictionary.h" />
     <ClInclude Include="src\game\rage\base\atRTTI.h" />
     <ClInclude Include="src\game\rage\base\tlsContext.h" />
@@ -312,6 +319,7 @@
     <ClInclude Include="src\app\uiBase\uiBaseWindow.h" />
     <ClInclude Include="vendor\Cougar\AlignedAllocator.h" />
     <ClInclude Include="vendor\Cougar\FixedSizeAllocator.h" />
+    <ClInclude Include="vendor\DirectXTK\DDSTextureLoader.h" />
     <ClInclude Include="vendor\ImGui\imconfig.h" />
     <ClInclude Include="vendor\ImGui\imgui.h" />
     <ClInclude Include="vendor\ImGui\imgui_impl_dx11.h" />
@@ -440,6 +448,7 @@
     <ClInclude Include="src\game\VfxLightningSettings\xml\vfxLightningXmlParser.h" />
     <ClInclude Include="src\game\VisualSettings\visualSettingsHandler.h" />
     <ClInclude Include="src\game\VisualSettings\ui\visualSettingsUi.h" />
+    <ClInclude Include="vendor\stbi\stb_image.h" />
     <ClInclude Include="vendor\stringzilla\experimental.h" />
     <ClInclude Include="vendor\stringzilla\include.h" />
     <ClInclude Include="vendor\stringzilla\stringzilla.h" />
@@ -460,6 +469,7 @@
     <ClInclude Include="vendor\zlib-ng\zlib_name_mangling-ng.h" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="vendor\DirectXTK\DirectXTK.lib" />
     <Library Include="vendor\MinHook\libMinHook.x64.lib" />
     <Library Include="vendor\scripthook\lib\ScriptHookV.lib" />
     <Library Include="vendor\zlib-ng\zlibstatic-ng.lib" />

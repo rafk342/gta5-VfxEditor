@@ -96,8 +96,8 @@ namespace rage
 
 		u32 m_hashName;
 		u8 m_pad1[4];
-		ptxKeyframePropList m_keyframePropList;				// convenient location for the system to check property ids against and prepared evos
-		u32 m_accumCPUUpdateTicks;							// profiling info
+		ptxKeyframePropList m_keyframePropList;			
+		u32 m_accumCPUUpdateTicks;						
 		u8 m_pad2[12];
 	};
 
@@ -120,8 +120,8 @@ namespace rage
 		ptxKeyframeProp m_xyzMaxKFP;
 		float* m_pGlobalData_NOTUSED;
 		int m_referenceSpace;
-		bool m_isAffectedByZoom;															// whether the acceleration is affected by zoom
-		bool m_enableGravity;																// whether to scale the z component with game gravity	
+		bool m_isAffectedByZoom;		
+		bool m_enableGravity;			
 		u8 pad[6];
 	};
 
@@ -145,7 +145,7 @@ namespace rage
 		bool m_isHiRes;
 		bool m_nearClip;
 		bool m_farClip;
-		bool m_uvClip;					// whether to clip the uvs when near or far clipping (or just leave them stretched)
+		bool m_uvClip;
 
 		bool m_disableDraw;
 
@@ -158,7 +158,6 @@ namespace rage
 
 		ptxKeyframeProp m_texInfoKFP;
 
-		// non keyframe data
 		Vec3V m_alignAxis;
 
 		int m_alignmentMode;
@@ -189,7 +188,6 @@ namespace rage
 
 		ptxKeyframeProp m_animRateKFP;
 
-		// non keyframe data
 		int m_keyframeMode;
 
 		int m_lastFrameId;
@@ -254,7 +252,6 @@ namespace rage
 
 		ptxKeyframeProp m_mtxWeightKFP;
 		
-		// non keyframe data
 		int m_referenceSpace;
 		u8 m_pad[12];
 	};
@@ -269,7 +266,7 @@ namespace rage
 		ptxKeyframeProp m_velNoiseMaxKFP;
 
 		int m_referenceSpace;
-		bool m_keepConstantSpeed;													// whether the velocity noise affects speed
+		bool m_keepConstantSpeed;
 
 		u8 m_pad[11];
 	};
@@ -309,14 +306,13 @@ namespace rage
 	{
 		virtual const char* GetName() override { return "ptxu_Size"; }
 
-		ptxKeyframeProp m_whdMinKFP;												// minimum width and height
-		ptxKeyframeProp m_whdMaxKFP;												// maximum width and height
-		ptxKeyframeProp m_tblrScalarKFP;											// top, bottom, left, right scalar
-		ptxKeyframeProp m_tblrVelScalarKFP;											// top, bottom, left, right velocity scalar
+		ptxKeyframeProp m_whdMinKFP;
+		ptxKeyframeProp m_whdMaxKFP;
+		ptxKeyframeProp m_tblrScalarKFP;
+		ptxKeyframeProp m_tblrVelScalarKFP;	
 
-		// non keyframe data
 		int m_keyframeMode;
-		bool m_isProportional;														// uses a single randomness across each size component
+		bool m_isProportional;				
 
 		u8 m_pad[11];
 	};
@@ -332,8 +328,8 @@ namespace rage
 
 		ptxKeyframeProp m_influenceKFP;
 
-		void* m_pGlobalData_NOTUSED;									// should always point to sm_globalData - so spu can load the global data
-		void* m_pWindEval_NOTUSED;											// we create a wind eval in the load fragment, and use it in the update fragment
+		void* m_pGlobalData_NOTUSED;
+		void* m_pWindEval_NOTUSED;
 
 		float m_highLodRange;
 		float m_lowLodRange;
@@ -376,7 +372,7 @@ namespace rage
 		virtual const char* GetName() override { return "ptxu_DecalPool"; }
 
 		float m_velocityThresh;
-		int m_liquidType;																		// oil, petrol, blood etc
+		int m_liquidType;
 		int m_decalId;
 		float m_startSize;
 		float m_endSize;
@@ -410,13 +406,13 @@ namespace rage
 	{
 		virtual const char* GetName() override { return "ptxu_Light"; }
 
-		// keyframe data (light specific)
+		//  (light specific)
 		ptxKeyframeProp m_rgbMinKFP;
 		ptxKeyframeProp m_rgbMaxKFP;
 		ptxKeyframeProp m_intensityKFP;
 		ptxKeyframeProp m_rangeKFP;
 
-		// keyframe data (corona specific)
+		// (corona specific)
 		ptxKeyframeProp m_coronaRgbMinKFP;
 		ptxKeyframeProp m_coronaRgbMaxKFP;
 		ptxKeyframeProp m_coronaIntensityKFP;
@@ -442,7 +438,7 @@ namespace rage
 		virtual const char* GetName() override { return "ptxu_Liquid"; }
 
 		float m_velocityThresh;
-		int m_liquidType;					// oil, petrol, blood etc
+		int m_liquidType;
 		float m_poolStartSize;
 		float m_poolEndSize;
 		float m_poolGrowthRate;
@@ -467,10 +463,8 @@ namespace rage
 		ptxKeyframeProp m_heightKFP;
 		ptxKeyframeProp m_fadeDistKFP;
 
-		// global data
 		float* m_pGlobalData_NOTUSED;
 
-		// non keyframe data
 		int m_mode;
 		int m_referenceSpace;
 
@@ -484,11 +478,10 @@ namespace rage
 		ptxKeyframeProp m_xyzMinKFP;
 		ptxKeyframeProp m_xyzMaxKFP;
 		
-		void* m_pGlobalData_NOTUSED;												// should always point to sm_globalData - so spu can load the global data
+		void* m_pGlobalData_NOTUSED;
 
-		// non keyframe data
 		int m_referenceSpace;
-		bool m_enableAirResistance;													// whether to scale with game air resistance	
+		bool m_enableAirResistance;	
 		
 		u8 pad[7];
 	};

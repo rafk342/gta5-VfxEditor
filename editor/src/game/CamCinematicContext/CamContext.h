@@ -10,7 +10,7 @@ public:
 	static inline bool DISABLE_IDLE_CAM = false;
 
 	static void Init()
-	{									
+	{
 		Hook::Create(
 			gmAddress::Scan("40 53 48 83 EC ?? 48 8B D9 E8 ?? ?? ?? ?? 48 8B 15 ?? ?? ?? ?? 48 8B 8A"), 
 			hk_CamCinematicOnFootIdleContext_CanUpdate, 

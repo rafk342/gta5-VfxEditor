@@ -1,10 +1,17 @@
 #pragma once
 #include <map>
 #include "common/types.h"
-#include "rage/atl/atArray.h"
+
 #include "rage/dat/datBase.h"
 #include "rage/paging/ref.h"
 
+#include "rage/atl/atBinaryMap.h"
+#include "rage/atl/atArray.h"
+
+#include "rage/grcore/texture.h"
+#include "rage/grm/shader.h"
+
+#include "ImGui/imgui.h"
 
 namespace rage
 {
@@ -34,8 +41,8 @@ namespace rage
 
 	enum ptxShaderVarType
 	{
-		PTXSHADERVAR_BOOL = 0,				// not used at the moment - could be removed but will need to change the editor code and data to match
-		PTXSHADERVAR_INT,								// not used at the moment - could be removed but will need to change the editor code and data to match
+		PTXSHADERVAR_BOOL = 0,
+		PTXSHADERVAR_INT,
 		PTXSHADERVAR_FLOAT,
 		PTXSHADERVAR_FLOAT2,
 		PTXSHADERVAR_FLOAT3,
@@ -47,6 +54,28 @@ namespace rage
 		PTXSHADERVAR_INVALID,
 	};
 
+	enum ptxShaderProgVarType
+	{
+		PTXPROGVAR_FIRST = 0,
+
+		PTXPROGVAR_FRAMEMAP = 0,
+		PTXPROGVAR_BLENDMODE,
+		PTXPROGVAR_CHANNELMASK,
+		PTXPROGVAR_RMPTFX_LAST = PTXPROGVAR_CHANNELMASK,
+		PTXPROGVAR_GAME_FIRST,
+		PTXPROGVAR_GAME_VAR_1 = PTXPROGVAR_GAME_FIRST,
+		PTXPROGVAR_GAME_VAR_2,
+		PTXPROGVAR_GAME_VAR_3,
+		PTXPROGVAR_GAME_VAR_4,
+		PTXPROGVAR_GAME_VAR_5,
+		PTXPROGVAR_GAME_VAR_6,
+		PTXPROGVAR_GAME_VAR_7,
+		PTXPROGVAR_GAME_VAR_8,
+		PTXPROGVAR_GAME_VAR_9,
+		PTXPROGVAR_COUNT,
+		PTXPROGVAR_RMPTFX_COUNT = PTXPROGVAR_RMPTFX_LAST + 1,
+		PTXPROGVAR_GAME_COUNT = PTXPROGVAR_COUNT - PTXPROGVAR_RMPTFX_COUNT
+	};
 
 	struct ptxTechniqueDesc
 	{
@@ -66,6 +95,51 @@ namespace rage
 	{
 		virtual ~ptxShaderVar() {};
 
+		void* m_pInfo;			//grmVariableInfo
+		u32 m_hashName;
+		ptxShaderVarType m_type;
+		u32 m_id;
+		bool m_isKeyframeable;
+		bool m_ownsInfo;
+		u8 pad[18];
+
+
+
+		void UiWidgets()
+		{
+			ImGui::Text("Name: %s", m_pInfo);
+			ImGui::Text("Type: %s", GetTypeStr());
+			ImGui::Text("Hash: %u", m_hashName);
+			ImGui::Text("ID: %u", m_id);
+			ImGui::Text("Keyframeable: %s", m_isKeyframeable ? "true" : "false");
+
+			switch (m_type)
+			{
+			case rage::PTXSHADERVAR_BOOL:
+				break;
+			case rage::PTXSHADERVAR_INT:
+				break;
+			case rage::PTXSHADERVAR_FLOAT:
+				break;
+			case rage::PTXSHADERVAR_FLOAT2:
+				break;
+			case rage::PTXSHADERVAR_FLOAT3:
+				break;
+			case rage::PTXSHADERVAR_FLOAT4:
+				break;
+			case rage::PTXSHADERVAR_TEXTURE:
+				break;
+			case rage::PTXSHADERVAR_KEYFRAME:
+				break;
+			case rage::PTXSHADERVAR_COUNT:
+				break;
+			case rage::PTXSHADERVAR_INVALID:
+				break;
+			default:
+				break;
+			}
+		}
+
 		const char* GetTypeStr()
 		{
 			static std::map<ptxShaderVarType, const char*> typesMap = {
@@ -82,14 +156,6 @@ namespace rage
 			auto it = typesMap.find(m_type);
 			return it == typesMap.end() ? "unknown" : it->second;
 		}
-
-		void* m_pInfo;			//grmVariableInfo
-		u32 m_hashName;
-		ptxShaderVarType m_type;
-		u32 m_id;
-		bool m_isKeyframeable;
-		bool m_ownsInfo;
-		u8 pad[18];
 	};
 
 	struct ptxShaderVarVector : public ptxShaderVar
@@ -104,13 +170,46 @@ namespace rage
 
 	struct ptxShaderVarTexture : public ptxShaderVar
 	{
-		void* m_pTexture;			//pgRef<grcTexture>
+		pgRef<grcTexture> m_pTexture;	
 		const char* m_textureName;
 		u32 m_textureHashName;
 		bool m_externalReference;
 		u8 pad[3];
 	};
 
+	struct ptxShaderTemplateOverride
+	{
+		struct techniqueOverride
+		{
+			bool bDisable;
+			bool bOverride;
+			u16 techniqueId;
+		};
+
+		atArray<techniqueOverride> m_techniqueOverrides;
+	};
+
+	struct ptxShaderTemplate
+	{
+		enum PTXTemplatePass
+		{
+			PTX_DEFAULT_PASS = 0,
+			PTX_SHADOW_PASS,
+			PTX_INSTSHADOW_PASS,
+			PTX_MAX_PASS
+		};
+
+		virtual ~ptxShaderTemplate() {};
+
+		grmShader* m_pShader;
+		char m_shaderName[128];
+
+		atBinaryMap<u32, ptxShaderVar*> m_shaderVars;
+		u32 m_progVars[PTXPROGVAR_COUNT];
+		ptxShaderTemplateOverride* m_pShaderOverride[1];
+		s32 m_BlendSet[1];
+		PTXTemplatePass m_RenderPassToUse[1];
+	};
 
 	struct ptxShaderInst
 	{
@@ -118,14 +217,14 @@ namespace rage
 
 		const char* m_shaderTemplateName;
 		const char* m_shaderTemplateTechniqueName;
-		void* m_pShaderTemplate;						//ptxShaderTemplate
+		ptxShaderTemplate* m_pShaderTemplate;
 		u32 m_shaderTemplateTechniqueId;
 		
 		u32 pad;
 
 		ptxTechniqueDesc m_techniqueDesc;
 
-		atArray<datOwner<ptxShaderVar>> m_instVars;		// instanced variables - does *NOT* include UI info from shader
+		atArray<datOwner<ptxShaderVar>> m_instVars;
 
 		bool m_isDataInSync;							// flag to determine if data matches shader
 		u8 m_pad[7];

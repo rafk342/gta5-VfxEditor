@@ -13,6 +13,15 @@
 
 namespace rage
 {
+	enum ptxSpawnedEffectScalarFlags
+	{
+		PTXSPAWNSCALAR_ACTIVE_DURATION,
+		PTXSPAWNSCALAR_ACTIVE_PLAYBACK_RATE,
+		PTXSPAWNSCALAR_ACTIVE_COLOUR_TINT,
+		PTXSPAWNSCALAR_ACTIVE_ZOOM,
+		PTXSPAWNSCALAR_ACTIVE_SIZE_SCALAR,
+	};
+
 	struct ptxSpawnedEffectScalars
 	{
 		float m_durationScalar;
@@ -23,14 +32,13 @@ namespace rage
 		u8 pad[12];
 	};
 
-
 	struct ptxEffectSpawner : public pgBase
 	{
 		u8 pad[8];
 		ptxSpawnedEffectScalars m_spawnedEffectScalarsMin;				// min spawned effect scalar settings
 		ptxSpawnedEffectScalars m_spawnedEffectScalarsMax;				// max spawned effect scalar settings
-		datRef<ptxEffectRule> m_pEffectRule;	//datRef						/ pointer to the effect rule that gets spawned
-		const char* m_name;											// the name of the effect rule that gets spawned - rsTODO: get rid of this (and others like it) if we do a 2 pass dependency check then load when loading xml data
+		datRef<ptxEffectRule> m_pEffectRule;							// pointer to the effect rule that gets spawned
+		const char* m_name;												// the name of the effect rule that gets spawned - rsTODO: get rid of this (and others like it) if we do a 2 pass dependency check then load when loading xml data
 		float m_triggerInfo;											// trigger info (either the ratio through the point life when the effect gets spawned or the velocity threshold of an effect that gets spawned on collision)
 		bool m_inheritsPointLife;										// whether the spawned effect inherits the life of the point
 		bool m_tracksPointPos;											// whether the spawned effect tracks the position of the point

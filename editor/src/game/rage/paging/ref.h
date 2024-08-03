@@ -107,8 +107,27 @@ namespace rage
 		T& operator*() const { return (*m_Pointer); }
 		T* operator->() const { return m_Pointer; }
 		T*& operator=(T* _ptr) { return m_Pointer = _ptr; }
+
+		T* Get() const { return m_Pointer; }
 		T& GetRef() { return (*m_Pointer); }
-		//const T& GetRef() { return *m_Pointer; }
+
+		operator T*() { return m_Pointer; }
+		operator bool() const { return m_Pointer != nullptr; }
+	};
+	
+	template <class T>
+	struct pgRef
+	{
+		T* m_Pointer;
+		T& operator*() const { return (*m_Pointer); }
+		T* operator->() const { return m_Pointer; }
+		T*& operator=(T* _ptr) { return m_Pointer = _ptr; }
+
+		T* Get() const { return m_Pointer; }
+		T& GetRef() { return (*m_Pointer); }
+
+		operator T* () { return m_Pointer; }
+		operator bool() const { return m_Pointer != nullptr; }
 	};
 
 }

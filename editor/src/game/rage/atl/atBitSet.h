@@ -105,7 +105,7 @@ public:
 		memset(m_bits, 0, m_BitWordsCount * sizeof(u32));
 	}
 	
-	bool test(u16 bit)
+	bool test(u16 bit) const
 	{
 		if (bit >= m_BitsCount) 
 			return false;
@@ -163,7 +163,7 @@ public:
 		}
 	}
 
-	const char* to_string()
+	const char* to_string() const
 	{
 		static char buff[0x400];
 		//memset(buff, 0, m_BitsCount);
@@ -199,6 +199,11 @@ public:
 	atFixedBitSet() = default;
 	atFixedBitSet(T value) : m_Value(value) {}
 
+	size_t    size() const    { return MaxBits; }
+	T*        data()          { return &m_Value; }
+	void      reset()         { m_Value = 0; }
+	operator  T() const       { return m_Value; }
+
 	atFixedBitSet& operator= (T value)
 	{
 		m_Value = value;
@@ -209,11 +214,6 @@ public:
 	{
 		m_Value = other.m_Value;
 		return *this;
-	}
-
-	size_t size() const
-	{
-		return MaxBits;
 	}
 
 	void set(T bit, bool on = true)
@@ -227,22 +227,12 @@ public:
 			m_Value |= mask;
 	}
 
-	bool test(T bit)
+	bool test(T bit) const
 	{
 		if (bit > MaxBits)
 			return false;
 
 		T mask = 1 << bit;
 		return m_Value & mask;
-	}
-
-	operator T() const
-	{
-		return m_Value;
-	}
-
-	T* data()
-	{
-		return &m_Value;
 	}
 };
