@@ -8,7 +8,6 @@
 #include "uiBase/uiBaseWindow.h"
 #include "uiBase/ImguiHelpers.h"
 #include "scripthookTh.h"
-#include "uiBase/ImguiHelpers.h"
 
 class LensFlareUi : public App
 {

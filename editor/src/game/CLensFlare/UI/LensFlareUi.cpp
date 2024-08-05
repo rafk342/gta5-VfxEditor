@@ -1,72 +1,6 @@
 #include "LensFlareUi.h"
 #include "overlayRender/Render.h"
 #include <map>
-#include "stbi/stb_image.h"
-#include "DirectXTK/DDSTextureLoader.h"
-
-
-void ReplaceWithDDS(rage::grcTexture*& texture_to_replace, std::filesystem::path path, int dds_type)
-{
-	ComPtr<ID3D11Resource> resource;
-	auto hr = DirectX::CreateDDSTextureFromFile(DX11Device, path.c_str(), &resource, nullptr);
-
-	if (SUCCEEDED(hr))
-	{
-		ComPtr<ID3D11Texture2D> pTexture;
-		auto hr = resource.As(&pTexture);
-
-		if (SUCCEEDED(hr))
-		{
-			D3D11_TEXTURE2D_DESC desc;
-			pTexture->GetDesc(&desc);
-
-			D3D11_TEXTURE2D_DESC stagingDesc = desc;
-			stagingDesc.Usage = D3D11_USAGE_STAGING;
-			stagingDesc.BindFlags = 0;
-			stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-			stagingDesc.MiscFlags = 0;
-
-			ComPtr<ID3D11Texture2D> StagingTexture;
-
-			HRESULT hr = DX11Device->CreateTexture2D(&stagingDesc, nullptr, &StagingTexture);
-			if (FAILED(hr)) {
-				LogInfo("Failed to create staging texture");
-			}
-			DX11Context->CopyResource(StagingTexture.Get(), pTexture.Get());
-			D3D11_MAPPED_SUBRESOURCE mappedRes;
-			hr = DX11Context->Map(StagingTexture.Get(), 0, D3D11_MAP_READ, 0, &mappedRes);
-
-			if (FAILED(hr)) {
-				LogInfo("Failed to map staging texture");
-			}
-
-			unsigned char* data = reinterpret_cast<unsigned char*>(mappedRes.pData);
-
-			if (data)
-			{
-				int grcFormat = dds_type;
-
-				rage::grcImage image;
-				memset(&image, 0, sizeof(image));
-				image.m_Width = desc.Width;
-				image.m_Height = desc.Height;
-				image.m_Depth = 1;
-				image.m_Stride = desc.Width * 4;
-				image.m_Format = (rage::grcImage::Format)grcFormat;
-				image.m_Bits = data;
-
-				texture_to_replace = rage::grcTextureFactory::GetInstance()->Create(&image, nullptr);
-			}
-
-			DX11Context->Unmap(StagingTexture.Get(), 0);
-
-		}
-	}
-	else
-	{
-		LogInfo("Failed to load texture from : {}", path.string());
-	}
-}
 
 
 static float v_speed = 0.01f;
@@ -161,9 +95,6 @@ void LensFlareUi::window()
 		ImGui::EndTable();
 	}
 
-	
-	ImGui::Separator();
-
 
 
 	if (ImGui::CollapsingHeader("Textures"))
@@ -182,85 +113,73 @@ void LensFlareUi::window()
 			auto& ref = *texture;
 			auto* curr_buff = _buff[i];
 
-			if (ImGui::TreeNode(vfmt(" {} Texture##{}", TextureNames[i],i)))
+			if (ImGui::TreeNode(vfmt(" {} Texture##{}", TextureNames[i], i)))
 			{
+				ImVec2 UiTex_Size;
 				ImVec2 Tex_Size(ref.GetWidth(), ref.GetHeight());
-				
+				float fAspectRatio = Tex_Size.x / Tex_Size.y;
+
+				if (Tex_Size.x > 256 || Tex_Size.y > 256) {
+					UiTex_Size = { 256.f, 256.f/ fAspectRatio };
+				} else {
+					UiTex_Size = Tex_Size;
+				}
+
 				auto* view = ref.GetTextureView();
 
 				if (view)
-					ImGui::Image(view, Tex_Size);
+					ImGui::Image(view, UiTex_Size);
 
 				ImGui::Text(vfmt("size = {} x {}", Tex_Size.x, Tex_Size.y));
 
-				ImGui::InputText(vfmt("Path##_texture{}", i), curr_buff, 255);
+				ImGui::Text("Path:");
+				ImGui::SameLine();
+				ImGui::InputText(vfmt("##Path_texture{}", i), curr_buff, 255);
 
+				ImGui::SameLine();
+				if (ImGui::Button(vfmt("Swap Texture##{}",i)))
+				{
+					std::filesystem::path path(curr_buff);
+					auto ext = path.extension();
+
+					if (ext == ".dds")
+					{
+						ImGui::OpenPopup("dds texture replace popup");
+					}
+					else
+					{
+						rage::grcTexture* texture = rage::grcTextureFactory::GetInstance()->CreateFromPath(path);
+						if (texture)
+						{
+							ptr->m_pTextures[i] = texture;
+						}
+					}
+				}
+				
 				if (ImGui::BeginPopupContextItem("dds texture replace popup"))
 				{
 					ImGui::Text("Load As:");
 
+					rage::grcTexture* texture = nullptr;
+
 					if (ImGui::Selectable("DXT1"))
 					{
-						ReplaceWithDDS(ptr->m_pTextures[i], curr_buff, 1);
+						texture = rage::grcTextureFactory::GetInstance()->CreateFromDDS(curr_buff, rage::grcImage::Format::DXT1);
 					}
 					if (ImGui::Selectable("DXT3"))
 					{
-						ReplaceWithDDS(ptr->m_pTextures[i], curr_buff, 2);
+						texture = rage::grcTextureFactory::GetInstance()->CreateFromDDS(curr_buff, rage::grcImage::Format::DXT3);
 					}
 					if (ImGui::Selectable("DXT5"))
 					{
-						ReplaceWithDDS(ptr->m_pTextures[i], curr_buff, 3);
+						texture = rage::grcTextureFactory::GetInstance()->CreateFromDDS(curr_buff, rage::grcImage::Format::DXT5);
+					}
+
+					if (texture)
+					{
+						ptr->m_pTextures[i] = texture;
 					}
 					ImGui::EndPopup();
-				}
-
-				if (ImGui::Button("Replace"))
-				{
-					std::filesystem::path path(curr_buff);
-
-					if (!path.has_extension() || path.empty())
-					{
-						ImGui::TreePop();
-						continue;
-					}
-
-					auto ext = path.extension();
-					
-					static const std::array other_extensions = { ".jpg", ".png", ".tga", ".bmp", ".psd", ".gif", ".hdr", ".pic" };
-
-					if (ext == ".dds")
-					{
-						ImGui::OpenPopup("dds texture replace popup");		
-					}
-					else if (std::find_if(							//this all should be made in grcTextureFactory as a functions
-						other_extensions.begin(), 
-						other_extensions.end(), 
-						[&ext] (const char* _ext) 
-						{ 
-							return ext == _ext; 
-						}) != other_extensions.end() ) 
-					{
-						int image_width = 0;
-						int image_height = 0;
-						unsigned char* image_data = stbi_load(curr_buff, &image_width, &image_height, NULL, 4);
-						if (image_data)
-						{
-							int grcFormat = 12;
-
-							rage::grcImage image;
-							memset(&image, 0, sizeof(image));
-							image.m_Width = image_width;
-							image.m_Height = image_height;
-							image.m_Depth = 1;
-							image.m_Stride = image_width * 4;
-							image.m_Format = (rage::grcImage::Format)grcFormat;
-							image.m_Bits = image_data;
-
-							ptr->m_pTextures[i] = rage::grcTextureFactory::GetInstance()->Create(&image, nullptr);
-
-							stbi_image_free(image_data);
-						}
-					}
 				}
 
 				ImGui::TreePop();

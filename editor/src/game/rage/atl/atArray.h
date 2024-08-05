@@ -37,10 +37,10 @@ class atArray
 
 	void VerifyBufferCanFitOrGrow(size_t requested_sz)
 	{
-		if (m_capacity == 0) {
-			reserve(16);
-		} else if (requested_sz >= m_capacity) {
-			reserve(NEXT_POWER_OF_TWO_32(requested_sz));
+		if (requested_sz >= m_capacity) 
+		{
+			size_t sz = NEXT_POWER_OF_TWO_32(requested_sz);
+			reserve(sz);
 		}
 	}
 
@@ -52,11 +52,7 @@ public:
 
 	atArray(TSize count)
 	{
-		VerifyBufferCanFitOrGrow(count);
-		for (size_t i = 0; i < count; i++) {
-			push_back(TValue());
-		}
-///		resize(count);
+		resize(count);
 	}
 
 	atArray(TSize count, const TValue& v)
@@ -225,15 +221,15 @@ public:
 			throw std::out_of_range(std::format("AtArray ::insert()\nIdx : {} is out of range", _where));
 
 		VerifyBufferCanFitOrGrow(m_size + 1);
-
-		auto* pos = m_offset + _where;
-		auto* _end = end();
 		if (_where == m_size)
 		{
 			emplace_back(value);
 			return;
 		}
 		
+		auto* pos = m_offset + _where;
+		auto* _end = end();
+
 		std::construct_at(_end, TValue());
 		if constexpr (std::is_nothrow_move_constructible_v<TValue>) {
 			std::move_backward(pos, _end, _end + 1);
@@ -274,7 +270,7 @@ public:
 		}
 		
 		std::destroy(pos, pos + il.size());
-		for (; it_begin != it_end; it_begin++)
+		for (; it_begin != it_end; it_begin++, pos++)
 		{
 			std::construct_at(pos, *it_begin);
 		}

@@ -3,7 +3,7 @@
 
 #include "ImGui/imgui.h"
 #include "common/types.h"
-#include "ptxKeyframeProp.h"
+#include "ptxKeyframe.h"
 
 #include "ptxUiUniqueNums.h"
 
@@ -32,36 +32,6 @@ namespace rage
 		virtual void ReleasePoint(void*) {}
 		virtual void SetKeyframeDefns() {}
 		virtual void SetEvolvedKeyframeDefns(void*) {}
-
-		//{
-		//	static std::map<u32, const char*> names
-		//	{
-		//		{ rage::joaat("ptxd_Model") ,"ptxd_Model"},
-		//		{ rage::joaat("ptxu_Acceleration") ,"ptxu_Acceleration"},
-		//		{ rage::joaat("ptxd_Sprite"), "ptxd_Sprite"},
-		//		{ rage::joaat("ptxd_Trail"), "ptxd_Trail"},
-		//		{ rage::joaat("ptxu_Age"), "ptxu_Age"},
-		//		{ rage::joaat("ptxu_AnimateTexture"), "ptxu_AnimateTexture"},
-		//		{ rage::joaat("ptxu_Attractor"), "ptxu_Attractor"},
-		//		{ rage::joaat("ptxu_Collision"), "ptxu_Collision"},
-		//		{ rage::joaat("ptxu_Colour"), "ptxu_Colour"},
-		//		{ rage::joaat("ptxu_MatrixWeight"), "ptxu_MatrixWeight"},
-		//		{ rage::joaat("ptxu_Noise"), "ptxu_Noise"},
-		//		{ rage::joaat("ptxu_Pause"), "ptxu_Pause"},
-		//		{ rage::joaat("ptxu_Rotation"), "ptxu_Rotation"},
-		//		{ rage::joaat("ptxu_Size"), "ptxu_Size"},
-		//		{ rage::joaat("ptxu_Velocity"), "ptxu_Velocity"},
-		//		{ rage::joaat("ptxu_Wind"), "ptxu_Wind"},
-		//		{ rage::joaat("ptxu_Decal"), "ptxu_Decal"},
-		//		{ rage::joaat("ptxu_DecalPool"), "ptxu_DecalPool"},
-		//		{ rage::joaat("ptxu_FogVolume"), "ptxu_FogVolume"},
-		//		{ rage::joaat("ptxu_Light"), "ptxu_Light"},
-		//		{ rage::joaat("ptxu_Liquid"), "ptxu_Liquid"},
-		//		{ rage::joaat("ptxu_River"), "ptxu_River"},
-		//		{ rage::joaat("ptxu_ZCull"), "ptxu_ZCull"},
-		//		{ rage::joaat("ptxu_Dampening"), "ptxu_Dampening"}
-		//	}
-		//}
 
 		enum class DerivedType : u32
 		{

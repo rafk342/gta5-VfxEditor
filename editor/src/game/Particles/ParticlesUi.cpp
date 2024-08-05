@@ -442,10 +442,8 @@ void ParticlesUi::window()
 							ptxEffectSpawnerTreeNode(e.m_effectSpawnerAtRatio, "Effect Spawner At Ratio", i);
 							ptxEffectSpawnerTreeNode(e.m_effectSpawnerOnColn, "Effect Spawner On Collision", i);
 
-							
 							BehavioursTreeNode(e.m_allBehaviours, "All Behaviours", i);
 							
-
 							if (ImGui::TreeNode(vfmt("PTX Bias Link##{}", i)))
 							{
 								for (size_t bias_link_idx = 0; bias_link_idx < e.m_biasLinks.size(); bias_link_idx++)
@@ -509,14 +507,7 @@ void ParticlesUi::window()
 									{
 										auto& shader_var = e.m_shaderInst.m_instVars[shader_var_idx].GetRef();
 
-										ImGui::Text(vfmt("hash : {}", shader_var.m_hashName));
-										ImGui::Text(vfmt("Type : {}", shader_var.GetTypeStr()));
-										ImGui::Text(vfmt("Id : {}", shader_var.m_id));
-
-										ImGui::Checkbox(vfmt("Is Keyframeable##{}", NextUniqueNum()), &shader_var.m_isKeyframeable);
-										ImGui::Text(vfmt("Owns Info : {}", shader_var.m_ownsInfo));
-
-										ImGui::Separator();
+										shader_var.UiWidgets(i, shader_var_idx);
 									}
 									ImGui::TreePop();
 								}
@@ -606,7 +597,7 @@ void ptxSpawnedEffectScalarsWidgets(ptxSpawnedEffectScalars& scalars, const char
 		ImGui::vColor32Edit4(vfmt("Colour Tint Scalar##{}", NextUniqueNum()), scalars.m_colourTintScalar, ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_AlphaBar );
 		ImGui::DragFloat(vfmt("Zoom Scalar ##{}", NextUniqueNum()), &scalars.m_zoomScalar, 0.01f);
 	
-		if (ImGui::TreeNode("Flags"))
+		if (ImGui::TreeNode(vfmt("Flags##{}",entryIdx)))
 		{
 			scalars.m_flags = BitsetWidgets<5, u32>(scalars.m_flags,
 				{
@@ -617,7 +608,6 @@ void ptxSpawnedEffectScalarsWidgets(ptxSpawnedEffectScalars& scalars, const char
 					"ACTIVE_SIZE_SCALAR"
 				});
 			ImGui::Text(vfmt("Flags : {:08b}", u32(scalars.m_flags)));
-			
 			ImGui::TreePop();
 		}
 		ImGui::TreePop();
@@ -670,12 +660,12 @@ void rage::PtxDomainTreeNode(ptxDomainObj& DomainObj, const char* name, size_t E
 	auto& domain = DomainObj.m_pDomain.GetRef();
 
 
-	if (ImGui::TreeNode(vfmt("{}_domain_{}", name, EntryIdx)))
+	if (ImGui::TreeNode(vfmt("{}##_domain_{}", name, EntryIdx)))
 	{
 		ImGui::Text("FileVersion %f", domain.m_fileVersion);
 
-		ImGui::InputInt(vfmt("Type_{}", NextUniqueNum()),					&domain.m_type);
-		ImGui::InputInt(vfmt("Shape_{}", NextUniqueNum()),					&domain.m_shape);
+		ImGui::InputInt(vfmt("Type##_{}", NextUniqueNum()),					&domain.m_type);
+		ImGui::InputInt(vfmt("Shape##_{}", NextUniqueNum()),					&domain.m_shape);
 
 		ImGui::Checkbox(vfmt("IsWorldSpace ##{}", NextUniqueNum()),			&domain.m_isWorldSpace);
 		ImGui::Checkbox(vfmt("IsPointRelative ##{}", NextUniqueNum()),		&domain.m_isPointRelative);
@@ -706,103 +696,14 @@ void rage::ptxKeyframePropTreeNode(
 	if (ImGui::TreeNode(vfmt("{}## {}", name, EntryIdx)))
 	{
 		ImGui::Checkbox(vfmt("Invert Bias Link## fkProp {}", NextUniqueNum()), &ptxKfProp.m_invertBiasLink);
-		//ImguiDragInt_FromDiffType(vfmt("Rand Index## fkProp {} {}", EntryIdx, NameId), v1, ptxKfProp.m_randIndex);
-		
-		if (ImGui::TreeNode(vfmt("Keyframes ## fkProp {}", EntryIdx)))
-		{
-			auto& keyframes = ptxKfProp.m_keyframe.data;
-
-			size_t num_columns =
-				type == PTX_KF_FLOAT ? 1 :
-				type == PTX_KF_FLOAT2 ? 2 :
-				type == PTX_KF_FLOAT3 ? 3 :
-				type == PTX_KF_FLOAT4 ? 4 :
-				type == PTX_KF_COL3 ? 1 : 
-				type == PTX_KF_COL4 ? 1 : 0;
-
-
-			if (ImGui::BeginTable(vfmt("KeyframeTable## kfProp {}", NextUniqueNum()), num_columns + 1, ImGuiTableFlags_Borders))
-			{
-				//==========================================================================
-				std::array labels = { lb1, lb2, lb3, lb4 };
-				
-				for (size_t i = 0; i < num_columns; i++)
-					ImGui::TableSetupColumn(labels[i]);
-
-				ImGui::TableSetupColumn("##col_last", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize(" Value ").x * 1.2);
-
-				//==========================================================================
-				
-				if (!(type == PTX_KF_COL3 || type == PTX_KF_COL4))
-					ImGui::TableHeadersRow();
-				
-				//==========================================================================
-
-				for (size_t kf_idx = 0; kf_idx < keyframes.size(); kf_idx++)
-				{
-					auto& CurrEntry = keyframes[kf_idx];
-
-					ImGui::TableNextRow();
-
-					for (size_t columnIdx = 0; columnIdx < num_columns; columnIdx++)
-					{
-						ImGui::TableNextColumn();
-						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-						ImGui::DragFloat(vfmt("##Time kfProp {}", NextUniqueNum()), &CurrEntry.vTime[columnIdx],v_speed);
-					}
-
-					ImGui::TableNextColumn();
-					ImGui::Text(" Time ");
-
-					for (size_t columnIdx = 0; columnIdx < num_columns; columnIdx++)
-					{
-						ImGui::TableNextColumn();
-						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-						
-						const char* vValue_Label = vfmt("##Value kfProp {}", NextUniqueNum());
-
-						if (type == PTX_KF_COL3)
-						{
-							ImGui::ColorEdit3(vValue_Label, CurrEntry.vValue, ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_HDR);
-						}
-						else if (type == PTX_KF_COL4)
-						{
-							ImGui::ColorEdit4(vValue_Label, CurrEntry.vValue, ImGuiColorEditFlags_DisplayHSV | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_HDR);
-						}
-						else
-						{
-							ImGui::DragFloat(vValue_Label, &CurrEntry.vValue[columnIdx], v_speed);
-						}
-					}
-					
-					ImGui::TableNextColumn();
-					ImGui::Text(" Value ");
-				}
-
-				ImGui::EndTable();
-			}
-			if (ImGui::Button("Append Item")) 
-			{
-				keyframes.push_back(ptxKeyframeEntry());
-			}
-
-			if (ImGui::Button("Clear"))
-			{
-				keyframes.clear();
-			}
-
-			if (ImGui::Button("Pop back"))
-			{
-				keyframes.pop_back();
-			}
-
-
-			ImGui::TreePop();
-		}
+	
+		ptxKeyframeTable(ptxKfProp.m_keyframe,EntryIdx, type, lb1, lb2, lb3, lb4);
 
 		ImGui::TreePop();
 	}
 }
+
+
 
 
 ParticlesUi::~ParticlesUi()

@@ -34,3 +34,26 @@ std::vector<std::string> split_string(const std::string& input, const std::strin
     return elements;
 }
 
+bool TextToClipboard(const std::string& text)
+{
+	if (!OpenClipboard(nullptr))
+		return false;
+
+	EmptyClipboard();
+
+	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, text.size() + 1);
+	if (!hGlobal)
+	{
+		CloseClipboard();
+		return false;
+	}
+
+	memcpy(GlobalLock(hGlobal), text.c_str(), text.size() + 1);
+	GlobalUnlock(hGlobal);
+
+	SetClipboardData(CF_TEXT, hGlobal);
+	CloseClipboard();
+
+	GlobalFree(hGlobal);
+	return true;
+}

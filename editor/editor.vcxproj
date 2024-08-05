@@ -180,6 +180,7 @@
     <ClCompile Include="src\game\overlayRender\Render.cpp" />
     <ClCompile Include="src\game\Particles\ParticlesUi.cpp" />
     <ClCompile Include="src\game\Particles\ptxBehaviour.cpp" />
+    <ClCompile Include="src\game\Particles\ptxShader.cpp" />
     <ClCompile Include="src\game\rage\grcore\texturepc.cpp" />
     <ClCompile Include="src\game\rage\math\vec.cpp" />
     <ClCompile Include="src\game\rage\math\vecv.cpp" />

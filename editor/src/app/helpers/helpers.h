@@ -9,11 +9,13 @@
 #include <iomanip>
 #include "common/types.h"
 #include <mutex>
+#include <windows.h>
 
 #include "Cougar/FixedSizeAllocator.h"
 
-std::string                 strip_str                       (const std::string& str);
-std::vector<std::string>    split_string                    (const std::string& input, const std::string& delimiters, u16 expected_vec_size = 16);
+std::string                 strip_str           (const std::string& str);
+std::vector<std::string>    split_string        (const std::string& input, const std::string& delimiters, u16 expected_vec_size = 16);
+bool						TextToClipboard		(const std::string& text);
 
 
 template <typename T>
@@ -75,7 +77,3 @@ constexpr size_t constexpr_strlen(const char* str)
 		++len;
 	return len;
 }
-
-
-
-

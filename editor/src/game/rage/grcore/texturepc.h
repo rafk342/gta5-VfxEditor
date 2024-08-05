@@ -7,6 +7,8 @@
 #include "rage/atl/color32.h"
 #include "rage/math/vecv.h"
 
+#include "overlayRender/Render.h"
+
 namespace rage
 {
 	struct grcTextureDX11_ExtraData
@@ -208,6 +210,8 @@ namespace rage
 
 	class grcTextureFactory
 	{
+		grcTextureFactory() {};
+		~grcTextureFactory() {};
 	public:
 
 		static grcTextureFactory* GetInstance()
@@ -218,8 +222,12 @@ namespace rage
 			return obj;
 		}
 
+		//Can return nullptr
+		grcTexture* CreateFromDDS(std::filesystem::path path, grcImage::Format img_format);
+		//Can return nullptr
+		grcTexture* CreateFromPath(std::filesystem::path path, grcImage::Format img_format = grcImage::Format::A8B8G8R8);
+
 		virtual ~grcTextureFactory() = 0;
-		//virtual grcTexture* createManualTexture	(short width, short height, int format, void* pBuffer, const grcManualTextureDef* templ) = 0;
 		virtual grcTexture* Create(u32 width, u32 height, u32 depth, u32 eFormat, void* pBuffer, TextureCreateParams* params) = 0;
 		virtual grcTexture* Create(grcImage* texture, TextureCreateParams* CreateParams) = 0;
 		virtual grcTexture* Create(u32 width, u32 height, u32 eFormat, void* pBuffer, u32 numMips, TextureCreateParams* params) = 0;

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <map>
 #include "common/types.h"
 
@@ -11,7 +12,8 @@
 #include "rage/grcore/texture.h"
 #include "rage/grm/shader.h"
 
-#include "ImGui/imgui.h"
+#include "ptxKeyframe.h"
+
 
 namespace rage
 {
@@ -91,75 +93,65 @@ namespace rage
 		u8 pad[3];
 	};
 
-	struct alignas(16) ptxShaderVar : public datBase
+	struct grmVariableInfo
+	{
+		enum VarType {
+			VT_NONE, VT_INT_DONTUSE, VT_FLOAT, VT_VECTOR2,				// 0-3
+			VT_VECTOR3, VT_VECTOR4, VT_TEXTURE, VT_BOOL_DONTUSE,		// 4-7
+			VT_MATRIX43, VT_MATRIX44, VT_STRING,						// 8-A
+
+			VT_INT, VT_INT2, VT_INT3, VT_INT4, VT_STRUCTUREDBUFFER, VT_SAMPLERSTATE,
+
+			VT_UNUSED1, VT_UNUSED2, VT_UNUSED3, VT_UNUSED4, //these are to be used for the particle system to add custom vertex buffer values
+			VT_UAV_STRUCTURED, VT_UAV_TEXTURE,	// these only affect Compute Shaders
+			
+			VT_BYTEADDRESSBUFFER, VT_UAV_BYTEADDRESS,
+			VT_COUNT /*Must be the last one*/
+		};
+
+		const char*	m_Name;			// Semantic name
+		const char*	m_ActualName;	// Actual underlying parameter name, only on __WIN32PC builds.
+		VarType		m_Type;
+		const char*	m_TypeName;
+		const char*	m_UiName;		// Name to display in widgets
+		const char*	m_UiWidget;		// Used to describe what type of widget to display
+		const char*	m_UiHelp;		// Extra info for widget tool tips
+		const char*	m_UiHint;
+		const char*	m_AssetName;	// Primarily useful for hardcoding texture filenames
+		const char*	m_GeoValueSource;//The source of the value ("instance","type","template") "instance" is the assumed default
+		float		m_UiMin;		// Minimum allowed value for a widget
+		float		m_UiMax;		// Maximum allowed value for a widget
+		float		m_UiStep;		// Step size
+		bool		m_UiHidden;		// Flag for if this variable should be hidden from the UI.
+		int			m_UvSetIndex;	// Used for texture variables to formally declare which UV set index the shader uses
+		const char*	m_UvSetName;	// Used for texture variables to formally declare which UV set name the exporter should use
+		const char*	m_TextureOutputFormats;		// The output formats of the texture, this is a ; separated list of 'platform'='format' pairs
+		int			m_iNoOfMipLevels;			// No of mip map levels to create (If this value is zero, a complete mipmap chain is created.  This also the default.)
+		int			m_MaterialDataUvSetIndex; // Used for misc. material data that needs to get pushed into the vertex buffer. -1 means not using
+		int			m_ArrayCount;	// Number of elements in the array
+		bool		m_IsMaterial;
+	};
+
+
+	struct ptxShaderVar : public datBase
 	{
 		virtual ~ptxShaderVar() {};
 
-		void* m_pInfo;			//grmVariableInfo
+		grmVariableInfo* m_pInfo;			//grmVariableInfo
 		u32 m_hashName;
 		ptxShaderVarType m_type;
 		u32 m_id;
 		bool m_isKeyframeable;
 		bool m_ownsInfo;
-		u8 pad[18];
+		u8 pad[10];
 
-
-
-		void UiWidgets()
-		{
-			ImGui::Text("Name: %s", m_pInfo);
-			ImGui::Text("Type: %s", GetTypeStr());
-			ImGui::Text("Hash: %u", m_hashName);
-			ImGui::Text("ID: %u", m_id);
-			ImGui::Text("Keyframeable: %s", m_isKeyframeable ? "true" : "false");
-
-			switch (m_type)
-			{
-			case rage::PTXSHADERVAR_BOOL:
-				break;
-			case rage::PTXSHADERVAR_INT:
-				break;
-			case rage::PTXSHADERVAR_FLOAT:
-				break;
-			case rage::PTXSHADERVAR_FLOAT2:
-				break;
-			case rage::PTXSHADERVAR_FLOAT3:
-				break;
-			case rage::PTXSHADERVAR_FLOAT4:
-				break;
-			case rage::PTXSHADERVAR_TEXTURE:
-				break;
-			case rage::PTXSHADERVAR_KEYFRAME:
-				break;
-			case rage::PTXSHADERVAR_COUNT:
-				break;
-			case rage::PTXSHADERVAR_INVALID:
-				break;
-			default:
-				break;
-			}
-		}
-
-		const char* GetTypeStr()
-		{
-			static std::map<ptxShaderVarType, const char*> typesMap = {
-				{ PTXSHADERVAR_BOOL, "bool" },
-				{ PTXSHADERVAR_INT, "int" },
-				{ PTXSHADERVAR_FLOAT, "float" },
-				{ PTXSHADERVAR_FLOAT2, "float2" },
-				{ PTXSHADERVAR_FLOAT3, "float3" },
-				{ PTXSHADERVAR_FLOAT4, "float4" },
-				{ PTXSHADERVAR_TEXTURE, "texture" },
-				{ PTXSHADERVAR_KEYFRAME, "keyframe" }
-			};
-
-			auto it = typesMap.find(m_type);
-			return it == typesMap.end() ? "unknown" : it->second;
-		}
+		void UiWidgets(size_t entryIdx, size_t varIdx);
+		const char* GetTypeStr();
 	};
 
 	struct ptxShaderVarVector : public ptxShaderVar
 	{
+		u8 pad[8];
 		rage::Vector4 m_vector;
 	};
 
